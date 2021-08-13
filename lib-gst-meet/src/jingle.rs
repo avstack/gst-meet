@@ -716,12 +716,13 @@ impl JingleSession {
       });
       description.ssrcs = vec![ssrc];
 
-      let mut transport = IceUdpTransport::new().with_fingerprint(Fingerprint {
-        hash: Algo::Sha_256,
-        setup: Some(Setup::Active),
-        value: fingerprint.clone(),
-        required: Some(true.to_string()),
-      });
+      let mut transport = IceUdpTransport::new()
+        .with_fingerprint(Fingerprint {
+          hash: Algo::Sha_256,
+          setup: Some(Setup::Active),
+          value: fingerprint.clone(),
+          required: Some(true.to_string()),
+        });
       transport.ufrag = Some(ice_local_ufrag.clone());
       transport.pwd = Some(ice_local_pwd.clone());
       transport.candidates = vec![];

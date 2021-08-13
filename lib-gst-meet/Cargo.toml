@@ -1,5 +1,6 @@
 [package]
 name = "lib-gst-meet"
+description = "Connect GStreamer pipelines to Jitsi Meet conferences"
 version = "0.1.0"
 edition = "2018"
 license = "MIT/Apache-2.0"
@@ -17,18 +18,18 @@ hex = { version = "0.4", default-features = false, features = ["std"] }
 itertools = { version = "0.10", default-features = false, features = ["use_std"] }
 libc = { version = "0.2", default-features = false }
 maplit = { version = "1", default-features = false }
-nice-gst-meet = { path = "../nice-gst-meet", default-features = false, features = ["v0_1_18"] }
+nice-gst-meet = { version = "0.1", path = "../nice-gst-meet", default-features = false, features = ["v0_1_18"] }
 once_cell = { version = "1", default-features = false, features = ["std"] }
 pem = { version = "0.8", default-features = false }
 rand = { version = "0.8", default-features = false, features = ["std", "std_rng"] }
 rcgen = { version = "0.8", default-features = false }
 ring = { version = "0.16", default-features = false }
-tokio = { version = "1", default-features = false, features = ["sync", "time"] }
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
 tokio-tungstenite = { version = "0.14", default-features = false, features = ["connect", "rustls-tls"] }
 tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
 uuid = { version = "0.8", default-features = false, features = ["v4"] }
-xmpp-parsers = { path = "../../xmpp-rs/xmpp-parsers", default-features = false }
+xmpp-parsers = { package = "xmpp-parsers-gst-meet", version = "0.18", default-features = false }
 
 [build-dependencies]
 pkg-config = { version = "0.3", default-features = false }

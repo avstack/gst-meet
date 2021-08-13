@@ -1,5 +1,6 @@
 [package]
 name = "gst-meet"
+description = "A tool for connecting GStreamer pipelines to Jitsi Meet conferences"
 version = "0.1.0"
 edition = "2018"
 license = "MIT/Apache-2.0"
@@ -10,7 +11,7 @@ anyhow = { version = "1", default-features = false, features = ["std"] }
 futures = { version = "0.3", default-features = false }
 glib = { version = "0.14", default-features = false, features = ["log"] }
 gstreamer = { version = "0.17", default-features = false, features = ["v1_18"] }
-lib-gst-meet = { path = "../lib-gst-meet" }
+lib-gst-meet = { version = "0.1", path = "../lib-gst-meet", default-features = false }
 structopt = { version = "0.3", default-features = false }
 tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "signal", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false }

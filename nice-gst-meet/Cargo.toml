@@ -1,5 +1,6 @@
 [package]
 name = "nice-gst-meet"
+description = "Bindings to libnice for gst-meet"
 version = "0.1.0"
 edition = "2018"
 license = "MIT/Apache-2.0"
@@ -9,7 +10,7 @@ authors = ["Jasper Hugo <jasper@avstack.io>"]
 bitflags = { version = "1", default-features = false, optional = true }
 glib = { version = "0.14", default-features = false }
 libc = { version = "0.2", default-features = false }
-nice-gst-meet-sys = { path = "../nice-gst-meet-sys", default-features = false }
+nice-gst-meet-sys = { version = "0.1", path = "../nice-gst-meet-sys", default-features = false }
 nix = { version = "0.22", default-features = false }
 
 [features]

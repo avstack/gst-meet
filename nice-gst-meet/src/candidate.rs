@@ -30,7 +30,6 @@ impl ::std::fmt::Debug for Candidate {
     f.debug_struct("Candidate")
       .field("type_", &self.type_())
       .field("foundation", &self.foundation())
-      .field("transport", &self.transport())
       .field("addr", &self.addr())
       .field("priority", &self.priority())
       .field("stream_id", &self.stream_id())

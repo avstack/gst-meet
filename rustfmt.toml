@@ -1,0 +1,13 @@
+tab_spaces = 2
+use_field_init_shorthand = true
+use_try_shorthand = true
+control_brace_style = "ClosingNextLine"
+condense_wildcard_suffixes = true
+match_block_trailing_comma = true
+imports_granularity = "Crate"
+newline_style = "Unix"
+reorder_impl_items = true
+group_imports = "StdExternalCrate"
+report_fixme = "Unnumbered"
+report_todo = "Unnumbered"
+version = "Two"

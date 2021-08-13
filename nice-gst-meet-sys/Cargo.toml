@@ -1,0 +1,73 @@
+[package]
+name = "nice-gst-meet-sys"
+version = "0.1.0"
+links = "nice"
+edition = "2018"
+build = "build.rs"
+license = "MIT/Apache-2.0"
+authors = ["Jasper Hugo <jasper@avstack.io>"]
+
+[package.metadata.system-deps.nice]
+name = "nice"
+version = "0.1"
+
+[package.metadata.system-deps.nice.v0_1_4]
+version = "0.1.4"
+
+[package.metadata.system-deps.nice.v0_1_5]
+version = "0.1.5"
+
+[package.metadata.system-deps.nice.v0_1_6]
+version = "0.1.6"
+
+[package.metadata.system-deps.nice.v0_1_8]
+version = "0.1.8"
+
+[package.metadata.system-deps.nice.v0_1_14]
+version = "0.1.14"
+
+[package.metadata.system-deps.nice.v0_1_15]
+version = "0.1.15"
+
+[package.metadata.system-deps.nice.v0_1_16]
+version = "0.1.16"
+
+[package.metadata.system-deps.nice.v0_1_17]
+version = "0.1.17"
+
+[package.metadata.system-deps.nice.v0_1_18]
+version = "0.1.18"
+
+[package.metadata.system-deps.nice.v0_1_20]
+version = "0.1.20"
+
+[package.metadata.docs.rs]
+features = ["dox"]
+
+[lib]
+name = "nice_sys"
+
+[dependencies]
+libc = { version = "0.2", default-features = false }
+glib = { version = "0.14", default-features = false }
+gio = { version = "0.14", default-features = false }
+
+[build-dependencies]
+system-deps = { version = "3", default-features = false }
+
+[dev-dependencies]
+shell-words = { version = "1", default-features = false }
+tempfile = { version = "3", default-features = false }
+
+[features]
+v0_1_4 = []
+v0_1_5 = ["v0_1_4"]
+v0_1_6 = ["v0_1_5"]
+v0_1_8 = ["v0_1_6"]
+v0_1_14 = ["v0_1_8"]
+v0_1_15 = ["v0_1_14"]
+v0_1_16 = ["v0_1_15"]
+v0_1_17 = ["v0_1_16"]
+v0_1_18 = ["v0_1_17"]
+v0_1_20 = ["v0_1_18"]
+dox = []

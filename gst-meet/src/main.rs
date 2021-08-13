@@ -1,0 +1,224 @@
+use std::time::Duration;
+
+use anyhow::{Context, Result};
+#[cfg(target_os = "macos")]
+use cocoa::appkit::NSApplication;
+use gstreamer::{
+  prelude::{ElementExt, GstBinExt},
+  GhostPad,
+};
+use lib_gst_meet::{JitsiConferenceConfig, JitsiConnection};
+use structopt::StructOpt;
+use tokio::{signal::ctrl_c, task, time::timeout};
+use tracing::{info, warn};
+
+#[derive(Debug, Clone, StructOpt)]
+#[structopt(
+  name = "gst-meet",
+  about = "Connect a GStreamer pipeline to a Jitsi Meet conference."
+)]
+struct Opt {
+  #[structopt(long)]
+  web_socket_url: String,
+  #[structopt(long)]
+  xmpp_domain: String,
+  #[structopt(long)]
+  room_name: String,
+  #[structopt(long)]
+  muc_domain: Option<String>,
+  #[structopt(long)]
+  focus_jid: Option<String>,
+  #[structopt(long, default_value = "vp8")]
+  video_codec: String,
+  #[structopt(long, default_value = "gst-meet")]
+  nick: String,
+  #[structopt(long, default_value)]
+  region: String,
+  #[structopt(long)]
+  send_pipeline: Option<String>,
+  #[structopt(long)]
+  recv_pipeline_participant_template: Option<String>,
+}
+
+#[cfg(not(target_os = "macos"))]
+#[tokio::main]
+async fn main() -> Result<()> {
+  main_inner().await
+}
+
+#[cfg(target_os = "macos")]
+fn main() {
+  // GStreamer requires an NSApp event loop in order for osxvideosink etc to work.
+  let app = unsafe { cocoa::appkit::NSApp() };
+
+  let rt = tokio::runtime::Builder::new_multi_thread()
+    .enable_all()
+    .build()
+    .unwrap();
+
+  rt.spawn(async move {
+    main_inner().await.unwrap();
+    unsafe {
+      cocoa::appkit::NSApp().stop_(cocoa::base::nil);
+    }
+    std::process::exit(0);
+  });
+
+  unsafe {
+    app.run();
+  }
+}
+
+async fn main_inner() -> Result<()> {
+  init_tracing();
+
+  let opt = Opt::from_args();
+
+  glib::log_set_default_handler(glib::rust_log_handler);
+  let main_loop = glib::MainLoop::new(None, false);
+  gstreamer::init().unwrap();
+
+  let parsed_bin = opt
+    .send_pipeline
+    .as_ref()
+    .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
+    .transpose()?;
+
+  let (connection, background) =
+    JitsiConnection::new(&opt.web_socket_url, &opt.xmpp_domain).await?;
+
+  tokio::spawn(background);
+
+  connection.connect().await?;
+
+  let room_jid = format!(
+    "{}@{}",
+    opt.room_name,
+    opt
+      .muc_domain
+      .clone()
+      .unwrap_or_else(|| { format!("conference.{}", opt.xmpp_domain) }),
+  );
+
+  let focus_jid = opt
+    .focus_jid
+    .clone()
+    .unwrap_or_else(|| format!("focus@auth.{}/focus", opt.xmpp_domain,));
+
+  let Opt {
+    nick,
+    region,
+    video_codec,
+    recv_pipeline_participant_template,
+    ..
+  } = opt;
+
+  let config = JitsiConferenceConfig {
+    muc: room_jid.parse()?,
+    focus: focus_jid.parse()?,
+    nick,
+    region,
+    video_codec,
+  };
+
+  let conference = connection
+    .join_conference(main_loop.context(), config)
+    .await?;
+
+  if let Some(bin) = parsed_bin {
+    conference.add_bin(&bin).await?;
+
+    if let Some(audio) = bin.by_name("audio") {
+      info!("Found audio element in pipeline, linking...");
+      let audio_sink = conference.audio_sink_element().await?;
+      audio.link(&audio_sink)?;
+    }
+
+    if let Some(video) = bin.by_name("video") {
+      info!("Found video element in pipeline, linking...");
+      let video_sink = conference.video_sink_element().await?;
+      video.link(&video_sink)?;
+    }
+  }
+
+  conference
+    .on_participant(move |participant| {
+      let recv_pipeline_participant_template = recv_pipeline_participant_template.clone();
+      Box::pin(async move {
+        info!("New participant: {:?}", participant);
+
+        if let Some(template) = recv_pipeline_participant_template {
+          let pipeline_description = template
+            .replace("{jid}", &participant.jid.to_string())
+            .replace(
+              "{jid_user}",
+              &participant.jid.node.context("jid missing node")?,
+            )
+            .replace("{participant_id}", &participant.muc_jid.resource)
+            .replace("{nick}", &participant.nick.unwrap_or_default());
+
+          let bin = gstreamer::parse_bin_from_description(&pipeline_description, false)
+            .context("failed to parse recv pipeline participant template")?;
+
+          if let Some(audio_sink_element) = bin.by_name("audio") {
+            let sink_pad = audio_sink_element.static_pad("sink").context(
+              "audio sink element in recv pipeline participant template has no sink pad",
+            )?;
+            bin.add_pad(&GhostPad::with_target(Some("audio"), &sink_pad)?)?;
+          }
+          else {
+            info!("No audio sink element found in recv pipeline participant template");
+          }
+
+          if let Some(video_sink_element) = bin.by_name("video") {
+            let sink_pad = video_sink_element.static_pad("sink").context(
+              "video sink element in recv pipeline participant template has no sink pad",
+            )?;
+            bin.add_pad(&GhostPad::with_target(Some("video"), &sink_pad)?)?;
+          }
+          else {
+            info!("No video sink element found in recv pipeline participant template");
+          }
+
+          Ok(Some(bin))
+        }
+        else {
+          info!("No template for handling new participant");
+          Ok(None)
+        }
+      })
+    })
+    .await;
+
+  conference
+    .set_pipeline_state(gstreamer::State::Playing)
+    .await?;
+
+  let conference_ = conference.clone();
+  let main_loop_ = main_loop.clone();
+  tokio::spawn(async move {
+    ctrl_c().await.unwrap();
+
+    info!("Exiting...");
+
+    match timeout(Duration::from_secs(10), conference_.leave()).await {
+      Ok(Ok(_)) => {},
+      Ok(Err(e)) => warn!("Error leaving conference: {:?}", e),
+      Err(_) => warn!("Timed out leaving conference"),
+    }
+
+    main_loop_.quit();
+  });
+
+  task::spawn_blocking(move || main_loop.run()).await?;
+
+  Ok(())
+}
+
+fn init_tracing() {
+  tracing_subscriber::fmt()
+    .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+    .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
+    .with_target(false)
+    .init();
+}

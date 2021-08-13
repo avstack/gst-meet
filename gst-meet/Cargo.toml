@@ -1,0 +1,28 @@
+[package]
+name = "gst-meet"
+version = "0.1.0"
+edition = "2018"
+license = "MIT/Apache-2.0"
+authors = ["Jasper Hugo <jasper@avstack.io>"]
+
+[dependencies]
+anyhow = { version = "1", default-features = false, features = ["std"] }
+futures = { version = "0.3", default-features = false }
+glib = { version = "0.14", default-features = false, features = ["log"] }
+gstreamer = { version = "0.17", default-features = false, features = ["v1_18"] }
+lib-gst-meet = { path = "../lib-gst-meet" }
+structopt = { version = "0.3", default-features = false }
+tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "signal", "sync", "time"] }
+tokio-stream = { version = "0.1", default-features = false }
+tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
+tracing-subscriber = { version = "0.2", default-features = false, features = [
+  "chrono",
+  "env-filter",
+  "fmt",
+  "smallvec",
+  "parking_lot",
+  "tracing-log",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = { version = "0.24", default-features = false }

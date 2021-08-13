@@ -1,0 +1,26 @@
+[package]
+name = "nice-gst-meet"
+version = "0.1.0"
+edition = "2018"
+license = "MIT/Apache-2.0"
+authors = ["Jasper Hugo <jasper@avstack.io>"]
+
+[dependencies]
+bitflags = { version = "1", default-features = false, optional = true }
+glib = { version = "0.14", default-features = false }
+libc = { version = "0.2", default-features = false }
+nice-gst-meet-sys = { path = "../nice-gst-meet-sys", default-features = false }
+nix = { version = "0.22", default-features = false }
+
+[features]
+v0_1_4 = ["nice-gst-meet-sys/v0_1_4"]
+v0_1_5 = ["nice-gst-meet-sys/v0_1_5", "v0_1_4"]
+v0_1_6 = ["nice-gst-meet-sys/v0_1_6", "v0_1_5"]
+v0_1_8 = ["nice-gst-meet-sys/v0_1_8", "v0_1_6"]
+v0_1_14 = ["nice-gst-meet-sys/v0_1_14", "v0_1_8"]
+v0_1_15 = ["nice-gst-meet-sys/v0_1_15", "v0_1_14", "bitflags"]
+v0_1_16 = ["nice-gst-meet-sys/v0_1_16", "v0_1_15"]
+v0_1_17 = ["nice-gst-meet-sys/v0_1_17", "v0_1_16"]
+v0_1_18 = ["nice-gst-meet-sys/v0_1_18", "v0_1_17"]
+v0_1_20 = ["nice-gst-meet-sys/v0_1_20", "v0_1_18"]
+dox = []

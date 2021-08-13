@@ -1,0 +1,8 @@
+[options]
+library = "Nice"
+version = "0.1"
+min_cfg_version = "0.1"
+work_mode = "sys"
+target_path = "."
+external_libraries = []
+

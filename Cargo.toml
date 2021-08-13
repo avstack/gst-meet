@@ -1,0 +1,5 @@
+[workspace]
+members = ["lib-gst-meet", "gst-meet", "nice-gst-meet", "nice-gst-meet-sys"]
+
+[patch.crates-io]
+minidom = { path = "../xmpp-rs/minidom" }

@@ -1,0 +1,20 @@
+[options]
+library = "Nice"
+version = "0.1"
+min_cfg_version = "0.1"
+work_mode = "normal"
+auto_path = "src"
+target_path = "."
+external_libraries = []
+generate = [
+  "Nice.Address",
+  "Nice.Agent",
+  "Nice.AgentOption",
+  "Nice.Candidate",
+  "Nice.CandidateTransport",
+  "Nice.CandidateType",
+  "Nice.Compatibility",
+  "Nice.ComponentState",
+  "Nice.RelayType",
+]
+manual = ["glib.MainContext"]

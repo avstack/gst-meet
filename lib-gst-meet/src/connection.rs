@@ -280,7 +280,9 @@ impl JitsiConnection {
           }
 
           let iq = Iq::from_get(generate_id(), xmpp::extdisco::ServicesQuery {})
-            .with_from(Jid::Full(locked_inner.jid.as_ref().context("missing jid")?.clone()))
+            .with_from(Jid::Full(
+              locked_inner.jid.as_ref().context("missing jid")?.clone(),
+            ))
             .with_to(Jid::Bare(locked_inner.xmpp_domain.clone()));
           tx.send(iq.into()).await?;
           locked_inner.state = DiscoveringExternalServices;

@@ -21,12 +21,7 @@ use xmpp_parsers::{
   BareJid, Element, FullJid, Jid,
 };
 
-use crate::{
-  jingle::JingleSession,
-  source::MediaType,
-  stanza_filter::StanzaFilter,
-  xmpp,
-};
+use crate::{jingle::JingleSession, source::MediaType, stanza_filter::StanzaFilter, xmpp};
 
 static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| DiscoInfoResult {
   node: None,
@@ -36,7 +31,6 @@ static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| DiscoInfoResult {
     Feature::new(ns::JINGLE_RTP_VIDEO),
     Feature::new(ns::JINGLE_ICE_UDP),
     Feature::new(ns::JINGLE_DTLS),
-
     // not supported yet: rtx
     // Feature::new("urn:ietf:rfc:4588"),
 

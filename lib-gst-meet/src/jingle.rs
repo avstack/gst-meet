@@ -34,6 +34,7 @@ use crate::{
 };
 
 const DEFAULT_STUN_PORT: u16 = 3478;
+const DEFAULT_TURNS_PORT: u16 = 5349;
 
 pub(crate) struct JingleSession {
   pipeline: gstreamer::Pipeline,
@@ -198,7 +199,10 @@ impl JingleSession {
     }
 
     if let Some(remote_fingerprint) = dtls_fingerprint {
-      warn!("Remote DTLS fingerprint (verification not implemented yet): {:?}", remote_fingerprint);
+      warn!(
+        "Remote DTLS fingerprint (verification not implemented yet): {:?}",
+        remote_fingerprint
+      );
     }
 
     let mut dtls_cert_params = CertificateParams::new(vec!["gst-meet".to_owned()]);
@@ -225,36 +229,63 @@ impl JingleSession {
     debug!("audio SSRC: {}", audio_ssrc);
     debug!("video SSRC: {}", video_ssrc);
 
+    let ice_agent = nice::Agent::new(&conference.glib_main_context, nice::Compatibility::Rfc5245);
+    ice_agent.set_ice_tcp(false);
+    ice_agent.set_upnp(false);
+    let ice_stream_id = ice_agent.add_stream(1);
+    let ice_component_id = 1;
+
     let maybe_stun = conference
       .external_services
       .iter()
       .find(|svc| svc.r#type == "stun");
-    
+
     let stun_addr = if let Some(stun) = maybe_stun {
-      lookup_host(format!("{}:{}", stun.host, stun.port.unwrap_or(DEFAULT_STUN_PORT)))
-        .await?
-        .next()
+      lookup_host(format!(
+        "{}:{}",
+        stun.host,
+        stun.port.unwrap_or(DEFAULT_STUN_PORT)
+      ))
+      .await?
+      .next()
     }
     else {
       None
     };
     debug!("STUN address: {:?}", stun_addr);
 
-    let ice_agent = nice::Agent::new(&conference.glib_main_context, nice::Compatibility::Rfc5245);
-    ice_agent.set_ice_tcp(false);
     if let Some((stun_addr, stun_port)) = stun_addr.map(|sa| (sa.ip().to_string(), sa.port())) {
       ice_agent.set_stun_server(Some(&stun_addr));
       ice_agent.set_stun_server_port(stun_port as u32);
     }
-    ice_agent.set_upnp(false);
-    ice_agent.connect_component_state_changed(|_, a, b, c| {
-      debug!("ICE component-state-changed {} {} {}", a, b, c);
-    });
-    ice_agent.connect_new_selected_pair(|_, a, b, c, d| {
-      debug!("ICE new-selected-pair {} {} {} {}", a, b, c, d);
-    });
-    let ice_stream_id = ice_agent.add_stream(1);
-    let ice_component_id = 1;
+
+    let maybe_turn = conference
+      .external_services
+      .iter()
+      .find(|svc| svc.r#type == "turns");
+
+    if let Some(turn_server) = maybe_turn {
+      let maybe_addr = lookup_host(format!(
+        "{}:{}",
+        turn_server.host,
+        turn_server.port.unwrap_or(DEFAULT_TURNS_PORT)
+      ))
+      .await?
+      .next();
+
+      if let Some(addr) = maybe_addr {
+        debug!("TURN address: {:?}", addr);
+        ice_agent.set_relay_info(
+          ice_stream_id,
+          ice_component_id,
+          &addr.ip().to_string(),
+          addr.port() as u32,
+          turn_server.username.as_deref().unwrap_or_default(),
+          turn_server.password.as_deref().unwrap_or_default(),
+          nice::RelayType::Tls,
+        );
+      }
+    }
 
     if !ice_agent.attach_recv(
       ice_stream_id,
@@ -716,13 +747,12 @@ impl JingleSession {
       });
       description.ssrcs = vec![ssrc];
 
-      let mut transport = IceUdpTransport::new()
-        .with_fingerprint(Fingerprint {
-          hash: Algo::Sha_256,
-          setup: Some(Setup::Active),
-          value: fingerprint.clone(),
-          required: Some(true.to_string()),
-        });
+      let mut transport = IceUdpTransport::new().with_fingerprint(Fingerprint {
+        hash: Algo::Sha_256,
+        setup: Some(Setup::Active),
+        value: fingerprint.clone(),
+        required: Some(true.to_string()),
+      });
       transport.ufrag = Some(ice_local_ufrag.clone());
       transport.pwd = Some(ice_local_pwd.clone());
       transport.candidates = vec![];

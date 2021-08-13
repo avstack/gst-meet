@@ -1,10 +1,7 @@
 use std::convert::TryFrom;
 
 use anyhow::{bail, Context, Result};
-use xmpp_parsers::{
-  Element,
-  iq::IqGetPayload,
-};
+use xmpp_parsers::{iq::IqGetPayload, Element};
 
 use crate::xmpp::ns;
 
@@ -56,17 +53,21 @@ impl TryFrom<Element> for ServicesResult {
     Ok(ServicesResult {
       services: elem
         .children()
-        .map(|child| Ok(Service {
-          r#type: child.attr("type").context("missing type attr")?.to_owned(),
-          name: child.attr("name").map(ToOwned::to_owned),
-          host: child.attr("host").context("missing host attr")?.to_owned(),
-          port: child.attr("port").map(|p| p.parse()).transpose()?,
-          transport: child.attr("transport").map(ToOwned::to_owned),
-          restricted: child.attr("restricted").map(|b| b.to_lowercase() == "parse" || b == "1"),
-          username: child.attr("username").map(ToOwned::to_owned),
-          password: child.attr("password").map(ToOwned::to_owned),
-          expires: child.attr("expires").map(ToOwned::to_owned),
-        }))
+        .map(|child| {
+          Ok(Service {
+            r#type: child.attr("type").context("missing type attr")?.to_owned(),
+            name: child.attr("name").map(ToOwned::to_owned),
+            host: child.attr("host").context("missing host attr")?.to_owned(),
+            port: child.attr("port").map(|p| p.parse()).transpose()?,
+            transport: child.attr("transport").map(ToOwned::to_owned),
+            restricted: child
+              .attr("restricted")
+              .map(|b| b.to_lowercase() == "parse" || b == "1"),
+            username: child.attr("username").map(ToOwned::to_owned),
+            password: child.attr("password").map(ToOwned::to_owned),
+            expires: child.attr("expires").map(ToOwned::to_owned),
+          })
+        })
         .collect::<Result<_>>()?,
     })
   }

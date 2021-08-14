@@ -656,7 +656,6 @@ dependencies = [
  "nice-gst-meet",
  "once_cell",
  "pem",
- "pkg-config",
  "rand",
  "rcgen",
  "ring",
@@ -667,6 +666,10 @@ dependencies = [
  "uuid",
  "xmpp-parsers-gst-meet",
 ]
+
+[[package]]
+name = "lib-gst-meet-c"
+version = "0.1.0"
 
 [[package]]
 name = "libc"

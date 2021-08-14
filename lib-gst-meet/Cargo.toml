@@ -13,12 +13,12 @@ async-trait = { version = "0.1", default-features = false }
 bytes = { version = "1", default-features = false, features = ["std"] }
 futures = { version = "0.3", default-features = false }
 glib = { version = "0.14", default-features = false }
-gstreamer = { version = "0.17", default-features = false, features = ["v1_18"] }
+gstreamer = { version = "0.17", default-features = false, features = ["v1_16"] }
 hex = { version = "0.4", default-features = false, features = ["std"] }
 itertools = { version = "0.10", default-features = false, features = ["use_std"] }
 libc = { version = "0.2", default-features = false }
 maplit = { version = "1", default-features = false }
-nice-gst-meet = { version = "0.1", path = "../nice-gst-meet", default-features = false, features = ["v0_1_18"] }
+nice-gst-meet = { version = "0.1", path = "../nice-gst-meet", default-features = false, features = ["v0_1_16"] }
 once_cell = { version = "1", default-features = false, features = ["std"] }
 pem = { version = "0.8", default-features = false }
 rand = { version = "0.8", default-features = false, features = ["std", "std_rng"] }
@@ -30,6 +30,3 @@ tokio-tungstenite = { version = "0.14", default-features = false, features = ["c
 tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
 uuid = { version = "0.8", default-features = false, features = ["v4"] }
 xmpp-parsers = { package = "xmpp-parsers-gst-meet", version = "0.18", default-features = false }
-
-[build-dependencies]
-pkg-config = { version = "0.3", default-features = false }

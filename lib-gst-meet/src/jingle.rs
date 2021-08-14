@@ -338,10 +338,6 @@ impl JingleSession {
           candidate.set_foundation(&c.foundation);
           candidate.set_addr(SocketAddr::new(c.ip, c.port));
           candidate.set_priority(c.priority);
-          candidate.set_transport(match c.protocol.as_str() {
-            "udp" => nice::CandidateTransport::Udp,
-            other => panic!("unsupported protocol: {}", other),
-          });
           candidate.set_username(ufrag);
           candidate.set_password(pwd);
           debug!("candidate: {:?}", candidate);
@@ -757,35 +753,28 @@ impl JingleSession {
       transport.pwd = Some(ice_local_pwd.clone());
       transport.candidates = vec![];
       for c in &local_candidates {
-        match c.transport() {
-          nice::CandidateTransport::Udp => {
-            let addr = c.addr();
-            let foundation = c.foundation()?;
-            transport.candidates.push(jingle_ice_udp::Candidate {
-              component: c.component_id() as u8,
-              foundation: foundation.to_owned(),
-              generation: 0,
-              id: Uuid::new_v4().to_string(),
-              ip: addr.ip(),
-              port: addr.port(),
-              priority: c.priority(),
-              protocol: "udp".to_owned(),
-              type_: match c.type_() {
-                nice::CandidateType::Host => jingle_ice_udp::Type::Host,
-                nice::CandidateType::PeerReflexive => jingle_ice_udp::Type::Prflx,
-                nice::CandidateType::ServerReflexive => jingle_ice_udp::Type::Srflx,
-                nice::CandidateType::Relayed => jingle_ice_udp::Type::Relay,
-                other => bail!("unsupported candidate type: {:?}", other),
-              },
-              rel_addr: None,
-              rel_port: None,
-              network: None,
-            });
+        let addr = c.addr();
+        let foundation = c.foundation()?;
+        transport.candidates.push(jingle_ice_udp::Candidate {
+          component: c.component_id() as u8,
+          foundation: foundation.to_owned(),
+          generation: 0,
+          id: Uuid::new_v4().to_string(),
+          ip: addr.ip(),
+          port: addr.port(),
+          priority: c.priority(),
+          protocol: "udp".to_owned(),
+          type_: match c.type_() {
+            nice::CandidateType::Host => jingle_ice_udp::Type::Host,
+            nice::CandidateType::PeerReflexive => jingle_ice_udp::Type::Prflx,
+            nice::CandidateType::ServerReflexive => jingle_ice_udp::Type::Srflx,
+            nice::CandidateType::Relayed => jingle_ice_udp::Type::Relay,
+            other => bail!("unsupported candidate type: {:?}", other),
           },
-          other => {
-            warn!("skipping unsupported ICE transport: {:?}", other);
-          },
-        }
+          rel_addr: None,
+          rel_port: None,
+          network: None,
+        });
       }
 
       jingle_accept = jingle_accept.add_content(

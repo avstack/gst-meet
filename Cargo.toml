@@ -2,7 +2,6 @@
 members = [
   "gst-meet",
   "lib-gst-meet",
-  "lib-gst-meet-c",
   "nice-gst-meet",
   "nice-gst-meet-sys",
 ]

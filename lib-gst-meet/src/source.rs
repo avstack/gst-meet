@@ -6,6 +6,7 @@ pub struct Source {
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[repr(C)]
 pub enum MediaType {
   Video,
   Audio,

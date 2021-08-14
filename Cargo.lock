@@ -668,6 +668,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "lib-gst-meet-c"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "glib",
+ "gstreamer",
+ "lib-gst-meet",
+ "tokio",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -4,7 +4,7 @@ on:
     branches:
     - master
 jobs:
-  release:
+  rustdoc:
     name: Deploy Documentation
     runs-on: ubuntu-latest
     steps:

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["JitsiConference",""],["JitsiConferenceConfig",""],["Participant",""]]});

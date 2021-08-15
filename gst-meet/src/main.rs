@@ -38,6 +38,8 @@ struct Opt {
   send_pipeline: Option<String>,
   #[structopt(long)]
   recv_pipeline_participant_template: Option<String>,
+  #[structopt(short, long, parse(from_occurrences))]
+  verbose: u8,
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -70,9 +72,13 @@ fn main() {
 }
 
 async fn main_inner() -> Result<()> {
-  init_tracing();
-
   let opt = Opt::from_args();
+
+  init_tracing(match opt.verbose {
+    0 => tracing::Level::INFO,
+    1 => tracing::Level::DEBUG,
+    _ => tracing::Level::TRACE,
+  });
 
   glib::log_set_default_handler(glib::rust_log_handler);
   let main_loop = glib::MainLoop::new(None, false);
@@ -189,6 +195,15 @@ async fn main_inner() -> Result<()> {
       })
     })
     .await;
+  
+  conference
+    .on_participant_left(move |participant| {
+      Box::pin(async move {
+        info!("Participant left: {:?}", participant);
+        Ok(())
+      })
+    })
+    .await;
 
   conference
     .set_pipeline_state(gstreamer::State::Playing)
@@ -215,9 +230,9 @@ async fn main_inner() -> Result<()> {
   Ok(())
 }
 
-fn init_tracing() {
+fn init_tracing(level: tracing::Level) {
   tracing_subscriber::fmt()
-    .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+    .with_max_level(level)
     .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
     .with_target(false)
     .init();

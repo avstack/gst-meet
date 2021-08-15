@@ -57,14 +57,14 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
                           demuxer.audio_0 ! queue ! vorbisdec ! audioconvert ! audioresample ! opusenc name=audio"
 ```
 
-Stream the default macOS video & audio inputs to the conference, encoding as VP8 and Opus, display incoming video streams and play back incoming audio (a very basic, but completely native, Jitsi Meet conference!):
+Stream the default video & audio inputs to the conference, encoding as VP8 and Opus, composite incoming video streams and play back incoming audio (a very basic, but completely native, Jitsi Meet conference!):
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
          --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
-         --send-pipeline="avfvideosrc ! queue ! videoconvert ! vp8enc buffer-size=1000 deadline=1 name=video
-                          osxaudiosrc ! queue ! audioconvert ! audioresample ! opusenc name=audio" \
+         --send-pipeline="autovideosrc ! queue ! videoconvert ! vp8enc buffer-size=1000 deadline=1 name=video
+                          autoaudiosrc ! queue ! audioconvert ! audioresample ! opusenc name=audio" \
          --recv-pipeline-participant-template="opusdec name=audio ! autoaudiosink
                                                vp8dec name=video ! videoconvert ! autovideosink"
 ```

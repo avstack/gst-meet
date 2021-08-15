@@ -18,7 +18,6 @@ tokio-stream = { version = "0.1", default-features = false }
 tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
 tracing-subscriber = { version = "0.2", default-features = false, features = [
   "chrono",
-  "env-filter",
   "fmt",
   "smallvec",
   "parking_lot",

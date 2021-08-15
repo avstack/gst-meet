@@ -311,8 +311,8 @@ impl JingleSession {
       }
     }
 
-    ice_agent.connect_candidate_gathering_done(move |ice_agent, a| {
-      debug!("ICE candidate-gathering-done {}", a);
+    ice_agent.connect_candidate_gathering_done(move |_agent, candidates| {
+      debug!("ICE candidate-gathering-done {:?}", candidates);
     });
 
     debug!("gathering ICE candidates");

@@ -104,6 +104,7 @@ pub(crate) struct JitsiConferenceInner {
         + Sync,
     >,
   >,
+  on_participant_left: Option<Arc<dyn (Fn(Participant) -> Pin<Box<dyn Future<Output = Result<()>> + Send>>) + Send + Sync>>,
   state: JitsiConferenceState,
   connected_tx: Option<oneshot::Sender<()>>,
   connected_rx: Option<oneshot::Receiver<()>>,
@@ -137,6 +138,7 @@ impl JitsiConference {
         state: JitsiConferenceState::Discovering,
         participants: HashMap::new(),
         on_participant: None,
+        on_participant_left: None,
         jingle_session: None,
         connected_tx: Some(tx),
         connected_rx: Some(rx),
@@ -315,6 +317,17 @@ impl JitsiConference {
         Err(e) => warn!("on_participant failed: {:?}", e),
       }
     }
+  }
+
+  #[tracing::instrument(level = "trace", skip(f))]
+  pub async fn on_participant_left(
+    &self,
+    f: impl (Fn(Participant) -> Pin<Box<dyn Future<Output = Result<()>> + Send>>)
+    + Send
+    + Sync
+    + 'static,
+  ) {
+    self.inner.lock().await.on_participant_left = Some(Arc::new(f));
   }
 }
 
@@ -557,6 +570,16 @@ impl StanzaFilter for JitsiConference {
                           },
                           Ok(None) => {},
                           Err(e) => warn!("on_participant failed: {:?}", e),
+                        }
+                      }
+                    }
+                    else if presence.type_ == presence::Type::Unavailable {
+                      locked_inner.participants.remove(&from.resource.clone());
+                      debug!("participant left: {:?}", jid);
+                      if let Some(f) = &locked_inner.on_participant_left {
+                        debug!("calling on_participant_left with old participant");
+                        if let Err(e) = f(participant).await {
+                          warn!("on_participant_left failed: {:?}", e);
                         }
                       }
                     }

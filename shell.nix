@@ -1,9 +1,10 @@
-{ pkgs ? import <nixpkgs> {} }:
-
-pkgs.mkShell {
+with import <nixpkgs> {};
+mkShell {
   name = "gst-meet";
-  buildInputs = with pkgs; [
-    glib
+  buildInputs = [
     pkg-config
+    glib
+    gst_all_1.gstreamer
+    libnice
   ];
 }

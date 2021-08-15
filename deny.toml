@@ -36,7 +36,9 @@ highlight = "all"
 allow = []
 deny = []
 skip = []
-skip-tree = []
+skip-tree = [
+  { name = "paste", version = "0.1.18", depth = 2 }
+]
 
 [sources]
 unknown-registry = "deny"

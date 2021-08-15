@@ -10,7 +10,7 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 
 You will need the dependencies `glib`, `gstreamer` and `libnice`, as well as any GStreamer plugins you want to use in your pipelines, and a Rust toolchain ([rustup](https://rustup.rs/) is the easiest way to install one).
 
-Then: `cargo install gst-meet`
+Then: `cargo install --force gst-meet` (`--force` will upgrade `gst-meet` if you have already installed it.)
 
 To integrate gst-meet into your own application, look at `lib-gst-meet`.
 

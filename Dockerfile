@@ -1,0 +1,9 @@
+FROM docker.io/rust:1.54-alpine3.14 AS builder
+RUN apk --update --no-cache add build-base pkgconf glib-dev gstreamer-dev libnice-dev
+COPY . .
+RUN cargo build --release -p gst-meet
+
+FROM docker.io/alpine:3.14
+RUN apk --update --no-cache add glib gstreamer libnice
+COPY --from=builder target/release/gst-meet /usr/local/bin
+ENTRYPOINT ["/usr/local/bin/gst-meet"]

@@ -141,7 +141,7 @@ impl Candidate {
       .as_bytes()
       .iter()
       .take(32)
-      .map(|c| *c as i8)
+      .map(|c| *c as c_char)
       .collect();
     bytes.resize(33, 0);
     self.0.foundation.copy_from_slice(&bytes);

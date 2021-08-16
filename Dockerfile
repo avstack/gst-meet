@@ -4,6 +4,6 @@ COPY . .
 RUN cargo build --release -p gst-meet
 
 FROM docker.io/alpine:3.14
-RUN apk --update --no-cache add glib gstreamer libnice
+RUN apk --update --no-cache add glib gstreamer libnice libc6-compat
 COPY --from=builder target/release/gst-meet /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/gst-meet"]

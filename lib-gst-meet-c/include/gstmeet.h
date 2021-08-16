@@ -7,6 +7,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <glib/glib.h>
+#include <gst/gst.h>
+
+typedef struct JitsiConnection JitsiConnection;
+typedef struct JitsiConference JitsiConference;
 
 typedef struct Context Context;
 
@@ -23,6 +28,8 @@ typedef struct Participant {
   const char *muc_jid;
   const char *nick;
 } Participant;
+
+typedef enum {VIDEO, AUDIO} MediaType;
 
 struct Context *gstmeet_init(void);
 

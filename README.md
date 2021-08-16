@@ -1,6 +1,6 @@
 # gst-meet: Integrate Jitsi Meet conferences with GStreamer pipelines
 
-Note: gst-meet is in an **alpha** state and is under active development. The command-line options and the lib-gst-meet API are subject to change, and some important features (TURN, RTX, TCC, simulcast) are not yet fully functional.
+Note: gst-meet is in an **alpha** state and is under active development. The command-line options and the lib-gst-meet API are subject to change, and some important features (simulcast, RTX, TCC) are not yet fully functional.
 
 gst-meet provides a library and tool for integrating Jitsi Meet conferences with GStreamer pipelines. You can pipe audio and video into a conference as a participant, and pipe out other participants' audio and video streams.
 

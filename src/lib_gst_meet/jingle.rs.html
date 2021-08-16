@@ -1161,8 +1161,8 @@
       }
     }
 
-    <span class="ident">ice_agent</span>.<span class="ident">connect_candidate_gathering_done</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">ice_agent</span>, <span class="ident">a</span><span class="op">|</span> {
-      <span class="macro">debug!</span>(<span class="string">&quot;ICE candidate-gathering-done {}&quot;</span>, <span class="ident">a</span>);
+    <span class="ident">ice_agent</span>.<span class="ident">connect_candidate_gathering_done</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">_agent</span>, <span class="ident">candidates</span><span class="op">|</span> {
+      <span class="macro">debug!</span>(<span class="string">&quot;ICE candidate-gathering-done {:?}&quot;</span>, <span class="ident">candidates</span>);
     });
 
     <span class="macro">debug!</span>(<span class="string">&quot;gathering ICE candidates&quot;</span>);

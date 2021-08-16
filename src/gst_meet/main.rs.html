@@ -224,6 +224,21 @@
 <span id="222">222</span>
 <span id="223">223</span>
 <span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">std::time::Duration</span>;
 
@@ -265,6 +280,8 @@
   <span class="ident">send_pipeline</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
   <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">long</span>)]</span>
   <span class="ident">recv_pipeline_participant_template</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+  <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">short</span>, <span class="ident">long</span>, <span class="ident">parse</span>(<span class="ident">from_occurrences</span>))]</span>
+  <span class="ident">verbose</span>: <span class="ident">u8</span>,
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
@@ -297,9 +314,13 @@
 }
 
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main_inner</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-  <span class="ident">init_tracing</span>();
-
   <span class="kw">let</span> <span class="ident">opt</span> <span class="op">=</span> <span class="ident">Opt::from_args</span>();
+
+  <span class="ident">init_tracing</span>(<span class="kw">match</span> <span class="ident">opt</span>.<span class="ident">verbose</span> {
+    <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">tracing::Level::INFO</span>,
+    <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">tracing::Level::DEBUG</span>,
+    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">tracing::Level::TRACE</span>,
+  });
 
   <span class="ident">glib::log_set_default_handler</span>(<span class="ident">glib::rust_log_handler</span>);
   <span class="kw">let</span> <span class="ident">main_loop</span> <span class="op">=</span> <span class="ident">glib::MainLoop::new</span>(<span class="prelude-val">None</span>, <span class="bool-val">false</span>);
@@ -416,6 +437,15 @@
       })
     })
     .<span class="kw">await</span>;
+  
+  <span class="ident">conference</span>
+    .<span class="ident">on_participant_left</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">participant</span><span class="op">|</span> {
+      <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
+        <span class="macro">info!</span>(<span class="string">&quot;Participant left: {:?}&quot;</span>, <span class="ident">participant</span>);
+        <span class="prelude-val">Ok</span>(())
+      })
+    })
+    .<span class="kw">await</span>;
 
   <span class="ident">conference</span>
     .<span class="ident">set_pipeline_state</span>(<span class="ident">gstreamer::State::Playing</span>)
@@ -442,9 +472,9 @@
   <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn</span> <span class="ident">init_tracing</span>() {
+<span class="kw">fn</span> <span class="ident">init_tracing</span>(<span class="ident">level</span>: <span class="ident">tracing::Level</span>) {
   <span class="ident">tracing_subscriber::fmt</span>()
-    .<span class="ident">with_env_filter</span>(<span class="ident">tracing_subscriber::EnvFilter::from_default_env</span>())
+    .<span class="ident">with_max_level</span>(<span class="ident">level</span>)
     .<span class="ident">with_span_events</span>(<span class="ident">tracing_subscriber::fmt::format::FmtSpan::CLOSE</span>)
     .<span class="ident">with_target</span>(<span class="bool-val">false</span>)
     .<span class="ident">init</span>();

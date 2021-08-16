@@ -349,7 +349,7 @@
       .<span class="ident">as_bytes</span>()
       .<span class="ident">iter</span>()
       .<span class="ident">take</span>(<span class="number">32</span>)
-      .<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">c</span> <span class="kw">as</span> <span class="ident">i8</span>)
+      .<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">c</span> <span class="kw">as</span> <span class="ident">c_char</span>)
       .<span class="ident">collect</span>();
     <span class="ident">bytes</span>.<span class="ident">resize</span>(<span class="number">33</span>, <span class="number">0</span>);
     <span class="self">self</span>.<span class="number">0</span>.<span class="ident">foundation</span>.<span class="ident">copy_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>);

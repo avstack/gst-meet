@@ -777,7 +777,7 @@ checksum = "b5136edda114182728ccdedb9f5eda882781f35fa6e80cc360af12a8932507f3"
 
 [[package]]
 name = "nice-gst-meet"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bitflags",
  "glib",

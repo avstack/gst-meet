@@ -143,7 +143,7 @@ impl JitsiConference {
     })
   }
 
-  pub async fn connected(&self) -> Result<()> {
+  pub(crate) async fn connected(&self) -> Result<()> {
     let rx = {
       let mut locked_inner = self.inner.lock().await;
       locked_inner

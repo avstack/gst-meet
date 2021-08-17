@@ -28,5 +28,15 @@ tokio = { version = "1", default-features = false, features = ["rt-multi-thread"
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
 tokio-tungstenite = { version = "0.14", default-features = false, features = ["connect", "rustls-tls"] }
 tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
+tracing-subscriber = { version = "0.2", optional = true, default-features = false, features = [
+  "chrono",
+  "fmt",
+  "smallvec",
+  "parking_lot",
+  "tracing-log",
+] }
 uuid = { version = "0.8", default-features = false, features = ["v4"] }
 xmpp-parsers = { package = "xmpp-parsers-gst-meet", version = "0.18", default-features = false }
+
+[features]
+default = []

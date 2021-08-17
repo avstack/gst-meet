@@ -33,6 +33,8 @@ typedef enum {VIDEO, AUDIO} MediaType;
 
 struct Context *gstmeet_init(void);
 
+void gstmeet_init_tracing(const char *level);
+
 void gstmeet_deinit(struct Context *context);
 
 JitsiConnection *gstmeet_connection_new(struct Context *context,

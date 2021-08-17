@@ -7,7 +7,7 @@ use gstreamer::{
   prelude::{ElementExt, GstBinExt},
   GhostPad,
 };
-use lib_gst_meet::{JitsiConferenceConfig, JitsiConnection};
+use lib_gst_meet::{init_tracing, JitsiConferenceConfig, JitsiConnection};
 use structopt::StructOpt;
 use tokio::{signal::ctrl_c, task, time::timeout};
 use tracing::{info, warn};
@@ -228,12 +228,4 @@ async fn main_inner() -> Result<()> {
   task::spawn_blocking(move || main_loop.run()).await?;
 
   Ok(())
-}
-
-fn init_tracing(level: tracing::Level) {
-  tracing_subscriber::fmt()
-    .with_max_level(level)
-    .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
-    .with_target(false)
-    .init();
 }

@@ -485,7 +485,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]
@@ -663,6 +662,7 @@ dependencies = [
  "tokio-stream",
  "tokio-tungstenite",
  "tracing",
+ "tracing-subscriber",
  "uuid",
  "xmpp-parsers-gst-meet",
 ]
@@ -676,6 +676,7 @@ dependencies = [
  "gstreamer",
  "lib-gst-meet",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

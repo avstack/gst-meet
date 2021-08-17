@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::Result;
 use glib::{ffi::GMainContext, translate::{from_glib_full, ToGlibPtr}};
-pub use lib_gst_meet::{JitsiConference, JitsiConnection, MediaType};
+pub use lib_gst_meet::{init_tracing, JitsiConference, JitsiConnection, MediaType};
 use lib_gst_meet::JitsiConferenceConfig;
 use tokio::runtime::Runtime;
 
@@ -53,6 +53,15 @@ pub extern "C" fn gstmeet_init() -> *mut Context {
     .map(|runtime| Context { runtime })
     .map_err(|e| e.into())
     .ok_raw_or_log()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn gstmeet_init_tracing(level: *const c_char) {
+  let level = CStr::from_ptr(level)
+    .to_string_lossy()
+    .parse()
+    .expect("invalid tracing level");
+  init_tracing(level);
 }
 
 #[no_mangle]
@@ -127,19 +136,10 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_conference_connected(context: *mut Context, conference: *mut JitsiConference) -> bool {
-  (*context)
-    .runtime
-    .block_on((*conference).connected())
-    .map_err(|e| eprintln!("lib-gst-meet: {:?}", e))
-    .is_ok()
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn gstmeet_conference_leave(context: *mut Context, conference: *mut JitsiConference) -> bool {
   (*context)
     .runtime
-    .block_on(Box::from_raw(conference).connected())
+    .block_on(Box::from_raw(conference).leave())
     .map_err(|e| eprintln!("lib-gst-meet: {:?}", e))
     .is_ok()
 }

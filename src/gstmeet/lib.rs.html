@@ -211,11 +211,18 @@
 <span id="209">209</span>
 <span id="210">210</span>
 <span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">std</span>::{
-  <span class="ident">ffi</span>::{<span class="ident">CStr</span>, <span class="ident">CString</span>},
+  <span class="ident">ffi</span>::{<span class="ident">CStr</span>, <span class="ident">CString</span>, <span class="ident">c_void</span>},
   <span class="ident">os::raw::c_char</span>,
   <span class="ident">ptr</span>,
+  <span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">atomic</span>::{<span class="ident">AtomicPtr</span>, <span class="ident">Ordering</span>}},
 };
 
 <span class="kw">use</span> <span class="ident">anyhow::Result</span>;
@@ -400,27 +407,32 @@
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">gstmeet_conference_on_participant</span>(
   <span class="ident">context</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Context</span>,
   <span class="ident">conference</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">JitsiConference</span>,
-  <span class="ident">f</span>: <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">Participant</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gstreamer::ffi::GstBin</span>,
+  <span class="ident">f</span>: <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">Participant</span>, <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">gstreamer::ffi::GstBin</span>,
+  <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) {
+  <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">AtomicPtr::new</span>(<span class="ident">ctx</span>));
   (<span class="kw-2">*</span><span class="ident">context</span>)
     .<span class="ident">runtime</span>
-    .<span class="ident">block_on</span>((<span class="kw-2">*</span><span class="ident">conference</span>).<span class="ident">on_participant</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">participant</span><span class="op">|</span> <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
-      <span class="kw">let</span> <span class="ident">participant</span> <span class="op">=</span> <span class="ident">Participant</span> {
-        <span class="ident">jid</span>: <span class="ident">CString::new</span>(<span class="ident">participant</span>.<span class="ident">jid</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>.<span class="ident">into_raw</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>,
-        <span class="ident">muc_jid</span>: <span class="ident">CString::new</span>(<span class="ident">participant</span>.<span class="ident">muc_jid</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>.<span class="ident">into_raw</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>,
-        <span class="ident">nick</span>: <span class="ident">participant</span>
-          .<span class="ident">nick</span>
-          .<span class="ident">map</span>(<span class="op">|</span><span class="ident">nick</span><span class="op">|</span> <span class="prelude-val">Ok</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">anyhow::Error</span><span class="op">&gt;</span>(<span class="ident">CString::new</span>(<span class="ident">nick</span>)<span class="question-mark">?</span>.<span class="ident">into_raw</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>))
-          .<span class="ident">transpose</span>()<span class="question-mark">?</span>
-          .<span class="ident">unwrap_or_else</span>(<span class="ident">ptr::null</span>),
-      };
-      <span class="kw">let</span> <span class="ident">maybe_bin</span> <span class="op">=</span> <span class="ident">f</span>(<span class="ident">participant</span>);
-      <span class="kw">if</span> <span class="ident">maybe_bin</span>.<span class="ident">is_null</span>() {
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
-      }
-      <span class="kw">else</span> {
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">from_glib_full</span>(<span class="ident">maybe_bin</span>)))
-      }
-    })));
+    .<span class="ident">block_on</span>((<span class="kw-2">*</span><span class="ident">conference</span>).<span class="ident">on_participant</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">participant</span><span class="op">|</span> {
+      <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">clone</span>();
+      <span class="ident">Box::pin</span>(<span class="kw">async</span> <span class="kw">move</span> {
+        <span class="kw">let</span> <span class="ident">participant</span> <span class="op">=</span> <span class="ident">Participant</span> {
+          <span class="ident">jid</span>: <span class="ident">CString::new</span>(<span class="ident">participant</span>.<span class="ident">jid</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>.<span class="ident">into_raw</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>,
+          <span class="ident">muc_jid</span>: <span class="ident">CString::new</span>(<span class="ident">participant</span>.<span class="ident">muc_jid</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>.<span class="ident">into_raw</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>,
+          <span class="ident">nick</span>: <span class="ident">participant</span>
+            .<span class="ident">nick</span>
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">nick</span><span class="op">|</span> <span class="prelude-val">Ok</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">anyhow::Error</span><span class="op">&gt;</span>(<span class="ident">CString::new</span>(<span class="ident">nick</span>)<span class="question-mark">?</span>.<span class="ident">into_raw</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>))
+            .<span class="ident">transpose</span>()<span class="question-mark">?</span>
+            .<span class="ident">unwrap_or_else</span>(<span class="ident">ptr::null</span>),
+        };
+        <span class="kw">let</span> <span class="ident">maybe_bin</span> <span class="op">=</span> <span class="ident">f</span>(<span class="ident">participant</span>, <span class="ident">ctx</span>.<span class="ident">load</span>(<span class="ident">Ordering::Relaxed</span>));
+        <span class="kw">if</span> <span class="ident">maybe_bin</span>.<span class="ident">is_null</span>() {
+          <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+        }
+        <span class="kw">else</span> {
+          <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">from_glib_full</span>(<span class="ident">maybe_bin</span>)))
+        }
+      })
+    }));
 }</pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="gstmeet" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

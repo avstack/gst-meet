@@ -231,14 +231,6 @@
 <span id="229">229</span>
 <span id="230">230</span>
 <span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">std::time::Duration</span>;
 
@@ -249,7 +241,7 @@
   <span class="ident">prelude</span>::{<span class="ident">ElementExt</span>, <span class="ident">GstBinExt</span>},
   <span class="ident">GhostPad</span>,
 };
-<span class="kw">use</span> <span class="ident">lib_gst_meet</span>::{<span class="ident">JitsiConferenceConfig</span>, <span class="ident">JitsiConnection</span>};
+<span class="kw">use</span> <span class="ident">lib_gst_meet</span>::{<span class="ident">init_tracing</span>, <span class="ident">JitsiConferenceConfig</span>, <span class="ident">JitsiConnection</span>};
 <span class="kw">use</span> <span class="ident">structopt::StructOpt</span>;
 <span class="kw">use</span> <span class="ident">tokio</span>::{<span class="ident">signal::ctrl_c</span>, <span class="ident">task</span>, <span class="ident">time::timeout</span>};
 <span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">info</span>, <span class="ident">warn</span>};
@@ -470,14 +462,5 @@
   <span class="ident">task::spawn_blocking</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> <span class="ident">main_loop</span>.<span class="ident">run</span>()).<span class="kw">await</span><span class="question-mark">?</span>;
 
   <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">fn</span> <span class="ident">init_tracing</span>(<span class="ident">level</span>: <span class="ident">tracing::Level</span>) {
-  <span class="ident">tracing_subscriber::fmt</span>()
-    .<span class="ident">with_max_level</span>(<span class="ident">level</span>)
-    .<span class="ident">with_span_events</span>(<span class="ident">tracing_subscriber::fmt::format::FmtSpan::CLOSE</span>)
-    .<span class="ident">with_target</span>(<span class="bool-val">false</span>)
-    .<span class="ident">init</span>();
-}
-</pre></div>
+}</pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="gst_meet" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

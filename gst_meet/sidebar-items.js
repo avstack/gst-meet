@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["init_tracing",""],["main",""],["main_inner",""]],"struct":[["Opt",""]]});
+initSidebarItems({"fn":[["main",""],["main_inner",""]],"struct":[["Opt",""]]});

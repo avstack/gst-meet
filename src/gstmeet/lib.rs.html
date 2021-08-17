@@ -227,7 +227,7 @@
 
 <span class="kw">use</span> <span class="ident">anyhow::Result</span>;
 <span class="kw">use</span> <span class="ident">glib</span>::{<span class="ident">ffi::GMainContext</span>, <span class="ident">translate</span>::{<span class="ident">from_glib_full</span>, <span class="ident">ToGlibPtr</span>}};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lib_gst_meet</span>::{<span class="ident">JitsiConference</span>, <span class="ident">JitsiConnection</span>, <span class="ident">MediaType</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lib_gst_meet</span>::{<span class="ident">init_tracing</span>, <span class="ident">JitsiConference</span>, <span class="ident">JitsiConnection</span>, <span class="ident">MediaType</span>};
 <span class="kw">use</span> <span class="ident">lib_gst_meet::JitsiConferenceConfig</span>;
 <span class="kw">use</span> <span class="ident">tokio::runtime::Runtime</span>;
 
@@ -273,6 +273,15 @@
     .<span class="ident">map</span>(<span class="op">|</span><span class="ident">runtime</span><span class="op">|</span> <span class="ident">Context</span> { <span class="ident">runtime</span> })
     .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">into</span>())
     .<span class="ident">ok_raw_or_log</span>()
+}
+
+<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">gstmeet_init_tracing</span>(<span class="ident">level</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) {
+  <span class="kw">let</span> <span class="ident">level</span> <span class="op">=</span> <span class="ident">CStr::from_ptr</span>(<span class="ident">level</span>)
+    .<span class="ident">to_string_lossy</span>()
+    .<span class="ident">parse</span>()
+    .<span class="ident">expect</span>(<span class="string">&quot;invalid tracing level&quot;</span>);
+  <span class="ident">init_tracing</span>(<span class="ident">level</span>);
 }
 
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
@@ -347,19 +356,10 @@
 }
 
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">gstmeet_conference_connected</span>(<span class="ident">context</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Context</span>, <span class="ident">conference</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">JitsiConference</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-  (<span class="kw-2">*</span><span class="ident">context</span>)
-    .<span class="ident">runtime</span>
-    .<span class="ident">block_on</span>((<span class="kw-2">*</span><span class="ident">conference</span>).<span class="ident">connected</span>())
-    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">eprintln!</span>(<span class="string">&quot;lib-gst-meet: {:?}&quot;</span>, <span class="ident">e</span>))
-    .<span class="ident">is_ok</span>()
-}
-
-<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">gstmeet_conference_leave</span>(<span class="ident">context</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Context</span>, <span class="ident">conference</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">JitsiConference</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
   (<span class="kw-2">*</span><span class="ident">context</span>)
     .<span class="ident">runtime</span>
-    .<span class="ident">block_on</span>(<span class="ident">Box::from_raw</span>(<span class="ident">conference</span>).<span class="ident">connected</span>())
+    .<span class="ident">block_on</span>(<span class="ident">Box::from_raw</span>(<span class="ident">conference</span>).<span class="ident">leave</span>())
     .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">eprintln!</span>(<span class="string">&quot;lib-gst-meet: {:?}&quot;</span>, <span class="ident">e</span>))
     .<span class="ident">is_ok</span>()
 }

@@ -67,6 +67,7 @@ GstElement *gstmeet_conference_video_sink_element(struct Context *context,
 
 void gstmeet_conference_on_participant(struct Context *context,
                                        JitsiConference *conference,
-                                       GstBin *(*f)(struct Participant));
+                                       GstBin *(*f)(struct Participant, void *),
+                                       void *callback_context);
 
 #endif /* gstmeet_h */

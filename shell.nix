@@ -4,6 +4,7 @@ mkShell {
   buildInputs = [
     pkg-config
     glib
+    glib-networking
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
     gst_all_1.gst-plugins-good
@@ -13,4 +14,6 @@ mkShell {
     darwin.apple_sdk.frameworks.AppKit
     darwin.apple_sdk.frameworks.Security
   ] else []);
+
+  GIO_EXTRA_MODULES = ["${pkgs.glib-networking.out}/lib/gio/modules"];
 }

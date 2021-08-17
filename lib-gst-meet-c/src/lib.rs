@@ -1,7 +1,8 @@
 use std::{
-  ffi::{CStr, CString},
+  ffi::{CStr, CString, c_void},
   os::raw::c_char,
   ptr,
+  sync::{Arc, atomic::{AtomicPtr, Ordering}},
 };
 
 use anyhow::Result;
@@ -186,26 +187,31 @@ pub unsafe extern "C" fn gstmeet_conference_video_sink_element(context: *mut Con
 pub unsafe extern "C" fn gstmeet_conference_on_participant(
   context: *mut Context,
   conference: *mut JitsiConference,
-  f: unsafe extern "C" fn(Participant) -> *mut gstreamer::ffi::GstBin,
+  f: unsafe extern "C" fn(Participant, *mut c_void) -> *mut gstreamer::ffi::GstBin,
+  ctx: *mut c_void,
 ) {
+  let ctx = Arc::new(AtomicPtr::new(ctx));
   (*context)
     .runtime
-    .block_on((*conference).on_participant(move |participant| Box::pin(async move {
-      let participant = Participant {
-        jid: CString::new(participant.jid.to_string())?.into_raw() as *const _,
-        muc_jid: CString::new(participant.muc_jid.to_string())?.into_raw() as *const _,
-        nick: participant
-          .nick
-          .map(|nick| Ok::<_, anyhow::Error>(CString::new(nick)?.into_raw() as *const _))
-          .transpose()?
-          .unwrap_or_else(ptr::null),
-      };
-      let maybe_bin = f(participant);
-      if maybe_bin.is_null() {
-        Ok(None)
-      }
-      else {
-        Ok(Some(from_glib_full(maybe_bin)))
-      }
-    })));
+    .block_on((*conference).on_participant(move |participant| {
+      let ctx = ctx.clone();
+      Box::pin(async move {
+        let participant = Participant {
+          jid: CString::new(participant.jid.to_string())?.into_raw() as *const _,
+          muc_jid: CString::new(participant.muc_jid.to_string())?.into_raw() as *const _,
+          nick: participant
+            .nick
+            .map(|nick| Ok::<_, anyhow::Error>(CString::new(nick)?.into_raw() as *const _))
+            .transpose()?
+            .unwrap_or_else(ptr::null),
+        };
+        let maybe_bin = f(participant, ctx.load(Ordering::Relaxed));
+        if maybe_bin.is_null() {
+          Ok(None)
+        }
+        else {
+          Ok(Some(from_glib_full(maybe_bin)))
+        }
+      })
+    }));
 }

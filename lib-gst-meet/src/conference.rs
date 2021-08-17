@@ -94,17 +94,14 @@ pub struct Participant {
   bin: Option<gstreamer::Bin>,
 }
 
+type BoxedBinResultFuture = Pin<Box<dyn Future<Output = Result<Option<gstreamer::Bin>>> + Send>>;
+type BoxedResultFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
+
 pub(crate) struct JitsiConferenceInner {
   pub(crate) jingle_session: Option<JingleSession>,
   participants: HashMap<String, Participant>,
-  on_participant: Option<
-    Arc<
-      dyn (Fn(Participant) -> Pin<Box<dyn Future<Output = Result<Option<gstreamer::Bin>>> + Send>>)
-        + Send
-        + Sync,
-    >,
-  >,
-  on_participant_left: Option<Arc<dyn (Fn(Participant) -> Pin<Box<dyn Future<Output = Result<()>> + Send>>) + Send + Sync>>,
+  on_participant: Option<Arc<dyn (Fn(Participant) -> BoxedBinResultFuture) + Send + Sync>>,
+  on_participant_left: Option<Arc<dyn (Fn(Participant) -> BoxedResultFuture) + Send + Sync>>,
   state: JitsiConferenceState,
   connected_tx: Option<oneshot::Sender<()>>,
   connected_rx: Option<oneshot::Receiver<()>>,
@@ -273,13 +270,7 @@ impl JitsiConference {
   }
 
   #[tracing::instrument(level = "trace", skip(f))]
-  pub async fn on_participant(
-    &self,
-    f: impl (Fn(Participant) -> Pin<Box<dyn Future<Output = Result<Option<gstreamer::Bin>>> + Send>>)
-    + Send
-    + Sync
-    + 'static,
-  ) {
+  pub async fn on_participant(&self, f: impl (Fn(Participant) -> BoxedBinResultFuture) + Send + Sync + 'static) {
     let f = Arc::new(f);
     let f2 = f.clone();
     let existing_participants: Vec<_> = {
@@ -320,13 +311,7 @@ impl JitsiConference {
   }
 
   #[tracing::instrument(level = "trace", skip(f))]
-  pub async fn on_participant_left(
-    &self,
-    f: impl (Fn(Participant) -> Pin<Box<dyn Future<Output = Result<()>> + Send>>)
-    + Send
-    + Sync
-    + 'static,
-  ) {
+  pub async fn on_participant_left(&self, f: impl (Fn(Participant) -> BoxedResultFuture) + Send + Sync + 'static) {
     self.inner.lock().await.on_participant_left = Some(Arc::new(f));
   }
 }

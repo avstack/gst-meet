@@ -72,4 +72,8 @@ void gstmeet_conference_on_participant(struct Context *context,
                                        GstBin *(*f)(struct Participant, void *),
                                        void *callback_context);
 
+bool gstmeet_conference_set_pipeline_state(struct Context *context,
+                                           JitsiConference *conference,
+                                           GstState state);
+
 #endif /* gstmeet_h */

@@ -6,7 +6,7 @@ use std::{
 };
 
 use anyhow::Result;
-use glib::{ffi::GMainContext, translate::{from_glib_full, ToGlibPtr}};
+use glib::{ffi::GMainContext, translate::{from_glib, from_glib_full, ToGlibPtr}};
 pub use lib_gst_meet::{init_tracing, JitsiConference, JitsiConnection, MediaType};
 use lib_gst_meet::JitsiConferenceConfig;
 use tokio::runtime::Runtime;
@@ -214,4 +214,17 @@ pub unsafe extern "C" fn gstmeet_conference_on_participant(
         }
       })
     }));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn gstmeet_conference_set_pipeline_state(
+  context: *mut Context,
+  conference: *mut JitsiConference,
+  state: gstreamer::ffi::GstState,
+) -> bool {
+  (*context)
+    .runtime
+    .block_on((*conference).set_pipeline_state(from_glib(state)))
+    .map_err(|e| eprintln!("lib-gst-meet: {:?}", e))
+    .is_ok()
 }

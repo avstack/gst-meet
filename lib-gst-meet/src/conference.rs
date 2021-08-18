@@ -533,7 +533,16 @@ impl StanzaFilter for JitsiConference {
                       nick: item.nick,
                       bin: None,
                     };
-                    if locked_inner
+                    if presence.type_ == presence::Type::Unavailable && locked_inner.participants.remove(&from.resource.clone()).is_some() {
+                      debug!("participant left: {:?}", jid);
+                      if let Some(f) = &locked_inner.on_participant_left {
+                        debug!("calling on_participant_left with old participant");
+                        if let Err(e) = f(participant).await {
+                          warn!("on_participant_left failed: {:?}", e);
+                        }
+                      }
+                    }
+                    else if locked_inner
                       .participants
                       .insert(from.resource.clone(), participant.clone())
                       .is_none()
@@ -555,16 +564,6 @@ impl StanzaFilter for JitsiConference {
                           },
                           Ok(None) => {},
                           Err(e) => warn!("on_participant failed: {:?}", e),
-                        }
-                      }
-                    }
-                    else if presence.type_ == presence::Type::Unavailable {
-                      locked_inner.participants.remove(&from.resource.clone());
-                      debug!("participant left: {:?}", jid);
-                      if let Some(f) = &locked_inner.on_participant_left {
-                        debug!("calling on_participant_left with old participant");
-                        if let Err(e) = f(participant).await {
-                          warn!("on_participant_left failed: {:?}", e);
                         }
                       }
                     }

@@ -1,7 +1,7 @@
 [package]
 name = "gst-meet"
 description = "A tool for connecting GStreamer pipelines to Jitsi Meet conferences"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2018"
 license = "MIT/Apache-2.0"
 authors = ["Jasper Hugo <jasper@avstack.io>"]

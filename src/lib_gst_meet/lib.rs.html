@@ -23,20 +23,24 @@
 <span id="21">21</span>
 <span id="22">22</span>
 <span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
 </pre><pre class="rust">
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">conference</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">connection</span>;
+<span class="kw">mod</span> <span class="ident">colibri</span>;
+<span class="kw">mod</span> <span class="ident">conference</span>;
+<span class="kw">mod</span> <span class="ident">connection</span>;
 <span class="kw">mod</span> <span class="ident">jingle</span>;
 <span class="kw">mod</span> <span class="ident">pinger</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">source</span>;
+<span class="kw">mod</span> <span class="ident">source</span>;
 <span class="kw">mod</span> <span class="ident">stanza_filter</span>;
 <span class="kw">mod</span> <span class="ident">util</span>;
 <span class="kw">mod</span> <span class="ident">xmpp</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::{
+  <span class="ident">colibri::ColibriMessage</span>,
   <span class="ident">conference</span>::{<span class="ident">JitsiConference</span>, <span class="ident">JitsiConferenceConfig</span>, <span class="ident">Participant</span>},
   <span class="ident">connection::JitsiConnection</span>,
-  <span class="ident">source</span>::{<span class="ident">MediaType</span>, <span class="ident">Source</span>},
+  <span class="ident">source::MediaType</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tracing-subscriber&quot;</span>)]</span>

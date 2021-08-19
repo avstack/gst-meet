@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["lib_gst_meet"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/serde/1.0.127/serde/ser/trait.Serialize.html\" title=\"trait serde::ser::Serialize\">Serialize</a> for <a class=\"enum\" href=\"lib_gst_meet/enum.ColibriMessage.html\" title=\"enum lib_gst_meet::ColibriMessage\">ColibriMessage</a>","synthetic":false,"types":["lib_gst_meet::colibri::ColibriMessage"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

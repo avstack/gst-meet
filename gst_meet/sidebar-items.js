@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""],["main_inner",""]],"struct":[["Opt",""]]});
+initSidebarItems({"fn":[["init_gstreamer",""],["main",""],["main_inner",""]],"struct":[["Opt",""]]});

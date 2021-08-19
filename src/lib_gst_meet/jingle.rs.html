@@ -844,9 +844,6 @@
 <span id="842">842</span>
 <span id="843">843</span>
 <span id="844">844</span>
-<span id="845">845</span>
-<span id="846">846</span>
-<span id="847">847</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">fmt</span>, <span class="ident">net::SocketAddr</span>};
 
@@ -862,7 +859,7 @@
 <span class="kw">use</span> <span class="ident">tokio</span>::{
   <span class="ident">net::lookup_host</span>,
   <span class="ident">runtime::Handle</span>,
-  <span class="ident">sync</span>::{<span class="ident">mpsc</span>, <span class="ident">oneshot</span>},
+  <span class="ident">sync::oneshot</span>,
 };
 <span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">warn</span>};
 <span class="kw">use</span> <span class="ident">uuid::Uuid</span>;
@@ -878,6 +875,7 @@
 };
 
 <span class="kw">use</span> <span class="kw">crate</span>::{
+  <span class="ident">colibri::ColibriChannel</span>,
   <span class="ident">conference::JitsiConference</span>,
   <span class="ident">source</span>::{<span class="ident">MediaType</span>, <span class="ident">Source</span>},
   <span class="ident">util::generate_id</span>,
@@ -896,11 +894,7 @@
   <span class="ident">ice_component_id</span>: <span class="ident">u32</span>,
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">accept_iq_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">colibri_url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-  <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">colibri_tx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>
-    <span class="ident">mpsc::Sender</span><span class="op">&lt;</span>
-      <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">tokio_tungstenite::tungstenite::Message</span>, <span class="ident">tokio_tungstenite::tungstenite::Error</span><span class="op">&gt;</span>,
-    <span class="op">&gt;</span>,
-  <span class="op">&gt;</span>,
+  <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">colibri_channel</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ColibriChannel</span><span class="op">&gt;</span>,
   <span class="ident">pipeline_state_null_rx</span>: <span class="ident">oneshot::Receiver</span><span class="op">&lt;</span>()<span class="op">&gt;</span>,
 }
 
@@ -1651,7 +1645,7 @@
       <span class="ident">ice_component_id</span>,
       <span class="ident">accept_iq_id</span>: <span class="prelude-val">Some</span>(<span class="ident">accept_iq_id</span>),
       <span class="ident">colibri_url</span>,
-      <span class="ident">colibri_tx</span>: <span class="prelude-val">None</span>,
+      <span class="ident">colibri_channel</span>: <span class="prelude-val">None</span>,
       <span class="ident">pipeline_state_null_rx</span>,
     })
   }

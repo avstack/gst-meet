@@ -1,4 +1,4 @@
-mod colibri;
+pub mod colibri;
 mod conference;
 mod connection;
 mod jingle;

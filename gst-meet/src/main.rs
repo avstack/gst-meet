@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 #[cfg(target_os = "macos")]
 use cocoa::appkit::NSApplication;
 use glib::ObjectExt;
@@ -8,7 +8,10 @@ use gstreamer::{
   prelude::{ElementExt, GstBinExt},
   GhostPad,
 };
-use lib_gst_meet::{init_tracing, JitsiConferenceConfig, JitsiConnection};
+use lib_gst_meet::{
+  init_tracing, JitsiConferenceConfig, JitsiConnection,
+  colibri::{ColibriMessage, Constraints, VideoType},
+};
 use structopt::StructOpt;
 use tokio::{signal::ctrl_c, task, time::timeout};
 use tracing::{info, trace, warn};
@@ -39,6 +42,14 @@ struct Opt {
   send_pipeline: Option<String>,
   #[structopt(long)]
   recv_pipeline_participant_template: Option<String>,
+  #[structopt(long)]
+  select_endpoints: Option<String>,
+  #[structopt(long)]
+  last_n: Option<u16>,
+  #[structopt(long)]
+  recv_video_height: Option<u16>,
+  #[structopt(long)]
+  video_type: Option<String>,
   #[structopt(short, long, parse(from_occurrences))]
   verbose: u8,
 }
@@ -138,6 +149,32 @@ async fn main_inner() -> Result<()> {
   let conference = connection
     .join_conference(main_loop.context(), config)
     .await?;
+
+  if opt.select_endpoints.is_some() || opt.last_n.is_some() || opt.recv_video_height.is_some() {
+    conference
+      .send_colibri_message(ColibriMessage::ReceiverVideoConstraints {
+        last_n: opt.last_n,
+        selected_endpoints: opt.select_endpoints.map(|endpoints| endpoints.split(',').map(ToOwned::to_owned).collect()),
+        on_stage_endpoints: None,
+        default_constraints: opt.recv_video_height.map(|height| Constraints {
+          ideal_height: Some(height),
+          max_height: None,
+        }),
+        constraints: None,
+      }).await?;
+  }
+
+  if let Some(video_type) = opt.video_type {
+    conference
+      .send_colibri_message(ColibriMessage::VideoTypeMessage {
+        video_type: match video_type.as_str() {
+          "camera" => VideoType::Camera,
+          "desktop" => VideoType::Desktop,
+          other => bail!(format!("invalid video type: {}", other)),
+        }
+      })
+      .await?;
+  }
 
   if let Some(bin) = parsed_bin {
     conference.add_bin(&bin).await?;

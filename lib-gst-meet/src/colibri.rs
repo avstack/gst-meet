@@ -59,7 +59,7 @@ pub enum ColibriMessage {
     selected_endpoints: Option<Vec<String>>,
     on_stage_endpoints: Option<Vec<String>>,
     default_constraints: Option<Constraints>,
-    constraints: HashMap<String, Constraints>,
+    constraints: Option<HashMap<String, Constraints>>,
   },
   #[serde(rename_all = "camelCase")]
   SelectedEndpointsChangedEvent {
@@ -75,39 +75,46 @@ pub enum ColibriMessage {
   },
   #[serde(rename_all = "camelCase")]
   VideoTypeMessage {
-    video_type: String,
+    video_type: VideoType,
   },
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum VideoType {
+  Camera,
+  Desktop,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Constraints {
-  ideal_height: Option<u16>,
-  max_height: Option<u16>,
+  pub ideal_height: Option<u16>,
+  pub max_height: Option<u16>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Bitrates {
-  audio: Bitrate,
-  video: Bitrate,
+  pub audio: Bitrate,
+  pub video: Bitrate,
   #[serde(flatten)]
-  total: Bitrate,
+  pub total: Bitrate,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Bitrate {
-  upload: u32,
-  download: u32,
+  pub upload: u32,
+  pub download: u32,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PacketLoss {
-  total: u32,
-  download: u32,
-  upload: u32,
+  pub total: u32,
+  pub download: u32,
+  pub upload: u32,
 }
 
 pub(crate) struct ColibriChannel {

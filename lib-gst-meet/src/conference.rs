@@ -3,7 +3,6 @@ use std::{collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin,
 use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
 use futures::stream::StreamExt;
-use glib::ObjectExt;
 use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
 use once_cell::sync::Lazy;
 use tokio::sync::{mpsc, oneshot, Mutex};
@@ -21,7 +20,13 @@ use xmpp_parsers::{
   BareJid, Element, FullJid, Jid,
 };
 
-use crate::{jingle::JingleSession, source::MediaType, stanza_filter::StanzaFilter, xmpp};
+use crate::{
+  colibri::{ColibriChannel, ColibriMessage},
+  jingle::JingleSession,
+  source::MediaType,
+  stanza_filter::StanzaFilter,
+  xmpp,
+};
 
 static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| DiscoInfoResult {
   node: None,
@@ -91,17 +96,16 @@ pub struct Participant {
   pub jid: FullJid,
   pub muc_jid: FullJid,
   pub nick: Option<String>,
-  bin: Option<gstreamer::Bin>,
 }
 
-type BoxedBinResultFuture = Pin<Box<dyn Future<Output = Result<Option<gstreamer::Bin>>> + Send>>;
 type BoxedResultFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
 
 pub(crate) struct JitsiConferenceInner {
   pub(crate) jingle_session: Option<JingleSession>,
   participants: HashMap<String, Participant>,
-  on_participant: Option<Arc<dyn (Fn(Participant) -> BoxedBinResultFuture) + Send + Sync>>,
-  on_participant_left: Option<Arc<dyn (Fn(Participant) -> BoxedResultFuture) + Send + Sync>>,
+  on_participant: Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
+  on_participant_left: Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
+  on_colibri_message: Option<Arc<dyn (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync>>,
   state: JitsiConferenceState,
   connected_tx: Option<oneshot::Sender<()>>,
   connected_rx: Option<oneshot::Receiver<()>>,
@@ -136,6 +140,7 @@ impl JitsiConference {
         participants: HashMap::new(),
         on_participant: None,
         on_participant_left: None,
+        on_colibri_message: None,
         jingle_session: None,
         connected_tx: Some(tx),
         connected_rx: Some(rx),
@@ -269,8 +274,23 @@ impl JitsiConference {
     )
   }
 
+  pub async fn send_colibri_message(&self, message: ColibriMessage) -> Result<()> {
+    self
+      .inner
+      .lock()
+      .await
+      .jingle_session
+      .as_ref()
+      .context("not connected (no jingle session)")?
+      .colibri_channel
+      .as_ref()
+      .context("no colibri channel")?
+      .send(message)
+      .await
+  }
+
   #[tracing::instrument(level = "trace", skip(f))]
-  pub async fn on_participant(&self, f: impl (Fn(Participant) -> BoxedBinResultFuture) + Send + Sync + 'static) {
+  pub async fn on_participant(&self, f: impl (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync + 'static) {
     let f = Arc::new(f);
     let f2 = f.clone();
     let existing_participants: Vec<_> = {
@@ -283,36 +303,20 @@ impl JitsiConference {
         "calling on_participant with existing participant: {:?}",
         participant
       );
-      match f(participant.clone()).await {
-        Ok(Some(bin)) => {
-          bin
-            .set_property(
-              "name",
-              format!("participant_{}", participant.muc_jid.resource),
-            )
-            .unwrap();
-          match self.add_bin(&bin).await {
-            Ok(_) => {
-              let mut locked_inner = self.inner.lock().await;
-              if let Some(p) = locked_inner
-                .participants
-                .get_mut(&participant.muc_jid.resource)
-              {
-                p.bin = Some(bin);
-              }
-            },
-            Err(e) => warn!("failed to add participant bin: {:?}", e),
-          }
-        },
-        Ok(None) => {},
-        Err(e) => warn!("on_participant failed: {:?}", e),
+      if let Err(e) = f(self.clone(), participant.clone()).await {
+        warn!("on_participant failed: {:?}", e);
       }
     }
   }
 
   #[tracing::instrument(level = "trace", skip(f))]
-  pub async fn on_participant_left(&self, f: impl (Fn(Participant) -> BoxedResultFuture) + Send + Sync + 'static) {
+  pub async fn on_participant_left(&self, f: impl (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync + 'static) {
     self.inner.lock().await.on_participant_left = Some(Arc::new(f));
+  }
+
+  #[tracing::instrument(level = "trace", skip(f))]
+  pub async fn on_colibri_message(&self, f: impl (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync + 'static) {
+    self.inner.lock().await.on_colibri_message = Some(Arc::new(f));
   }
 }
 
@@ -463,37 +467,22 @@ impl StanzaFilter for JitsiConference {
 
                   if let Some(colibri_url) = colibri_url {
                     info!("Connecting Colibri WebSocket to {}", colibri_url);
+                    let colibri_channel = ColibriChannel::new(&colibri_url).await?;
+                    let (tx, rx) = mpsc::channel(8);
+                    colibri_channel.subscribe(tx).await;
+                    locked_inner.jingle_session.as_mut().unwrap().colibri_channel = Some(colibri_channel);
 
-                    let request =
-                      tokio_tungstenite::tungstenite::http::Request::get(colibri_url).body(())?;
-                    let (colibri_websocket, _response) =
-                      tokio_tungstenite::connect_async(request).await?;
-                    info!("Connected Colibri WebSocket");
-
-                    let (colibri_sink, mut colibri_stream) = colibri_websocket.split();
-                    let colibri_receive_task = tokio::spawn(async move {
-                      while let Some(msg) = colibri_stream.next().await {
-                        debug!("colibri: {:?}", msg);
-                      }
-                      Ok::<_, anyhow::Error>(())
-                    });
-                    let (colibri_tx, colibri_rx) = mpsc::channel(8);
-                    locked_inner.jingle_session.as_mut().unwrap().colibri_tx = Some(colibri_tx);
-                    let colibri_transmit_task = tokio::spawn(async move {
-                      let stream = ReceiverStream::new(colibri_rx);
-                      stream.forward(colibri_sink).await?;
-                      Ok::<_, anyhow::Error>(())
-                    });
-
+                    let self_ = self.clone();
                     tokio::spawn(async move {
-                      tokio::select! {
-                        res = colibri_receive_task => if let Ok(Err(e)) = res {
-                          error!("colibri read loop: {:?}", e);
-                        },
-                        res = colibri_transmit_task => if let Ok(Err(e)) = res {
-                          error!("colibri write loop: {:?}", e);
-                        },
-                      };
+                      let mut stream = ReceiverStream::new(rx);
+                      while let Some(msg) = stream.next().await {
+                        let locked_inner = self_.inner.lock().await;
+                        if let Some(f) = &locked_inner.on_colibri_message {
+                          if let Err(e) = f(self_.clone(), msg).await {
+                            warn!("on_colibri_message failed: {:?}", e);
+                          }
+                        }
+                      }
                     });
                   }
 
@@ -531,13 +520,12 @@ impl StanzaFilter for JitsiConference {
                       jid: jid.clone(),
                       muc_jid: from.clone(),
                       nick: item.nick,
-                      bin: None,
                     };
                     if presence.type_ == presence::Type::Unavailable && locked_inner.participants.remove(&from.resource.clone()).is_some() {
                       debug!("participant left: {:?}", jid);
                       if let Some(f) = &locked_inner.on_participant_left {
                         debug!("calling on_participant_left with old participant");
-                        if let Err(e) = f(participant).await {
+                        if let Err(e) = f(self.clone(), participant).await {
                           warn!("on_participant_left failed: {:?}", e);
                         }
                       }
@@ -550,20 +538,8 @@ impl StanzaFilter for JitsiConference {
                       debug!("new participant: {:?}", jid);
                       if let Some(f) = &locked_inner.on_participant {
                         debug!("calling on_participant with new participant");
-                        match f(participant).await {
-                          Ok(Some(bin)) => {
-                            bin.set_property("name", format!("participant_{}", from.resource))?;
-                            match self.add_bin(&bin).await {
-                              Ok(_) => {
-                                if let Some(p) = locked_inner.participants.get_mut(&from.resource) {
-                                  p.bin = Some(bin);
-                                }
-                              },
-                              Err(e) => warn!("failed to add participant bin: {:?}", e),
-                            }
-                          },
-                          Ok(None) => {},
-                          Err(e) => warn!("on_participant failed: {:?}", e),
+                        if let Err(e) = f(self.clone(), participant).await {
+                          warn!("on_participant failed: {:?}", e);
                         }
                       }
                     }

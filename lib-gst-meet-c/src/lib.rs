@@ -187,13 +187,13 @@ pub unsafe extern "C" fn gstmeet_conference_video_sink_element(context: *mut Con
 pub unsafe extern "C" fn gstmeet_conference_on_participant(
   context: *mut Context,
   conference: *mut JitsiConference,
-  f: unsafe extern "C" fn(Participant, *mut c_void) -> *mut gstreamer::ffi::GstBin,
+  f: unsafe extern "C" fn(*mut JitsiConference, Participant, *mut c_void) -> *mut gstreamer::ffi::GstBin,
   ctx: *mut c_void,
 ) {
   let ctx = Arc::new(AtomicPtr::new(ctx));
   (*context)
     .runtime
-    .block_on((*conference).on_participant(move |participant| {
+    .block_on((*conference).on_participant(move |conference, participant| {
       let ctx = ctx.clone();
       Box::pin(async move {
         let participant = Participant {
@@ -205,13 +205,8 @@ pub unsafe extern "C" fn gstmeet_conference_on_participant(
             .transpose()?
             .unwrap_or_else(ptr::null),
         };
-        let maybe_bin = f(participant, ctx.load(Ordering::Relaxed));
-        if maybe_bin.is_null() {
-          Ok(None)
-        }
-        else {
-          Ok(Some(from_glib_full(maybe_bin)))
-        }
+        f(Box::into_raw(Box::new(conference)), participant, ctx.load(Ordering::Relaxed));
+        Ok(())
       })
     }));
 }

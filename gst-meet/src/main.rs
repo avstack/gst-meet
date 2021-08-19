@@ -3,6 +3,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 #[cfg(target_os = "macos")]
 use cocoa::appkit::NSApplication;
+use glib::ObjectExt;
 use gstreamer::{
   prelude::{ElementExt, GstBinExt},
   GhostPad,
@@ -10,7 +11,7 @@ use gstreamer::{
 use lib_gst_meet::{init_tracing, JitsiConferenceConfig, JitsiConnection};
 use structopt::StructOpt;
 use tokio::{signal::ctrl_c, task, time::timeout};
-use tracing::{info, warn};
+use tracing::{info, trace, warn};
 
 #[derive(Debug, Clone, StructOpt)]
 #[structopt(
@@ -71,6 +72,12 @@ fn main() {
   }
 }
 
+fn init_gstreamer() {
+  trace!("starting gstreamer init");
+  gstreamer::init().expect("gstreamer init failed");
+  trace!("finished gstreamer init");
+}
+
 async fn main_inner() -> Result<()> {
   let opt = Opt::from_args();
 
@@ -79,10 +86,9 @@ async fn main_inner() -> Result<()> {
     1 => tracing::Level::DEBUG,
     _ => tracing::Level::TRACE,
   });
-
   glib::log_set_default_handler(glib::rust_log_handler);
-  let main_loop = glib::MainLoop::new(None, false);
-  gstreamer::init().unwrap();
+  
+  init_gstreamer();
 
   let parsed_bin = opt
     .send_pipeline
@@ -127,6 +133,8 @@ async fn main_inner() -> Result<()> {
     video_codec,
   };
 
+  let main_loop = glib::MainLoop::new(None, false);
+
   let conference = connection
     .join_conference(main_loop.context(), config)
     .await?;
@@ -148,7 +156,7 @@ async fn main_inner() -> Result<()> {
   }
 
   conference
-    .on_participant(move |participant| {
+    .on_participant(move |conference, participant| {
       let recv_pipeline_participant_template = recv_pipeline_participant_template.clone();
       Box::pin(async move {
         info!("New participant: {:?}", participant);
@@ -186,20 +194,31 @@ async fn main_inner() -> Result<()> {
             info!("No video sink element found in recv pipeline participant template");
           }
 
-          Ok(Some(bin))
+          bin.set_property("name", format!("participant_{}", participant.muc_jid.resource))?;
+          conference.add_bin(&bin).await?;
         }
         else {
           info!("No template for handling new participant");
-          Ok(None)
         }
+        
+        Ok(())
       })
     })
     .await;
   
   conference
-    .on_participant_left(move |participant| {
+    .on_participant_left(move |_conference, participant| {
       Box::pin(async move {
         info!("Participant left: {:?}", participant);
+        Ok(())
+      })
+    })
+    .await;
+
+  conference
+    .on_colibri_message(move |_conference, message| {
+      Box::pin(async move {
+        info!("Colibri message: {:?}", message);
         Ok(())
       })
     })

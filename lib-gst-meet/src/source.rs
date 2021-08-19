@@ -1,8 +1,8 @@
 #[derive(Debug, Clone)]
-pub struct Source {
+pub(crate) struct Source {
   pub(crate) ssrc: u32,
-  pub participant_id: String,
-  pub media_type: MediaType,
+  pub(crate) participant_id: String,
+  pub(crate) media_type: MediaType,
 }
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]

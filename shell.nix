@@ -1,17 +1,13 @@
 with import <nixpkgs> {};
-let
-  gst-plugins-base = gst_all_1.gst-plugins-base.override {
-    enableCocoa = stdenv.isDarwin;
-  };
-in
 mkShell {
   name = "gst-meet";
   buildInputs = [
+    cargo
     pkg-config
     glib
     glib-networking
     gst_all_1.gstreamer
-    gst-plugins-base
+    gst_all_1.gst-plugins-base
     gst_all_1.gst-plugins-good
     gst_all_1.gst-plugins-bad
     libnice

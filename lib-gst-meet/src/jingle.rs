@@ -12,7 +12,7 @@ use ring::digest::{digest, SHA256};
 use tokio::{
   net::lookup_host,
   runtime::Handle,
-  sync::{mpsc, oneshot},
+  sync::oneshot,
 };
 use tracing::{debug, error, warn};
 use uuid::Uuid;
@@ -28,6 +28,7 @@ use xmpp_parsers::{
 };
 
 use crate::{
+  colibri::ColibriChannel,
   conference::JitsiConference,
   source::{MediaType, Source},
   util::generate_id,
@@ -46,11 +47,7 @@ pub(crate) struct JingleSession {
   ice_component_id: u32,
   pub(crate) accept_iq_id: Option<String>,
   pub(crate) colibri_url: Option<String>,
-  pub(crate) colibri_tx: Option<
-    mpsc::Sender<
-      Result<tokio_tungstenite::tungstenite::Message, tokio_tungstenite::tungstenite::Error>,
-    >,
-  >,
+  pub(crate) colibri_channel: Option<ColibriChannel>,
   pipeline_state_null_rx: oneshot::Receiver<()>,
 }
 
@@ -801,7 +798,7 @@ impl JingleSession {
       ice_component_id,
       accept_iq_id: Some(accept_iq_id),
       colibri_url,
-      colibri_tx: None,
+      colibri_channel: None,
       pipeline_state_null_rx,
     })
   }

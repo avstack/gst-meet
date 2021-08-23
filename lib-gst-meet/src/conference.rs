@@ -28,31 +28,33 @@ use crate::{
   xmpp,
 };
 
-static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| DiscoInfoResult {
-  node: None,
-  identities: vec![],
-  features: vec![
+static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| {
+  let mut features = vec![
     Feature::new(ns::JINGLE_RTP_AUDIO),
     Feature::new(ns::JINGLE_RTP_VIDEO),
     Feature::new(ns::JINGLE_ICE_UDP),
     Feature::new(ns::JINGLE_DTLS),
-    // not supported yet: rtx
-    // Feature::new("urn:ietf:rfc:4588"),
+    Feature::new("urn:ietf:rfc:5888"),  // BUNDLE
+    Feature::new("urn:ietf:rfc:5761"),  // RTCP-MUX
+    Feature::new("urn:ietf:rfc:4588"),  // RTX
 
-    // not supported yet: rtcp remb
-    // Feature::new("http://jitsi.org/remb"),
-
-    // not supported yet: transport-cc
-    // Feature::new("http://jitsi.org/tcc"),
-
-    // rtcp-mux
-    Feature::new("urn:ietf:rfc:5761"),
-    // rtp-bundle
-    Feature::new("urn:ietf:rfc:5888"),
-    // opus red
-    Feature::new("http://jitsi.org/opus-red"),
-  ],
-  extensions: vec![],
+  ];
+  let gst_version = gstreamer::version();
+  if gst_version.0 >= 1 && gst_version.1 >= 19 {
+    // RTP header extensions are supported on GStreamer 1.19+
+    features.push(Feature::new("http://jitsi.org/tcc"));
+  }
+  else {
+    warn!("Upgrade GStreamer to 1.19 or later to enable RTP header extensions");
+  }
+  // Not supported yet:
+  // Feature::new("http://jitsi.org/opus-red")
+  DiscoInfoResult {
+    node: None,
+    identities: vec![],
+    features,
+    extensions: vec![],
+  }
 });
 
 #[derive(Debug, Clone, Copy)]

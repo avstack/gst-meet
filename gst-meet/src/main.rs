@@ -101,7 +101,9 @@ async fn main_inner() -> Result<()> {
   
   init_gstreamer();
 
-  let parsed_bin = opt
+  // Parse pipeline early so that we don't bother connecting to the conference if it's invalid.
+
+  let send_pipeline = opt
     .send_pipeline
     .as_ref()
     .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
@@ -176,7 +178,7 @@ async fn main_inner() -> Result<()> {
       .await?;
   }
 
-  if let Some(bin) = parsed_bin {
+  if let Some(bin) = send_pipeline {
     conference.add_bin(&bin).await?;
 
     if let Some(audio) = bin.by_name("audio") {

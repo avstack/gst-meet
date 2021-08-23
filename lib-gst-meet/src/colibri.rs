@@ -37,7 +37,7 @@ pub enum ColibriMessage {
     packet_loss: PacketLoss,
     connection_quality: f32,
     #[serde(rename = "jvbRTT")]
-    jvb_rtt: u16,
+    jvb_rtt: Option<u16>,
     server_region: String,
     max_enabled_resolution: u16,
   },
@@ -139,7 +139,7 @@ impl ColibriChannel {
         while let Some(msg) = colibri_stream.try_next().await? {
           match msg {
             Message::Text(text) => {
-              debug!("colibri: {}", text);
+              debug!("Colibri <<< {}", text);
               match serde_json::from_str::<ColibriMessage>(&text) {
                 Ok(colibri_msg) => {
                   let mut txs = recv_tx.lock().await;
@@ -173,6 +173,7 @@ impl ColibriChannel {
       while let Some(colibri_msg) = stream.next().await {
         match serde_json::to_string(&colibri_msg) {
           Ok(json) => {
+            debug!("Colibri >>> {}", json);
             let msg = Message::Text(json);
             colibri_sink.send(msg).await?;
           },

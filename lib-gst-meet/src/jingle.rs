@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt, net::SocketAddr};
 
 use anyhow::{anyhow, bail, Context, Result};
 use futures::stream::StreamExt;
-use glib::{Cast, ObjectExt, ToValue};
+use glib::{ObjectExt, ToValue};
 use gstreamer::prelude::{ElementExt, GObjectExtManualGst, GstBinExt, PadExt};
 use nice_gst_meet as nice;
 use pem::Pem;
@@ -23,6 +23,7 @@ use xmpp_parsers::{
   jingle_dtls_srtp::{Fingerprint, Setup},
   jingle_ice_udp::{self, Transport as IceUdpTransport},
   jingle_rtp::{Description as RtpDescription, PayloadType, RtcpMux},
+  jingle_rtp_hdrext::RtpHdrext,
   jingle_ssma::{self, Parameter},
   Jid,
 };
@@ -34,6 +35,14 @@ use crate::{
   util::generate_id,
 };
 
+const RTP_HDREXT_SSRC_AUDIO_LEVEL: &str = "urn:ietf:params:rtp-hdrext:ssrc-audio-level";
+const RTP_HDREXT_ABS_SEND_TIME: &str = "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
+const RTP_HDREXT_TRANSPORT_CC: &str = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
+
+const RTX_PAYLOAD_TYPE_VP8: u8 = 96;
+const RTX_PAYLOAD_TYPE_VP9: u8 = 97;
+const RTX_PAYLOAD_TYPE_H264: u8 = 99;
+
 const DEFAULT_STUN_PORT: u16 = 3478;
 const DEFAULT_TURNS_PORT: u16 = 5349;
 
@@ -42,9 +51,7 @@ pub(crate) struct JingleSession {
   audio_sink_element: gstreamer::Element,
   video_sink_element: gstreamer::Element,
   remote_ssrc_map: HashMap<u32, Source>,
-  ice_agent: nice::Agent,
-  ice_stream_id: u32,
-  ice_component_id: u32,
+  _ice_agent: nice::Agent,
   pub(crate) accept_iq_id: Option<String>,
   pub(crate) colibri_url: Option<String>,
   pub(crate) colibri_channel: Option<ColibriChannel>,
@@ -107,6 +114,10 @@ impl JingleSession {
     let mut h264_payload_type = None;
     let mut vp8_payload_type = None;
     let mut vp9_payload_type = None;
+    let mut audio_hdrext_ssrc_audio_level = None;
+    let mut audio_hdrext_transport_cc = None;
+    let mut video_hdrext_abs_send_time = None;
+    let mut video_hdrext_transport_cc = None;
     let mut colibri_url = None;
 
     let mut remote_ssrc_map = HashMap::new();
@@ -119,6 +130,18 @@ impl JingleSession {
             .iter()
             .find(|pt| pt.name.as_deref() == Some("opus"))
             .map(|pt| pt.id);
+          audio_hdrext_ssrc_audio_level = description
+            .hdrexts
+            .iter()
+            .find(|hdrext| hdrext.uri == RTP_HDREXT_SSRC_AUDIO_LEVEL)
+            .map(|hdrext| hdrext.id.parse::<u8>())
+            .transpose()?;
+          audio_hdrext_transport_cc = description
+            .hdrexts
+            .iter()
+            .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
+            .map(|hdrext| hdrext.id.parse::<u8>())
+            .transpose()?;
         }
         else if description.media == "video" {
           h264_payload_type = description
@@ -136,6 +159,18 @@ impl JingleSession {
             .iter()
             .find(|pt| pt.name.as_deref() == Some("VP9"))
             .map(|pt| pt.id);
+          video_hdrext_abs_send_time = description
+            .hdrexts
+            .iter()
+            .find(|hdrext| hdrext.uri == RTP_HDREXT_ABS_SEND_TIME)
+            .map(|hdrext| hdrext.id.parse::<u8>())
+            .transpose()?;
+          video_hdrext_transport_cc = description
+            .hdrexts
+            .iter()
+            .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
+            .map(|hdrext| hdrext.id.parse::<u8>())
+            .transpose()?;
         }
         else {
           continue;
@@ -348,83 +383,111 @@ impl JingleSession {
       }
     }
 
-    let pipeline_spec = format!(
-      r#"
-        rtpbin rtp-profile=savpf name=rtpbin
+    debug!("building gstreamer pipeline");
 
-        nicesrc stream={0} component={1} name=nicesrc ! dtlssrtpdec name=dtlssrtpdec connection-id=gst-meet
-        dtlssrtpenc name=dtlssrtpenc connection-id=gst-meet is-client=true ! nicesink stream={0} component={1} name=nicesink
+    let pipeline = gstreamer::Pipeline::new(None);
 
-        rtpbin.send_rtp_src_0 ! dtlssrtpenc.rtp_sink_0
-        rtpbin.send_rtcp_src_0 ! dtlssrtpenc.rtcp_sink_0
-        rtpbin.send_rtp_src_1 ! dtlssrtpenc.rtp_sink_1
-        rtpbin.send_rtcp_src_1 ! dtlssrtpenc.rtcp_sink_1
+    let rtpbin = gstreamer::ElementFactory::make("rtpbin", Some("rtpbin"))?;
+    rtpbin.set_property_from_str("rtp-profile", "savpf");
+    rtpbin.set_property("do-retransmission", true)?;
+    rtpbin.set_property("autoremove", true)?;
+    pipeline.add(&rtpbin)?;
 
-        dtlssrtpdec.rtp_src ! rtpbin.recv_rtp_sink_0
-        dtlssrtpdec.rtcp_src ! rtpbin.recv_rtcp_sink_0
-      "#,
-      ice_stream_id, ice_component_id,
-    );
+    let nicesrc = gstreamer::ElementFactory::make("nicesrc", None)?;
+    nicesrc.set_property("stream", ice_stream_id)?;
+    nicesrc.set_property("component", ice_component_id)?;
+    nicesrc.set_property("agent", &ice_agent)?;
+    pipeline.add(&nicesrc)?;
 
-    debug!("building gstreamer pipeline:\n{}", pipeline_spec);
+    let nicesink = gstreamer::ElementFactory::make("nicesink", None)?;
+    nicesink.set_property("stream", ice_stream_id)?;
+    nicesink.set_property("component", ice_component_id)?;
+    nicesink.set_property("agent", &ice_agent)?;
+    pipeline.add(&nicesink)?;
 
-    let pipeline = gstreamer::parse_launch(&pipeline_spec)?
-      .downcast::<gstreamer::Pipeline>()
-      .map_err(|_| anyhow!("pipeline did not parse as a pipeline"))?;
+    let dtls_srtp_connection_id = "gst-meet";
 
-    let rtpbin = pipeline
-      .by_name("rtpbin")
-      .context("no rtpbin in pipeline")?;
+    let dtlssrtpdec = gstreamer::ElementFactory::make("dtlssrtpdec", None)?;
+    dtlssrtpdec.set_property("connection-id", dtls_srtp_connection_id)?;
+    dtlssrtpdec.set_property(
+      "pem",
+      format!("{}\n{}", dtls_cert_pem, dtls_private_key_pem),
+    )?;
+    pipeline.add(&dtlssrtpdec)?;
+
+    let dtlssrtpenc = gstreamer::ElementFactory::make("dtlssrtpenc", None)?;
+    dtlssrtpenc.set_property("connection-id", dtls_srtp_connection_id)?;
+    dtlssrtpenc.set_property("is-client", true)?;
+    pipeline.add(&dtlssrtpenc)?;
 
     rtpbin.connect("request-pt-map", false, move |values| {
       let f = || {
         debug!("rtpbin request-pt-map {:?}", values);
         let pt = values[2].get::<u32>()? as u8;
-        let maybe_caps = if Some(pt) == opus_payload_type {
-          Some(gstreamer::Caps::new_simple(
-            "application/x-rtp",
-            &[
-              ("media", &"audio"),
-              ("encoding-name", &"OPUS"),
-              ("clock-rate", &48000),
-            ],
-          ))
+        let mut caps = gstreamer::Caps::builder("application/x-rtp");
+        if Some(pt) == opus_payload_type {
+          caps = caps
+            .field("media", "audio")
+            .field("encoding-name", "OPUS")
+            .field("clock-rate", 48000);
+          if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
+            caps = caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
+          }
+          if let Some(hdrext) = audio_hdrext_transport_cc {
+            caps = caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_TRANSPORT_CC);
+          }
+          Ok::<_, anyhow::Error>(Some(caps.build()))
         }
-        else if Some(pt) == h264_payload_type {
-          Some(gstreamer::Caps::new_simple(
-            "application/x-rtp",
-            &[
-              ("media", &"video"),
-              ("encoding-name", &"H264"),
-              ("clock-rate", &90000),
-            ],
-          ))
+        else if Some(pt) == h264_payload_type || Some(pt) == vp8_payload_type || Some(pt) == vp9_payload_type {
+          caps = caps
+            .field("media", "video")
+            .field("clock-rate", 90000)
+            .field("encoding-name", if Some(pt) == h264_payload_type {
+              "H264"
+            }
+            else if Some(pt) == vp8_payload_type {
+              "VP8"
+            }
+            else if Some(pt) == vp9_payload_type {
+              "VP9"
+            }
+            else {
+              unreachable!()
+            });
+          if let Some(hdrext) = video_hdrext_abs_send_time {
+            caps = caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_ABS_SEND_TIME);
+          }
+          if let Some(hdrext) = video_hdrext_transport_cc {
+            caps = caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_TRANSPORT_CC);
+          }
+          Ok(Some(caps.build()))
         }
-        else if Some(pt) == vp8_payload_type {
-          Some(gstreamer::Caps::new_simple(
-            "application/x-rtp",
-            &[
-              ("media", &"video"),
-              ("encoding-name", &"VP8"),
-              ("clock-rate", &90000),
-            ],
-          ))
-        }
-        else if Some(pt) == vp9_payload_type {
-          Some(gstreamer::Caps::new_simple(
-            "application/x-rtp",
-            &[
-              ("media", &"video"),
-              ("encoding-name", &"VP9"),
-              ("clock-rate", &90000),
-            ],
-          ))
+        else if pt == RTX_PAYLOAD_TYPE_VP8 || pt == RTX_PAYLOAD_TYPE_VP9 || pt == RTX_PAYLOAD_TYPE_H264 {
+          caps = caps
+            .field("media", "video")
+            .field("clock-rate", 90000)
+            .field("encoding-name", "RTX")
+            .field("apt", if pt == RTX_PAYLOAD_TYPE_VP8 {
+              vp8_payload_type
+                .context("missing VP8 payload type")?
+            }
+            else if pt == RTX_PAYLOAD_TYPE_VP9 {
+              vp9_payload_type
+                .context("missing VP9 payload type")?
+            }
+            else if pt == RTX_PAYLOAD_TYPE_H264 {
+              h264_payload_type
+                .context("missing H264 payload type")?
+            }
+            else {
+              unreachable!()
+            });
+          Ok(Some(caps.build()))
         }
         else {
           warn!("unknown payload type: {}", pt);
-          None
-        };
-        Ok::<_, anyhow::Error>(maybe_caps)
+          Ok(None)
+        }
       };
       match f() {
         Ok(Some(caps)) => {
@@ -434,6 +497,94 @@ impl JingleSession {
         Ok(None) => None,
         Err(e) => {
           error!("handling request-pt-map: {:?}", e);
+          None
+        },
+      }
+    })?;
+
+    rtpbin.connect("request-aux-sender", false, move |values| {
+      let f = move || {
+        let session: u32 = values[1].get()?;
+        debug!("creating RTX sender for session {}", session);
+        let mut pt_map = gstreamer::Structure::builder("application/x-rtp-pt-map");
+        if let Some(pt) = vp8_payload_type {
+          pt_map = pt_map.field(&pt.to_string(), &(RTX_PAYLOAD_TYPE_VP8 as u32));
+        }
+        if let Some(pt) = vp9_payload_type {
+          pt_map = pt_map.field(&pt.to_string(), &(RTX_PAYLOAD_TYPE_VP9 as u32));
+        }
+        if let Some(pt) = h264_payload_type {
+          pt_map = pt_map.field(&pt.to_string(), &(RTX_PAYLOAD_TYPE_H264 as u32));
+        }
+        let bin = gstreamer::Bin::new(None);
+        let rtx_sender = gstreamer::ElementFactory::make("rtprtxsend", None)?;
+        rtx_sender.set_property("payload-type-map", pt_map.build())?;
+        bin.add(&rtx_sender)?;
+        bin.add_pad(
+          &gstreamer::GhostPad::with_target(
+            Some(&format!("src_{}", session)),
+            &rtx_sender
+              .static_pad("src")
+              .context("rtprtxsend has no src pad")?,
+          )?,
+        )?;
+        bin.add_pad(
+          &gstreamer::GhostPad::with_target(
+            Some(&format!("sink_{}", session)),
+            &rtx_sender
+              .static_pad("sink")
+              .context("rtprtxsend has no sink pad")?,
+          )?,
+        )?;
+        Ok::<_, anyhow::Error>(Some(bin.to_value()))
+      };
+      match f() {
+        Ok(o) => o,
+        Err(e) => {
+          warn!("request-aux-sender: {:?}", e);
+          None
+        },
+      }
+    })?;
+
+    rtpbin.connect("request-aux-receiver", false, move |values| {
+      let f = move || {
+        let session: u32 = values[1].get()?;
+        debug!("creating RTX receiver for session {}", session);
+        let mut pt_map = gstreamer::Structure::builder("application/x-rtp-pt-map");
+        if let Some(pt) = vp8_payload_type {
+          pt_map = pt_map.field(&pt.to_string(), RTX_PAYLOAD_TYPE_VP8 as u32);
+        }
+        if let Some(pt) = vp9_payload_type {
+          pt_map = pt_map.field(&pt.to_string(), RTX_PAYLOAD_TYPE_VP9 as u32);
+        }
+        if let Some(pt) = h264_payload_type {
+          pt_map = pt_map.field(&pt.to_string(), RTX_PAYLOAD_TYPE_H264 as u32);
+        }
+        let bin = gstreamer::Bin::new(None);
+        let rtx_receiver = gstreamer::ElementFactory::make("rtprtxreceive", None)?;
+        rtx_receiver.set_property("payload-type-map", pt_map.build())?;
+        bin.add(&rtx_receiver)?;
+        bin.add_pad(
+          &gstreamer::GhostPad::with_target(
+            Some(&format!("src_{}", session)),
+            &rtx_receiver.static_pad("src")
+              .context("rtprtxreceive has no src pad")?,
+          )?,
+        )?;
+        bin.add_pad(
+          &gstreamer::GhostPad::with_target(
+            Some(&format!("sink_{}", session)),
+            &rtx_receiver.static_pad("sink")
+              .context("rtprtxreceive has no sink pad")?,
+          )?,
+        )?;
+        Ok::<_, anyhow::Error>(Some(bin.to_value()))
+      };
+      match f() {
+        Ok(o) => o,
+        Err(e) => {
+          warn!("request-aux-receiver: {:?}", e);
           None
         },
       }
@@ -499,6 +650,12 @@ impl JingleSession {
           };
 
           let source_element = gstreamer::ElementFactory::make(element_name, None)?;
+          if source_element.has_property("auto-header-extension", None) {
+            source_element.set_property("auto-header-extension", true)?;
+          }
+          if source_element.has_property("request-keyframe", None) {
+            source_element.set_property("request-keyframe", true)?;
+          }
           pipeline_
             .add(&source_element)
             .context(format!("failed to add {} to pipeline", element_name))?;
@@ -571,8 +728,14 @@ impl JingleSession {
     )?;
     audio_sink_element.set_property("min-ptime", 10i64 * 1000 * 1000)?;
     audio_sink_element.set_property("ssrc", audio_ssrc)?;
+    let audio_hdrext_supported = if audio_sink_element.has_property("auto-header-extension", None) {
+      audio_sink_element.set_property("auto-header-extension", true)?;
+      true
+    }
+    else {
+      false
+    };
     pipeline.add(&audio_sink_element)?;
-    audio_sink_element.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
 
     let video_sink_element = match conference.config.video_codec.as_str() {
       "h264" => {
@@ -605,26 +768,59 @@ impl JingleSession {
       other => bail!("unsupported video codec: {}", other),
     };
     video_sink_element.set_property("ssrc", video_ssrc)?;
+    let video_hdrext_supported = if video_sink_element.has_property("auto-header-extension", None) {
+      video_sink_element.set_property("auto-header-extension", true)?;
+      true
+    }
+    else {
+      false
+    };
     pipeline.add(&video_sink_element)?;
-    video_sink_element.link_pads(None, &rtpbin, Some("send_rtp_sink_1"))?;
 
-    let dtlssrtpdec = pipeline
-      .by_name("dtlssrtpdec")
-      .context("no dtlssrtpdec in pipeline")?;
-    dtlssrtpdec.set_property(
-      "pem",
-      format!("{}\n{}", dtls_cert_pem, dtls_private_key_pem),
-    )?;
+    let mut audio_caps = gstreamer::Caps::builder("application/x-rtp");
+    // TODO: fails to negotiate
+    // if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
+    //   audio_caps = audio_caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
+    // }
+    if let Some(hdrext) = audio_hdrext_transport_cc {
+      audio_caps = audio_caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_TRANSPORT_CC);
+    }
+    let audio_capsfilter = gstreamer::ElementFactory::make("capsfilter", None)?;
+    audio_capsfilter.set_property("caps", audio_caps.build())?;
+    pipeline.add(&audio_capsfilter)?;
 
-    let nicesrc = pipeline
-      .by_name("nicesrc")
-      .context("no nicesrc in pipeline")?;
-    nicesrc.set_property("agent", &ice_agent)?;
+    let mut video_caps = gstreamer::Caps::builder("application/x-rtp");
+    if let Some(hdrext) = video_hdrext_abs_send_time {
+      video_caps = video_caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_ABS_SEND_TIME);
+    }
+    if let Some(hdrext) = video_hdrext_transport_cc {
+      video_caps = video_caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_TRANSPORT_CC);
+    }
+    let video_capsfilter = gstreamer::ElementFactory::make("capsfilter", None)?;
+    video_capsfilter.set_property("caps", video_caps.build())?;
+    pipeline.add(&video_capsfilter)?;
 
-    let nicesink = pipeline
-      .by_name("nicesink")
-      .context("no nicesink in pipeline")?;
-    nicesink.set_property("agent", &ice_agent)?;
+    debug!("linking audio payloader -> rtpbin");
+    audio_sink_element.link(&audio_capsfilter)?;
+    audio_capsfilter.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
+
+    debug!("linking video payloader -> rtpbin");
+    video_sink_element.link(&video_capsfilter)?;
+    video_capsfilter.link_pads(None, &rtpbin, Some("send_rtp_sink_1"))?;
+
+    debug!("linking ICE <-> DTLS-SRTP");
+    nicesrc.link(&dtlssrtpdec)?;
+    dtlssrtpenc.link(&nicesink)?;
+
+    debug!("linking rtpbin -> DTLS-SRTP encoder");
+    rtpbin.link_pads(Some("send_rtp_src_0"), &dtlssrtpenc, Some("rtp_sink_0"))?;
+    rtpbin.link_pads(Some("send_rtcp_src_0"), &dtlssrtpenc, Some("rtcp_sink_0"))?;
+    rtpbin.link_pads(Some("send_rtp_src_1"), &dtlssrtpenc, Some("rtp_sink_1"))?;
+    rtpbin.link_pads(Some("send_rtcp_src_1"), &dtlssrtpenc, Some("rtcp_sink_1"))?;
+
+    debug!("linking DTLS-SRTP decoder -> rtpbin");
+    dtlssrtpdec.link_pads(Some("rtp_src"), &rtpbin, Some("recv_rtp_sink_0"))?;
+    dtlssrtpdec.link_pads(Some("rtcp_src"), &rtpbin, Some("recv_rtcp_sink_0"))?;
 
     let bus = pipeline.bus().context("failed to get pipeline bus")?;
 
@@ -716,29 +912,69 @@ impl JingleSession {
       let label = Uuid::new_v4().to_string();
       let cname = Uuid::new_v4().to_string();
 
-      let mut ssrc = jingle_ssma::Source::new(if initiate_content.name.0 == "audio" {
-        audio_ssrc.to_string()
+      description.ssrcs = if initiate_content.name.0 == "audio" {
+        vec![jingle_ssma::Source::new(audio_ssrc.to_string())]
       }
       else {
-        video_ssrc.to_string()
-      });
-      ssrc.parameters.push(Parameter {
-        name: "cname".to_owned(),
-        value: Some(cname),
-      });
-      ssrc.parameters.push(Parameter {
-        name: "msid".to_owned(),
-        value: Some(format!("{} {}", mslabel, label)),
-      });
-      ssrc.parameters.push(Parameter {
-        name: "mslabel".to_owned(),
-        value: Some(mslabel),
-      });
-      ssrc.parameters.push(Parameter {
-        name: "label".to_owned(),
-        value: Some(label),
-      });
-      description.ssrcs = vec![ssrc];
+        vec![jingle_ssma::Source::new(video_ssrc.to_string())]
+      };
+
+      for ssrc in description.ssrcs.iter_mut() {
+        ssrc.parameters.push(Parameter {
+          name: "cname".to_owned(),
+          value: Some(cname.clone()),
+        });
+        ssrc.parameters.push(Parameter {
+          name: "msid".to_owned(),
+          value: Some(format!("{} {}", mslabel, label)),
+        });
+        ssrc.parameters.push(Parameter {
+          name: "mslabel".to_owned(),
+          value: Some(mslabel.clone()),
+        });
+        ssrc.parameters.push(Parameter {
+          name: "label".to_owned(),
+          value: Some(label.clone()),
+        });
+      }
+
+      if initiate_content.name.0 == "audio" {
+        // TODO: fails to negotiate
+        // if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
+        //   if audio_hdrext_supported {
+        //     description.hdrexts.push(RtpHdrext::new(hdrext.to_string(), RTP_HDREXT_SSRC_AUDIO_LEVEL.to_owned()));
+        //   }
+        //   else {
+        //     debug!("ssrc-audio-level hdrext requested but not supported");
+        //   }
+        // }
+        if let Some(hdrext) = audio_hdrext_transport_cc {
+          if audio_hdrext_supported {
+            description.hdrexts.push(RtpHdrext::new(hdrext.to_string(), RTP_HDREXT_TRANSPORT_CC.to_owned()));
+          }
+          else {
+            debug!("transport-cc hdrext requested, but hdrext not supported by audio payloader");
+          }
+        }
+      }
+      else if initiate_content.name.0 == "video" {
+        if let Some(hdrext) = video_hdrext_abs_send_time {
+          if video_hdrext_supported {
+            description.hdrexts.push(RtpHdrext::new(hdrext.to_string(), RTP_HDREXT_ABS_SEND_TIME.to_owned()));
+          }
+          else {
+            debug!("abs-send-time hdrext requested, but hdrext not supported by video payloader");
+          }
+        }
+        if let Some(hdrext) = video_hdrext_transport_cc {
+          if video_hdrext_supported {
+            description.hdrexts.push(RtpHdrext::new(hdrext.to_string(), RTP_HDREXT_TRANSPORT_CC.to_owned()));
+          }
+          else {
+            debug!("transport-cc hdrext requested, but hdrext not supported by video payloader");
+          }
+        }
+      }
 
       let mut transport = IceUdpTransport::new().with_fingerprint(Fingerprint {
         hash: Algo::Sha_256,
@@ -793,9 +1029,7 @@ impl JingleSession {
       audio_sink_element,
       video_sink_element,
       remote_ssrc_map,
-      ice_agent,
-      ice_stream_id,
-      ice_component_id,
+      _ice_agent: ice_agent,
       accept_iq_id: Some(accept_iq_id),
       colibri_url,
       colibri_channel: None,

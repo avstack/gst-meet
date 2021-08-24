@@ -6,3 +6,6 @@ members = [
   "nice-gst-meet",
   "nice-gst-meet-sys",
 ]
+
+[patch.crates-io]
+minidom = { path = "../xmpp-rs/minidom" }

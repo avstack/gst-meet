@@ -22,7 +22,7 @@ use xmpp_parsers::{
   jingle::{Action, Content, Creator, Description, Jingle, Senders, Transport},
   jingle_dtls_srtp::{Fingerprint, Setup},
   jingle_ice_udp::{self, Transport as IceUdpTransport},
-  jingle_rtp::{Description as RtpDescription, PayloadType, RtcpMux},
+  jingle_rtp::{self, Description as RtpDescription, PayloadType, RtcpMux},
   jingle_rtp_hdrext::RtpHdrext,
   jingle_ssma::{self, Parameter},
   Jid,
@@ -38,10 +38,6 @@ use crate::{
 const RTP_HDREXT_SSRC_AUDIO_LEVEL: &str = "urn:ietf:params:rtp-hdrext:ssrc-audio-level";
 const RTP_HDREXT_ABS_SEND_TIME: &str = "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
 const RTP_HDREXT_TRANSPORT_CC: &str = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
-
-const RTX_PAYLOAD_TYPE_VP8: u8 = 96;
-const RTX_PAYLOAD_TYPE_VP9: u8 = 97;
-const RTX_PAYLOAD_TYPE_H264: u8 = 99;
 
 const DEFAULT_STUN_PORT: u16 = 3478;
 const DEFAULT_TURNS_PORT: u16 = 5349;
@@ -111,9 +107,16 @@ impl JingleSession {
     let mut ice_remote_pwd = None;
     let mut dtls_fingerprint = None;
     let mut opus_payload_type = None;
+    let mut opus_rtcp_fbs = None;
     let mut h264_payload_type = None;
+    let mut h264_rtx_payload_type = None;
+    let mut h264_rtcp_fbs = None;
     let mut vp8_payload_type = None;
+    let mut vp8_rtx_payload_type = None;
+    let mut vp8_rtcp_fbs = None;
     let mut vp9_payload_type = None;
+    let mut vp9_rtx_payload_type = None;
+    let mut vp9_rtcp_fbs = None;
     let mut audio_hdrext_ssrc_audio_level = None;
     let mut audio_hdrext_transport_cc = None;
     let mut video_hdrext_abs_send_time = None;
@@ -130,6 +133,11 @@ impl JingleSession {
             .iter()
             .find(|pt| pt.name.as_deref() == Some("opus"))
             .map(|pt| pt.id);
+          opus_rtcp_fbs = description
+            .payload_types
+            .iter()
+            .find(|pt| pt.name.as_deref() == Some("opus"))
+            .map(|pt| pt.rtcp_fbs.clone());
           audio_hdrext_ssrc_audio_level = description
             .hdrexts
             .iter()
@@ -149,16 +157,79 @@ impl JingleSession {
             .iter()
             .find(|pt| pt.name.as_deref() == Some("H264"))
             .map(|pt| pt.id);
+          h264_rtx_payload_type = description
+            .payload_types
+            .iter()
+            .find(|pt| {
+              pt.name.as_deref() == Some("rtx")
+              &&
+              pt
+                .parameters
+                .iter()
+                .any(|param| {
+                  param.name == "apt"
+                  &&
+                  param.value == h264_payload_type.map(|pt| pt.to_string()).unwrap_or_default()
+                })
+            })
+            .map(|pt| pt.id);
+          h264_rtcp_fbs = description
+            .payload_types
+            .iter()
+            .find(|pt| pt.name.as_deref() == Some("H264"))
+            .map(|pt| pt.rtcp_fbs.clone());
           vp8_payload_type = description
             .payload_types
             .iter()
             .find(|pt| pt.name.as_deref() == Some("VP8"))
             .map(|pt| pt.id);
+          vp8_rtx_payload_type = description
+            .payload_types
+            .iter()
+            .find(|pt| {
+              pt.name.as_deref() == Some("rtx")
+              &&
+              pt
+                .parameters
+                .iter()
+                .any(|param| {
+                  param.name == "apt"
+                  &&
+                  param.value == vp8_payload_type.map(|pt| pt.to_string()).unwrap_or_default()
+                })
+            })
+            .map(|pt| pt.id);
+          vp8_rtcp_fbs = description
+            .payload_types
+            .iter()
+            .find(|pt| pt.name.as_deref() == Some("VP8"))
+            .map(|pt| pt.rtcp_fbs.clone());
           vp9_payload_type = description
             .payload_types
             .iter()
             .find(|pt| pt.name.as_deref() == Some("VP9"))
             .map(|pt| pt.id);
+          vp9_rtx_payload_type = description
+            .payload_types
+            .iter()
+            .find(|pt| {
+              pt.name.as_deref() == Some("rtx")
+              &&
+              pt
+                .parameters
+                .iter()
+                .any(|param| {
+                  param.name == "apt"
+                  &&
+                  param.value == vp9_payload_type.map(|pt| pt.to_string()).unwrap_or_default()
+                })
+            })
+            .map(|pt| pt.id);
+          vp9_rtcp_fbs = description
+            .payload_types
+            .iter()
+            .find(|pt| pt.name.as_deref() == Some("VP9"))
+            .map(|pt| pt.rtcp_fbs.clone());
           video_hdrext_abs_send_time = description
             .hdrexts
             .iter()
@@ -257,9 +328,11 @@ impl JingleSession {
 
     let audio_ssrc: u32 = random();
     let video_ssrc: u32 = random();
+    let video_rtx_ssrc: u32 = random();
 
     debug!("audio SSRC: {}", audio_ssrc);
     debug!("video SSRC: {}", video_ssrc);
+    debug!("video RTX SSRC: {}", video_rtx_ssrc);
 
     let ice_agent = nice::Agent::new(&conference.glib_main_context, nice::Compatibility::Rfc5245);
     ice_agent.set_ice_tcp(false);
@@ -389,7 +462,6 @@ impl JingleSession {
 
     let rtpbin = gstreamer::ElementFactory::make("rtpbin", Some("rtpbin"))?;
     rtpbin.set_property_from_str("rtp-profile", "savpf");
-    rtpbin.set_property("do-retransmission", true)?;
     rtpbin.set_property("autoremove", true)?;
     pipeline.add(&rtpbin)?;
 
@@ -407,6 +479,11 @@ impl JingleSession {
 
     let dtls_srtp_connection_id = "gst-meet";
 
+    let dtlssrtpenc = gstreamer::ElementFactory::make("dtlssrtpenc", None)?;
+    dtlssrtpenc.set_property("connection-id", dtls_srtp_connection_id)?;
+    dtlssrtpenc.set_property("is-client", true)?;
+    pipeline.add(&dtlssrtpenc)?;
+
     let dtlssrtpdec = gstreamer::ElementFactory::make("dtlssrtpdec", None)?;
     dtlssrtpdec.set_property("connection-id", dtls_srtp_connection_id)?;
     dtlssrtpdec.set_property(
@@ -414,11 +491,6 @@ impl JingleSession {
       format!("{}\n{}", dtls_cert_pem, dtls_private_key_pem),
     )?;
     pipeline.add(&dtlssrtpdec)?;
-
-    let dtlssrtpenc = gstreamer::ElementFactory::make("dtlssrtpenc", None)?;
-    dtlssrtpenc.set_property("connection-id", dtls_srtp_connection_id)?;
-    dtlssrtpenc.set_property("is-client", true)?;
-    pipeline.add(&dtlssrtpenc)?;
 
     rtpbin.connect("request-pt-map", false, move |values| {
       let f = || {
@@ -462,20 +534,20 @@ impl JingleSession {
           }
           Ok(Some(caps.build()))
         }
-        else if pt == RTX_PAYLOAD_TYPE_VP8 || pt == RTX_PAYLOAD_TYPE_VP9 || pt == RTX_PAYLOAD_TYPE_H264 {
+        else if Some(pt) == vp8_rtx_payload_type || Some(pt) == vp9_rtx_payload_type || Some(pt) == h264_rtx_payload_type {
           caps = caps
             .field("media", "video")
             .field("clock-rate", 90000)
             .field("encoding-name", "RTX")
-            .field("apt", if pt == RTX_PAYLOAD_TYPE_VP8 {
+            .field("apt", if Some(pt) == vp8_rtx_payload_type {
               vp8_payload_type
                 .context("missing VP8 payload type")?
             }
-            else if pt == RTX_PAYLOAD_TYPE_VP9 {
+            else if Some(pt) == vp9_rtx_payload_type {
               vp9_payload_type
                 .context("missing VP9 payload type")?
             }
-            else if pt == RTX_PAYLOAD_TYPE_H264 {
+            else if Some(pt) == h264_rtx_payload_type {
               h264_payload_type
                 .context("missing H264 payload type")?
             }
@@ -502,23 +574,64 @@ impl JingleSession {
       }
     })?;
 
+    let handle = Handle::current();
+    let inner_ = conference.inner.clone();
+    rtpbin.connect("new-jitterbuffer", false, move |values| {
+      let handle = handle.clone();
+      let inner_ = inner_.clone();
+      let f = move || {
+        let rtpjitterbuffer: gstreamer::Element = values[1].get()?;
+        let session: u32 = values[2].get()?;
+        let ssrc: u32 = values[3].get()?;
+        debug!("new jitterbuffer created for session {} ssrc {}", session, ssrc);
+
+        let source = handle.block_on(async move {
+          let locked_inner = inner_.lock().await;
+          let jingle_session = locked_inner
+            .jingle_session
+            .as_ref()
+            .context("not connected (no jingle session)")?;
+          Ok::<_, anyhow::Error>(
+            jingle_session
+              .remote_ssrc_map
+              .get(&ssrc)
+              .context(format!("unknown ssrc: {}", ssrc))?
+              .clone(),
+          )
+        })?;
+        debug!("jitterbuffer is for remote source: {:?}", source);
+        if source.media_type == MediaType::Video {
+          debug!("enabling RTX for ssrc {}", ssrc);
+          rtpjitterbuffer.set_property("do-retransmission", true)?;
+        }
+        Ok::<_, anyhow::Error>(())
+      };
+      if let Err(e) = f() {
+        warn!("new-jitterbuffer: {:?}", e);
+      }
+      None
+    })?;
+
     rtpbin.connect("request-aux-sender", false, move |values| {
       let f = move || {
         let session: u32 = values[1].get()?;
         debug!("creating RTX sender for session {}", session);
         let mut pt_map = gstreamer::Structure::builder("application/x-rtp-pt-map");
-        if let Some(pt) = vp8_payload_type {
-          pt_map = pt_map.field(&pt.to_string(), &(RTX_PAYLOAD_TYPE_VP8 as u32));
+        let mut ssrc_map = gstreamer::Structure::builder("application/x-rtp-ssrc-map");
+        if let (Some(pt), Some(rtx_pt)) = (vp8_payload_type, vp8_rtx_payload_type) {
+          pt_map = pt_map.field(&pt.to_string(), &(rtx_pt as u32));
         }
-        if let Some(pt) = vp9_payload_type {
-          pt_map = pt_map.field(&pt.to_string(), &(RTX_PAYLOAD_TYPE_VP9 as u32));
+        if let (Some(pt), Some(rtx_pt)) = (vp9_payload_type, vp9_rtx_payload_type) {
+          pt_map = pt_map.field(&pt.to_string(), &(rtx_pt as u32));
         }
-        if let Some(pt) = h264_payload_type {
-          pt_map = pt_map.field(&pt.to_string(), &(RTX_PAYLOAD_TYPE_H264 as u32));
+        if let (Some(pt), Some(rtx_pt)) = (h264_payload_type, h264_rtx_payload_type) {
+          pt_map = pt_map.field(&pt.to_string(), &(rtx_pt as u32));
         }
+        ssrc_map = ssrc_map.field(&video_ssrc.to_string(), &(video_rtx_ssrc as u32));
         let bin = gstreamer::Bin::new(None);
         let rtx_sender = gstreamer::ElementFactory::make("rtprtxsend", None)?;
         rtx_sender.set_property("payload-type-map", pt_map.build())?;
+        rtx_sender.set_property("ssrc-map", ssrc_map.build())?;
         bin.add(&rtx_sender)?;
         bin.add_pad(
           &gstreamer::GhostPad::with_target(
@@ -552,14 +665,14 @@ impl JingleSession {
         let session: u32 = values[1].get()?;
         debug!("creating RTX receiver for session {}", session);
         let mut pt_map = gstreamer::Structure::builder("application/x-rtp-pt-map");
-        if let Some(pt) = vp8_payload_type {
-          pt_map = pt_map.field(&pt.to_string(), RTX_PAYLOAD_TYPE_VP8 as u32);
+        if let (Some(pt), Some(rtx_pt)) = (vp8_payload_type, vp8_rtx_payload_type) {
+          pt_map = pt_map.field(&pt.to_string(), &(rtx_pt as u32));
         }
-        if let Some(pt) = vp9_payload_type {
-          pt_map = pt_map.field(&pt.to_string(), RTX_PAYLOAD_TYPE_VP9 as u32);
+        if let (Some(pt), Some(rtx_pt)) = (vp9_payload_type, vp9_rtx_payload_type) {
+          pt_map = pt_map.field(&pt.to_string(), &(rtx_pt as u32));
         }
-        if let Some(pt) = h264_payload_type {
-          pt_map = pt_map.field(&pt.to_string(), RTX_PAYLOAD_TYPE_H264 as u32);
+        if let (Some(pt), Some(rtx_pt)) = (h264_payload_type, h264_rtx_payload_type) {
+          pt_map = pt_map.field(&pt.to_string(), &(rtx_pt as u32));
         }
         let bin = gstreamer::Bin::new(None);
         let rtx_receiver = gstreamer::ElementFactory::make("rtprtxreceive", None)?;
@@ -800,27 +913,33 @@ impl JingleSession {
     video_capsfilter.set_property("caps", video_caps.build())?;
     pipeline.add(&video_capsfilter)?;
 
-    debug!("linking audio payloader -> rtpbin");
+    let rtpfunnel = gstreamer::ElementFactory::make("funnel", None)?;
+    pipeline.add(&rtpfunnel)?;
+
+    debug!("linking audio payloader -> rtp funnel");
     audio_sink_element.link(&audio_capsfilter)?;
-    audio_capsfilter.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
+    audio_capsfilter.link_pads(None, &rtpfunnel, Some("sink_0"))?;
 
-    debug!("linking video payloader -> rtpbin");
+    debug!("linking video payloader -> rtp funnel");
     video_sink_element.link(&video_capsfilter)?;
-    video_capsfilter.link_pads(None, &rtpbin, Some("send_rtp_sink_1"))?;
+    video_capsfilter.link_pads(None, &rtpfunnel, Some("sink_1"))?;
 
-    debug!("linking ICE <-> DTLS-SRTP");
-    nicesrc.link(&dtlssrtpdec)?;
-    dtlssrtpenc.link(&nicesink)?;
+    debug!("linking rtp funnel -> rtpbin");
+    rtpfunnel.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
 
-    debug!("linking rtpbin -> DTLS-SRTP encoder");
-    rtpbin.link_pads(Some("send_rtp_src_0"), &dtlssrtpenc, Some("rtp_sink_0"))?;
-    rtpbin.link_pads(Some("send_rtcp_src_0"), &dtlssrtpenc, Some("rtcp_sink_0"))?;
-    rtpbin.link_pads(Some("send_rtp_src_1"), &dtlssrtpenc, Some("rtp_sink_1"))?;
-    rtpbin.link_pads(Some("send_rtcp_src_1"), &dtlssrtpenc, Some("rtcp_sink_1"))?;
-
-    debug!("linking DTLS-SRTP decoder -> rtpbin");
+    debug!("link dtlssrtpdec -> rtpbin");
     dtlssrtpdec.link_pads(Some("rtp_src"), &rtpbin, Some("recv_rtp_sink_0"))?;
     dtlssrtpdec.link_pads(Some("rtcp_src"), &rtpbin, Some("recv_rtcp_sink_0"))?;
+
+    debug!("linking rtpbin -> dtlssrtpenc");
+    rtpbin.link_pads(Some("send_rtp_src_0"), &dtlssrtpenc, Some("rtp_sink_0"))?;
+    rtpbin.link_pads(Some("send_rtcp_src_0"), &dtlssrtpenc, Some("rtcp_sink_0"))?;
+
+    debug!("linking ice src -> dtlssrtpdec");
+    nicesrc.link(&dtlssrtpdec)?;
+
+    debug!("linking dtlssrtpenc -> ice sink");
+    dtlssrtpenc.link_pads(Some("src"), &nicesink, Some("sink"))?;
 
     let bus = pipeline.bus().context("failed to get pipeline bus")?;
 
@@ -875,35 +994,76 @@ impl JingleSession {
       let mut description = RtpDescription::new(initiate_content.name.0.clone());
 
       description.payload_types = if initiate_content.name.0 == "audio" {
-        vec![PayloadType::new(
+        let mut pt = PayloadType::new(
           opus_payload_type.context("no opus payload type in jingle session-initiate")?,
           "opus".to_owned(),
           48000,
           2,
-        )]
+        );
+        pt.rtcp_fbs = opus_rtcp_fbs.clone().unwrap_or_default();
+        vec![pt]
       }
       else {
+        let mut pts = vec![];
         match conference.config.video_codec.as_str() {
-          "h264" => vec![PayloadType::new(
-            h264_payload_type.context("no h264 payload type in jingle session-initiate")?,
-            "H264".to_owned(),
-            90000,
-            1,
-          )],
-          "vp8" => vec![PayloadType::new(
-            vp8_payload_type.context("no vp8 payload type in jingle session-initiate")?,
-            "VP8".to_owned(),
-            90000,
-            1,
-          )],
-          "vp9" => vec![PayloadType::new(
-            vp9_payload_type.context("no vp9 payload type in jingle session-initiate")?,
-            "VP9".to_owned(),
-            90000,
-            1,
-          )],
+          "h264" => {
+            if let Some(h264_pt) = h264_payload_type {
+              let mut pt = PayloadType::new(h264_pt, "H264".to_owned(), 90000, 1);
+              pt.rtcp_fbs = h264_rtcp_fbs.clone().unwrap_or_default();
+              pts.push(pt);
+              if let Some(rtx_pt) = h264_rtx_payload_type {
+                let mut rtx_pt = PayloadType::new(rtx_pt, "rtx".to_owned(), 90000, 1);
+                rtx_pt.parameters = vec![jingle_rtp::Parameter {
+                  name: "apt".to_owned(),
+                  value: h264_pt.to_string(),
+                }];
+                pts.push(rtx_pt);
+              }
+            }
+            else {
+              bail!("no h264 payload type in jingle session-initiate");
+            }
+          },
+          "vp8" => {
+            if let Some(vp8_pt) = vp8_payload_type {
+              let mut pt = PayloadType::new(vp8_pt, "VP8".to_owned(), 90000, 1);
+              pt.rtcp_fbs = vp8_rtcp_fbs.clone().unwrap_or_default();
+              pts.push(pt);
+              if let Some(rtx_pt) = vp8_rtx_payload_type {
+                let mut rtx_pt = PayloadType::new(rtx_pt, "rtx".to_owned(), 90000, 1);
+                rtx_pt.parameters = vec![jingle_rtp::Parameter {
+                  name: "apt".to_owned(),
+                  value: vp8_pt.to_string(),
+                }];
+                pts.push(rtx_pt);
+              }
+            }
+            else {
+              bail!("no vp8 payload type in jingle session-initiate");
+            }
+          },
+          "vp9" => {
+            if let Some(vp9_pt) = vp9_payload_type {
+              let mut pt = PayloadType::new(vp9_pt, "VP9".to_owned(), 90000, 1);
+              pt.rtcp_fbs = vp9_rtcp_fbs.clone().unwrap_or_default();
+              pts.push(pt);
+              if let Some(rtx_pt) = vp9_rtx_payload_type {
+                let mut rtx_pt = PayloadType::new(rtx_pt, "rtx".to_owned(), 90000, 1);
+                rtx_pt.parameters = vec![jingle_rtp::Parameter {
+                  name: "apt".to_owned(),
+                  value: vp9_pt.to_string(),
+                }];
+                pts.push(rtx_pt);
+              }
+            }
+            else {
+              bail!("no vp9 payload type in jingle session-initiate");
+            }
+
+          },
           other => bail!("unsupported video codec: {}", other),
         }
+        pts
       };
 
       description.rtcp_mux = Some(RtcpMux);
@@ -912,11 +1072,21 @@ impl JingleSession {
       let label = Uuid::new_v4().to_string();
       let cname = Uuid::new_v4().to_string();
 
+      description.ssrc = Some(if initiate_content.name.0 == "audio" {
+        audio_ssrc.to_string()
+      }
+      else {
+        video_ssrc.to_string()
+      });
+
       description.ssrcs = if initiate_content.name.0 == "audio" {
         vec![jingle_ssma::Source::new(audio_ssrc.to_string())]
       }
       else {
-        vec![jingle_ssma::Source::new(video_ssrc.to_string())]
+        vec![
+          jingle_ssma::Source::new(video_ssrc.to_string()),
+          jingle_ssma::Source::new(video_rtx_ssrc.to_string()),
+        ]
       };
 
       for ssrc in description.ssrcs.iter_mut() {
@@ -928,15 +1098,20 @@ impl JingleSession {
           name: "msid".to_owned(),
           value: Some(format!("{} {}", mslabel, label)),
         });
-        ssrc.parameters.push(Parameter {
-          name: "mslabel".to_owned(),
-          value: Some(mslabel.clone()),
-        });
-        ssrc.parameters.push(Parameter {
-          name: "label".to_owned(),
-          value: Some(label.clone()),
-        });
       }
+
+      description.ssrc_groups = if initiate_content.name.0 == "audio" {
+        vec![]
+      }
+      else {
+        vec![jingle_ssma::Group {
+          semantics: "FID".to_owned(),
+          sources: vec![
+            jingle_ssma::Source::new(video_ssrc.to_string()),
+            jingle_ssma::Source::new(video_rtx_ssrc.to_string()),
+          ],
+        }]
+      };
 
       if initiate_content.name.0 == "audio" {
         // TODO: fails to negotiate

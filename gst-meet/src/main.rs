@@ -9,12 +9,12 @@ use gstreamer::{
   GhostPad,
 };
 use lib_gst_meet::{
-  init_tracing, JitsiConferenceConfig, JitsiConnection,
   colibri::{ColibriMessage, Constraints, VideoType},
+  init_tracing, JitsiConferenceConfig, JitsiConnection,
 };
 use structopt::StructOpt;
 use tokio::{signal::ctrl_c, task, time::timeout};
-use tracing::{info, trace, warn};
+use tracing::{error, info, trace, warn};
 
 #[derive(Debug, Clone, StructOpt)]
 #[structopt(
@@ -71,7 +71,9 @@ fn main() {
     .unwrap();
 
   rt.spawn(async move {
-    main_inner().await.unwrap();
+    if let Err(e) = main_inner().await {
+      error!("fatal: {:?}", e);
+    }
     unsafe {
       cocoa::appkit::NSApp().stop_(cocoa::base::nil);
     }
@@ -83,10 +85,11 @@ fn main() {
   }
 }
 
-fn init_gstreamer() {
+fn init_gstreamer() -> Result<()> {
   trace!("starting gstreamer init");
-  gstreamer::init().expect("gstreamer init failed");
+  gstreamer::init()?;
   trace!("finished gstreamer init");
+  Ok(())
 }
 
 async fn main_inner() -> Result<()> {
@@ -98,8 +101,8 @@ async fn main_inner() -> Result<()> {
     _ => tracing::Level::TRACE,
   });
   glib::log_set_default_handler(glib::rust_log_handler);
-  
-  init_gstreamer();
+
+  init_gstreamer()?;
 
   // Parse pipeline early so that we don't bother connecting to the conference if it's invalid.
 
@@ -107,10 +110,12 @@ async fn main_inner() -> Result<()> {
     .send_pipeline
     .as_ref()
     .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
-    .transpose()?;
+    .transpose()
+    .context("failed to parse send pipeline")?;
 
-  let (connection, background) =
-    JitsiConnection::new(&opt.web_socket_url, &opt.xmpp_domain).await?;
+  let (connection, background) = JitsiConnection::new(&opt.web_socket_url, &opt.xmpp_domain)
+    .await
+    .context("failed to connect")?;
 
   tokio::spawn(background);
 
@@ -150,20 +155,24 @@ async fn main_inner() -> Result<()> {
 
   let conference = connection
     .join_conference(main_loop.context(), config)
-    .await?;
+    .await
+    .context("failed to join conference")?;
 
   if opt.select_endpoints.is_some() || opt.last_n.is_some() || opt.recv_video_height.is_some() {
     conference
       .send_colibri_message(ColibriMessage::ReceiverVideoConstraints {
         last_n: opt.last_n,
-        selected_endpoints: opt.select_endpoints.map(|endpoints| endpoints.split(',').map(ToOwned::to_owned).collect()),
+        selected_endpoints: opt
+          .select_endpoints
+          .map(|endpoints| endpoints.split(',').map(ToOwned::to_owned).collect()),
         on_stage_endpoints: None,
         default_constraints: opt.recv_video_height.map(|height| Constraints {
           ideal_height: Some(height),
           max_height: None,
         }),
         constraints: None,
-      }).await?;
+      })
+      .await?;
   }
 
   if let Some(video_type) = opt.video_type {
@@ -173,7 +182,7 @@ async fn main_inner() -> Result<()> {
           "camera" => VideoType::Camera,
           "desktop" => VideoType::Desktop,
           other => bail!(format!("invalid video type: {}", other)),
-        }
+        },
       })
       .await?;
   }
@@ -233,18 +242,21 @@ async fn main_inner() -> Result<()> {
             info!("No video sink element found in recv pipeline participant template");
           }
 
-          bin.set_property("name", format!("participant_{}", participant.muc_jid.resource))?;
+          bin.set_property(
+            "name",
+            format!("participant_{}", participant.muc_jid.resource),
+          )?;
           conference.add_bin(&bin).await?;
         }
         else {
           info!("No template for handling new participant");
         }
-        
+
         Ok(())
       })
     })
     .await;
-  
+
   conference
     .on_participant_left(move |_conference, participant| {
       Box::pin(async move {

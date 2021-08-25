@@ -74,14 +74,17 @@ impl JitsiConnection {
     websocket_url: &str,
     xmpp_domain: &str,
   ) -> Result<(Self, impl Future<Output = ()>)> {
-    let websocket_url: Uri = websocket_url.parse()?;
-    let xmpp_domain: BareJid = xmpp_domain.parse()?;
+    let websocket_url: Uri = websocket_url.parse().context("invalid WebSocket URL")?;
+    let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
 
     info!("Connecting XMPP WebSocket to {}", websocket_url);
     let request = Request::get(websocket_url)
       .header("Sec-Websocket-Protocol", "xmpp")
-      .body(())?;
-    let (websocket, _response) = tokio_tungstenite::connect_async(request).await?;
+      .body(())
+      .context("failed to build WebSocket request")?;
+    let (websocket, _response) = tokio_tungstenite::connect_async(request)
+      .await
+      .context("failed to connect XMPP WebSocket")?;
     let (sink, stream) = websocket.split();
     let (tx, rx) = mpsc::channel(64);
 

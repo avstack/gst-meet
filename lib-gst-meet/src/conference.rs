@@ -34,10 +34,9 @@ static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| {
     Feature::new(ns::JINGLE_RTP_VIDEO),
     Feature::new(ns::JINGLE_ICE_UDP),
     Feature::new(ns::JINGLE_DTLS),
-    Feature::new("urn:ietf:rfc:5888"),  // BUNDLE
-    Feature::new("urn:ietf:rfc:5761"),  // RTCP-MUX
-    Feature::new("urn:ietf:rfc:4588"),  // RTX
-
+    Feature::new("urn:ietf:rfc:5888"), // BUNDLE
+    Feature::new("urn:ietf:rfc:5761"), // RTCP-MUX
+    Feature::new("urn:ietf:rfc:4588"), // RTX
   ];
   let gst_version = gstreamer::version();
   if gst_version.0 >= 1 && gst_version.1 >= 19 {
@@ -105,9 +104,12 @@ type BoxedResultFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
 pub(crate) struct JitsiConferenceInner {
   pub(crate) jingle_session: Option<JingleSession>,
   participants: HashMap<String, Participant>,
-  on_participant: Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
-  on_participant_left: Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
-  on_colibri_message: Option<Arc<dyn (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync>>,
+  on_participant:
+    Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
+  on_participant_left:
+    Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
+  on_colibri_message:
+    Option<Arc<dyn (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync>>,
   state: JitsiConferenceState,
   connected_tx: Option<oneshot::Sender<()>>,
   connected_rx: Option<oneshot::Receiver<()>>,
@@ -292,7 +294,10 @@ impl JitsiConference {
   }
 
   #[tracing::instrument(level = "trace", skip(f))]
-  pub async fn on_participant(&self, f: impl (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync + 'static) {
+  pub async fn on_participant(
+    &self,
+    f: impl (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync + 'static,
+  ) {
     let f = Arc::new(f);
     let f2 = f.clone();
     let existing_participants: Vec<_> = {
@@ -312,12 +317,18 @@ impl JitsiConference {
   }
 
   #[tracing::instrument(level = "trace", skip(f))]
-  pub async fn on_participant_left(&self, f: impl (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync + 'static) {
+  pub async fn on_participant_left(
+    &self,
+    f: impl (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync + 'static,
+  ) {
     self.inner.lock().await.on_participant_left = Some(Arc::new(f));
   }
 
   #[tracing::instrument(level = "trace", skip(f))]
-  pub async fn on_colibri_message(&self, f: impl (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync + 'static) {
+  pub async fn on_colibri_message(
+    &self,
+    f: impl (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync + 'static,
+  ) {
     self.inner.lock().await.on_colibri_message = Some(Arc::new(f));
   }
 }
@@ -472,7 +483,11 @@ impl StanzaFilter for JitsiConference {
                     let colibri_channel = ColibriChannel::new(&colibri_url).await?;
                     let (tx, rx) = mpsc::channel(8);
                     colibri_channel.subscribe(tx).await;
-                    locked_inner.jingle_session.as_mut().unwrap().colibri_channel = Some(colibri_channel);
+                    locked_inner
+                      .jingle_session
+                      .as_mut()
+                      .unwrap()
+                      .colibri_channel = Some(colibri_channel);
 
                     let self_ = self.clone();
                     tokio::spawn(async move {
@@ -523,7 +538,12 @@ impl StanzaFilter for JitsiConference {
                       muc_jid: from.clone(),
                       nick: item.nick,
                     };
-                    if presence.type_ == presence::Type::Unavailable && locked_inner.participants.remove(&from.resource.clone()).is_some() {
+                    if presence.type_ == presence::Type::Unavailable
+                      && locked_inner
+                        .participants
+                        .remove(&from.resource.clone())
+                        .is_some()
+                    {
                       debug!("participant left: {:?}", jid);
                       if let Some(f) = &locked_inner.on_participant_left {
                         debug!("calling on_participant_left with old participant");

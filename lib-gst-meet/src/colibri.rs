@@ -20,10 +20,7 @@ pub enum ColibriMessage {
     previous_speakers: Vec<String>,
   },
   #[serde(rename_all = "camelCase")]
-  EndpointConnectivityStatusChangeEvent {
-    endpoint: String,
-    active: bool,
-  },
+  EndpointConnectivityStatusChangeEvent { endpoint: String, active: bool },
   #[serde(rename_all = "camelCase")]
   EndpointMessage {
     from: String,
@@ -42,17 +39,11 @@ pub enum ColibriMessage {
     max_enabled_resolution: u16,
   },
   #[serde(rename_all = "camelCase")]
-  LastNChangedEvent {
-    last_n: u16,
-  },
+  LastNChangedEvent { last_n: u16 },
   #[serde(rename_all = "camelCase")]
-  LastNEndpointsChangeEvent {
-    last_n_endpoints: Vec<String>,
-  },
+  LastNEndpointsChangeEvent { last_n_endpoints: Vec<String> },
   #[serde(rename_all = "camelCase")]
-  ReceiverVideoConstraint {
-    max_frame_height: u16,
-  },
+  ReceiverVideoConstraint { max_frame_height: u16 },
   #[serde(rename_all = "camelCase")]
   ReceiverVideoConstraints {
     last_n: Option<u16>,
@@ -62,21 +53,13 @@ pub enum ColibriMessage {
     constraints: Option<HashMap<String, Constraints>>,
   },
   #[serde(rename_all = "camelCase")]
-  SelectedEndpointsChangedEvent {
-    selected_endpoints: Vec<String>,
-  },
+  SelectedEndpointsChangedEvent { selected_endpoints: Vec<String> },
   #[serde(rename_all = "camelCase")]
-  SenderVideoConstraints {
-    video_constraints: Constraints,
-  },
+  SenderVideoConstraints { video_constraints: Constraints },
   #[serde(rename_all = "camelCase")]
-  ServerHello {
-    version: Option<String>,
-  },
+  ServerHello { version: Option<String> },
   #[serde(rename_all = "camelCase")]
-  VideoTypeMessage {
-    video_type: VideoType,
-  },
+  VideoTypeMessage { video_type: VideoType },
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
@@ -124,11 +107,9 @@ pub(crate) struct ColibriChannel {
 
 impl ColibriChannel {
   pub(crate) async fn new(colibri_url: &str) -> Result<Self> {
-    let request =
-      Request::get(colibri_url).body(())?;
-    let (colibri_websocket, _response) =
-      tokio_tungstenite::connect_async(request).await?;
-    
+    let request = Request::get(colibri_url).body(())?;
+    let (colibri_websocket, _response) = tokio_tungstenite::connect_async(request).await?;
+
     info!("Connected Colibri WebSocket");
 
     let (mut colibri_sink, mut colibri_stream) = colibri_websocket.split();
@@ -151,11 +132,17 @@ impl ColibriChannel {
                     }
                   }
                 },
-                Err(e) => warn!("failed to parse frame on colibri websocket: {:?}\nframe: {}", e, text),
+                Err(e) => warn!(
+                  "failed to parse frame on colibri websocket: {:?}\nframe: {}",
+                  e, text
+                ),
               }
             },
-            Message::Binary(data) => debug!("received unexpected {} byte binary frame on colibri websocket", data.len()),
-            Message::Ping(_) | Message::Pong(_) => {},  // handled automatically by tungstenite
+            Message::Binary(data) => debug!(
+              "received unexpected {} byte binary frame on colibri websocket",
+              data.len()
+            ),
+            Message::Ping(_) | Message::Pong(_) => {}, // handled automatically by tungstenite
             Message::Close(_) => {
               debug!("received close frame on colibri websocket");
               // TODO reconnect
@@ -194,10 +181,7 @@ impl ColibriChannel {
       };
     });
 
-    Ok(Self {
-      send_tx,
-      recv_tx,
-    })
+    Ok(Self { send_tx, recv_tx })
   }
 
   pub(crate) async fn subscribe(&self, tx: mpsc::Sender<ColibriMessage>) {

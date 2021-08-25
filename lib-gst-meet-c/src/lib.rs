@@ -1,14 +1,20 @@
 use std::{
-  ffi::{CStr, CString, c_void},
+  ffi::{c_void, CStr, CString},
   os::raw::c_char,
   ptr,
-  sync::{Arc, atomic::{AtomicPtr, Ordering}},
+  sync::{
+    atomic::{AtomicPtr, Ordering},
+    Arc,
+  },
 };
 
 use anyhow::Result;
-use glib::{ffi::GMainContext, translate::{from_glib, from_glib_full, ToGlibPtr}};
-pub use lib_gst_meet::{init_tracing, JitsiConference, JitsiConnection, MediaType};
+use glib::{
+  ffi::GMainContext,
+  translate::{from_glib, from_glib_full, ToGlibPtr},
+};
 use lib_gst_meet::JitsiConferenceConfig;
+pub use lib_gst_meet::{init_tracing, JitsiConference, JitsiConnection, MediaType};
 use tokio::runtime::Runtime;
 
 pub struct Context {
@@ -42,7 +48,7 @@ impl<T> ResultExt<T> for Result<T> {
       Err(e) => {
         eprintln!("lib-gst-meet: {:?}", e);
         ptr::null_mut()
-      }
+      },
     }
   }
 }
@@ -79,7 +85,10 @@ pub unsafe extern "C" fn gstmeet_connection_new(
   let xmpp_domain = CStr::from_ptr(xmpp_domain);
   (*context)
     .runtime
-    .block_on(JitsiConnection::new(&websocket_url.to_string_lossy(), &xmpp_domain.to_string_lossy()))
+    .block_on(JitsiConnection::new(
+      &websocket_url.to_string_lossy(),
+      &xmpp_domain.to_string_lossy(),
+    ))
     .map(|(connection, background)| {
       (*context).runtime.spawn(background);
       connection
@@ -93,7 +102,10 @@ pub unsafe extern "C" fn gstmeet_connection_free(connection: *mut JitsiConnectio
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_connection_connect(context: *mut Context, connection: *mut JitsiConnection) -> bool {
+pub unsafe extern "C" fn gstmeet_connection_connect(
+  context: *mut Context,
+  connection: *mut JitsiConnection,
+) -> bool {
   (*context)
     .runtime
     .block_on((*connection).connect())
@@ -126,8 +138,12 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
     muc,
     focus,
     nick: CStr::from_ptr((*config).nick).to_string_lossy().to_string(),
-    region: CStr::from_ptr((*config).region).to_string_lossy().to_string(),
-    video_codec: CStr::from_ptr((*config).video_codec).to_string_lossy().to_string(),
+    region: CStr::from_ptr((*config).region)
+      .to_string_lossy()
+      .to_string(),
+    video_codec: CStr::from_ptr((*config).video_codec)
+      .to_string_lossy()
+      .to_string(),
   };
   (*context)
     .runtime
@@ -136,7 +152,10 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_conference_leave(context: *mut Context, conference: *mut JitsiConference) -> bool {
+pub unsafe extern "C" fn gstmeet_conference_leave(
+  context: *mut Context,
+  conference: *mut JitsiConference,
+) -> bool {
   (*context)
     .runtime
     .block_on(Box::from_raw(conference).leave())
@@ -145,7 +164,12 @@ pub unsafe extern "C" fn gstmeet_conference_leave(context: *mut Context, confere
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_conference_set_muted(context: *mut Context, conference: *mut JitsiConference, media_type: MediaType, muted: bool) -> bool {
+pub unsafe extern "C" fn gstmeet_conference_set_muted(
+  context: *mut Context,
+  conference: *mut JitsiConference,
+  media_type: MediaType,
+  muted: bool,
+) -> bool {
   (*context)
     .runtime
     .block_on((*conference).set_muted(media_type, muted))
@@ -154,7 +178,10 @@ pub unsafe extern "C" fn gstmeet_conference_set_muted(context: *mut Context, con
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_conference_pipeline(context: *mut Context, conference: *mut JitsiConference) -> *mut gstreamer::ffi::GstPipeline {
+pub unsafe extern "C" fn gstmeet_conference_pipeline(
+  context: *mut Context,
+  conference: *mut JitsiConference,
+) -> *mut gstreamer::ffi::GstPipeline {
   (*context)
     .runtime
     .block_on((*conference).pipeline())
@@ -164,7 +191,10 @@ pub unsafe extern "C" fn gstmeet_conference_pipeline(context: *mut Context, conf
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_conference_audio_sink_element(context: *mut Context, conference: *mut JitsiConference) -> *mut gstreamer::ffi::GstElement {
+pub unsafe extern "C" fn gstmeet_conference_audio_sink_element(
+  context: *mut Context,
+  conference: *mut JitsiConference,
+) -> *mut gstreamer::ffi::GstElement {
   (*context)
     .runtime
     .block_on((*conference).audio_sink_element())
@@ -174,7 +204,10 @@ pub unsafe extern "C" fn gstmeet_conference_audio_sink_element(context: *mut Con
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_conference_video_sink_element(context: *mut Context, conference: *mut JitsiConference) -> *mut gstreamer::ffi::GstElement {
+pub unsafe extern "C" fn gstmeet_conference_video_sink_element(
+  context: *mut Context,
+  conference: *mut JitsiConference,
+) -> *mut gstreamer::ffi::GstElement {
   (*context)
     .runtime
     .block_on((*conference).video_sink_element())
@@ -187,13 +220,16 @@ pub unsafe extern "C" fn gstmeet_conference_video_sink_element(context: *mut Con
 pub unsafe extern "C" fn gstmeet_conference_on_participant(
   context: *mut Context,
   conference: *mut JitsiConference,
-  f: unsafe extern "C" fn(*mut JitsiConference, Participant, *mut c_void) -> *mut gstreamer::ffi::GstBin,
+  f: unsafe extern "C" fn(
+    *mut JitsiConference,
+    Participant,
+    *mut c_void,
+  ) -> *mut gstreamer::ffi::GstBin,
   ctx: *mut c_void,
 ) {
   let ctx = Arc::new(AtomicPtr::new(ctx));
-  (*context)
-    .runtime
-    .block_on((*conference).on_participant(move |conference, participant| {
+  (*context).runtime.block_on(
+    (*conference).on_participant(move |conference, participant| {
       let ctx = ctx.clone();
       Box::pin(async move {
         let participant = Participant {
@@ -205,10 +241,15 @@ pub unsafe extern "C" fn gstmeet_conference_on_participant(
             .transpose()?
             .unwrap_or_else(ptr::null),
         };
-        f(Box::into_raw(Box::new(conference)), participant, ctx.load(Ordering::Relaxed));
+        f(
+          Box::into_raw(Box::new(conference)),
+          participant,
+          ctx.load(Ordering::Relaxed),
+        );
         Ok(())
       })
-    }));
+    }),
+  );
 }
 
 #[no_mangle]

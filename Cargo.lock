@@ -511,6 +511,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "gstreamer-base-sys"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28169a7b58edb93ad8ac766f0fa12dcd36a2af4257a97ee10194c7103baf3e27"
+dependencies = [
+ "glib-sys",
+ "gobject-sys",
+ "gstreamer-sys",
+ "libc",
+ "system-deps",
+]
+
+[[package]]
+name = "gstreamer-rtp"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a99254d60381f29ce9674e4361fc777f8e40ad26ac4f9072f6d7f084447058fc"
+dependencies = [
+ "bitflags",
+ "glib",
+ "gstreamer",
+ "gstreamer-rtp-sys",
+ "once_cell",
+]
+
+[[package]]
+name = "gstreamer-rtp-sys"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b12af6ebd69df19b4bed0d2d38c25cc93b7b687088ab199113ffac1994dd59e"
+dependencies = [
+ "glib-sys",
+ "gstreamer-base-sys",
+ "gstreamer-sys",
+ "libc",
+ "system-deps",
+]
+
+[[package]]
 name = "gstreamer-sys"
 version = "0.17.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -648,6 +687,7 @@ dependencies = [
  "futures",
  "glib",
  "gstreamer",
+ "gstreamer-rtp",
  "hex",
  "itertools",
  "libc",
@@ -1432,9 +1472,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.10.0"
+version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01cf844b23c6131f624accf65ce0e4e9956a8bb329400ea5bcc26ae3a5c20b0b"
+checksum = "92036be488bb6594459f2e03b60e42df6f937fe6ca5c5ffdcb539c6b84dc40f5"
 dependencies = [
  "autocfg",
  "bytes",

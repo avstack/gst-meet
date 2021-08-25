@@ -647,12 +647,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
-name = "jid"
-version = "0.9.2"
+name = "jid-gst-meet"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaded88f156caeca06f5849b6dc97336815c2be69691fad705dd42ced1a06de8"
+checksum = "19e0935b518d535e6de070bdcfc9ab8970cefc57b94ef13b26baf6967cf65a73"
 dependencies = [
- "minidom",
+ "minidom-gst-meet",
 ]
 
 [[package]]
@@ -782,8 +782,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "minidom"
+name = "minidom-gst-meet"
 version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b030fa990eb06a9113da7e2f16e276a9bdcdbb372bda59b715e5b8aab8b50d4"
 dependencies = [
  "quick-xml",
 ]
@@ -1826,16 +1828,16 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "xmpp-parsers-gst-meet"
-version = "0.18.1"
+version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07ee050e91ad5abe5d8b90c07aad58e9bc66e1c188203dee96cd77c4c739a585"
+checksum = "8cde8e9611ca7cac569119e4ec1b6fe50da4df91a168fdab786693029ab1482a"
 dependencies = [
  "base64",
  "blake2",
  "chrono",
  "digest",
- "jid",
- "minidom",
+ "jid-gst-meet",
+ "minidom-gst-meet",
  "sha-1",
  "sha2",
  "sha3",

@@ -26,7 +26,7 @@ impl From<ServicesQuery> for Element {
 impl IqGetPayload for ServicesQuery {}
 
 #[derive(Debug, Clone)]
-pub(crate) struct Service {
+pub struct Service {
   pub(crate) r#type: String,
   pub(crate) name: Option<String>,
   pub(crate) host: String,

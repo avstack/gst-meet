@@ -236,6 +236,7 @@ impl JingleSession {
             .transpose()?;
         }
         else {
+          debug!("skipping media: {}", description.media);
           continue;
         }
 
@@ -246,20 +247,24 @@ impl JingleSession {
             .context("missing ssrc-info")?
             .owner
             .clone();
-          if owner == "jvb" {
-            debug!("skipping ssrc (owner = jvb)");
-            continue;
-          }
 
+          debug!("adding ssrc to remote_ssrc_map: {:?}", ssrc);
           remote_ssrc_map.insert(
             ssrc.id.parse()?,
             Source {
               ssrc: ssrc.id.parse()?,
-              participant_id: owner
-                .split('/')
-                .nth(1)
-                .context("invalid ssrc-info owner")?
-                .to_owned(),
+              participant_id: if owner == "jvb" {
+                None
+              }
+              else {
+                Some(
+                  owner
+                    .split('/')
+                    .nth(1)
+                    .context("invalid ssrc-info owner")?
+                    .to_owned(),
+                )
+              },
               media_type: if description.media == "audio" {
                 MediaType::Audio
               }
@@ -576,10 +581,10 @@ impl JingleSession {
     })?;
 
     let handle = Handle::current();
-    let inner_ = conference.inner.clone();
+    let jingle_session = conference.jingle_session.clone();
     rtpbin.connect("new-jitterbuffer", false, move |values| {
       let handle = handle.clone();
-      let inner_ = inner_.clone();
+      let jingle_session = jingle_session.clone();
       let f = move || {
         let rtpjitterbuffer: gstreamer::Element = values[1].get()?;
         let session: u32 = values[2].get()?;
@@ -590,13 +595,12 @@ impl JingleSession {
         );
 
         let source = handle.block_on(async move {
-          let locked_inner = inner_.lock().await;
-          let jingle_session = locked_inner
-            .jingle_session
-            .as_ref()
-            .context("not connected (no jingle session)")?;
           Ok::<_, anyhow::Error>(
             jingle_session
+              .lock()
+              .await
+              .as_ref()
+              .context("not connected (no jingle session)")?
               .remote_ssrc_map
               .get(&ssrc)
               .context(format!("unknown ssrc: {}", ssrc))?
@@ -604,7 +608,7 @@ impl JingleSession {
           )
         })?;
         debug!("jitterbuffer is for remote source: {:?}", source);
-        if source.media_type == MediaType::Video {
+        if source.media_type == MediaType::Video && source.participant_id.is_some() {
           debug!("enabling RTX for ssrc {}", ssrc);
           rtpjitterbuffer.set_property("do-retransmission", true)?;
         }
@@ -703,7 +707,7 @@ impl JingleSession {
 
     {
       let handle = Handle::current();
-      let inner = conference.inner.clone();
+      let conference = conference.clone();
       let pipeline = pipeline.clone();
       let rtpbin_ = rtpbin.clone();
       rtpbin.connect("pad-added", false, move |values| {
@@ -717,13 +721,13 @@ impl JingleSession {
             let ssrc: u32 = parts.next().context("malformed pad name")?.parse()?;
             let pt: u8 = parts.next().context("malformed pad name")?.parse()?;
             let source = handle.block_on(async {
-              let locked_inner = inner.lock().await;
-              let jingle_session = locked_inner
-                .jingle_session
-                .as_ref()
-                .context("not connected (no jingle session)")?;
               Ok::<_, anyhow::Error>(
-                jingle_session
+                conference
+                  .jingle_session
+                  .lock()
+                  .await
+                  .as_ref()
+                  .context("not connected (no jingle session)")?
                   .remote_ssrc_map
                   .get(&ssrc)
                   .context(format!("unknown ssrc: {}", ssrc))?
@@ -805,26 +809,32 @@ impl JingleSession {
               .static_pad("src")
               .context("depayloader has no src pad")?;
 
-            if let Some(participant_bin) =
-              pipeline.by_name(&format!("participant_{}", source.participant_id))
-            {
-              let sink_pad_name = match source.media_type {
-                MediaType::Audio => "audio",
-                MediaType::Video => "video",
-              };
-              if let Some(sink_pad) = participant_bin.static_pad(sink_pad_name) {
-                debug!("linking depayloader to participant bin");
-                src_pad.link(&sink_pad)?;
+            if let Some(participant_id) = source.participant_id {
+              handle.block_on(conference.ensure_participant(&participant_id))?;
+              if let Some(participant_bin) =
+                pipeline.by_name(&format!("participant_{}", participant_id))
+              {
+                let sink_pad_name = match source.media_type {
+                  MediaType::Audio => "audio",
+                  MediaType::Video => "video",
+                };
+                if let Some(sink_pad) = participant_bin.static_pad(sink_pad_name) {
+                  debug!("linking depayloader to participant bin");
+                  src_pad.link(&sink_pad)?;
+                }
+                else {
+                  warn!(
+                    "no {} sink pad in {} participant bin",
+                    sink_pad_name, participant_id
+                  );
+                }
               }
               else {
-                warn!(
-                  "no {} sink pad in {} participant bin",
-                  sink_pad_name, source.participant_id
-                );
+                debug!("no participant bin for {}", participant_id);
               }
             }
             else {
-              debug!("no participant bin for {}", source.participant_id);
+              debug!("not looking for participant bin, source is owned by JVB");
             }
 
             if !src_pad.is_linked() {
@@ -861,38 +871,43 @@ impl JingleSession {
     )?;
     audio_sink_element.set_property("min-ptime", 10i64 * 1000 * 1000)?;
     audio_sink_element.set_property("ssrc", audio_ssrc)?;
-    audio_sink_element.set_property("auto-header-extension", false)?;
-    audio_sink_element.connect("request-extension", false, move |values| {
-      let f = || {
-        let ext_id: u32 = values[1].get()?;
-        let ext_uri: String = values[2].get()?;
-        debug!(
-          "audio payloader requested extension: {} {}",
-          ext_id, ext_uri
-        );
-        let hdrext =
-          RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
-        hdrext.set_id(ext_id);
-        if ext_uri == RTP_HDREXT_ABS_SEND_TIME {
+    if audio_sink_element.has_property("auto-header-extension", None) {
+      audio_sink_element.set_property("auto-header-extension", false)?;
+      audio_sink_element.connect("request-extension", false, move |values| {
+        let f = || {
+          let ext_id: u32 = values[1].get()?;
+          let ext_uri: String = values[2].get()?;
+          debug!(
+            "audio payloader requested extension: {} {}",
+            ext_id, ext_uri
+          );
+          let hdrext =
+            RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
+          hdrext.set_id(ext_id);
+          if ext_uri == RTP_HDREXT_ABS_SEND_TIME {
+          }
+          else if ext_uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
+          }
+          else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
+            // hdrext.set_property("n-streams", 2u32)?;
+          }
+          else {
+            bail!("unknown rtp hdrext: {}", ext_uri);
+          }
+          Ok::<_, anyhow::Error>(hdrext)
+        };
+        match f() {
+          Ok(hdrext) => Some(hdrext.to_value()),
+          Err(e) => {
+            warn!("request-extension: {:?}", e);
+            None
+          },
         }
-        else if ext_uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
-        }
-        else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
-          // hdrext.set_property("n-streams", 2u32)?;
-        }
-        else {
-          bail!("unknown rtp hdrext: {}", ext_uri);
-        }
-        Ok::<_, anyhow::Error>(hdrext)
-      };
-      match f() {
-        Ok(hdrext) => Some(hdrext.to_value()),
-        Err(e) => {
-          warn!("request-extension: {:?}", e);
-          None
-        },
-      }
-    })?;
+      })?;
+    }
+    else {
+      debug!("audio payloader: no rtp header extension support");
+    }
     pipeline.add(&audio_sink_element)?;
 
     let video_sink_element = match conference.config.video_codec.as_str() {
@@ -926,43 +941,47 @@ impl JingleSession {
       other => bail!("unsupported video codec: {}", other),
     };
     video_sink_element.set_property("ssrc", video_ssrc)?;
-    video_sink_element.set_property("auto-header-extension", false)?;
-    video_sink_element.connect("request-extension", false, move |values| {
-      let f = || {
-        let ext_id: u32 = values[1].get()?;
-        let ext_uri: String = values[2].get()?;
-        debug!(
-          "video payloader requested extension: {} {}",
-          ext_id, ext_uri
-        );
-        let hdrext =
-          RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
-        hdrext.set_id(ext_id);
-        if ext_uri == RTP_HDREXT_ABS_SEND_TIME {
+    if video_sink_element.has_property("auto-header-extension", None) {
+      video_sink_element.set_property("auto-header-extension", false)?;
+      video_sink_element.connect("request-extension", false, move |values| {
+        let f = || {
+          let ext_id: u32 = values[1].get()?;
+          let ext_uri: String = values[2].get()?;
+          debug!(
+            "video payloader requested extension: {} {}",
+            ext_id, ext_uri
+          );
+          let hdrext =
+            RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
+          hdrext.set_id(ext_id);
+          if ext_uri == RTP_HDREXT_ABS_SEND_TIME {
+          }
+          else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
+            // hdrext.set_property("n-streams", 2u32)?;
+          }
+          else {
+            bail!("unknown rtp hdrext: {}", ext_uri);
+          }
+          Ok::<_, anyhow::Error>(hdrext)
+        };
+        match f() {
+          Ok(hdrext) => Some(hdrext.to_value()),
+          Err(e) => {
+            warn!("request-extension: {:?}", e);
+            None
+          },
         }
-        else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
-          // hdrext.set_property("n-streams", 2u32)?;
-        }
-        else {
-          bail!("unknown rtp hdrext: {}", ext_uri);
-        }
-        Ok::<_, anyhow::Error>(hdrext)
-      };
-      match f() {
-        Ok(hdrext) => Some(hdrext.to_value()),
-        Err(e) => {
-          warn!("request-extension: {:?}", e);
-          None
-        },
-      }
-    })?;
+      })?;
+    }
+    else {
+      debug!("video payloader: no rtp header extension support");
+    }
     pipeline.add(&video_sink_element)?;
 
     let mut audio_caps = gstreamer::Caps::builder("application/x-rtp");
-    // TODO: fails to negotiate
-    // if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
-    //   audio_caps = audio_caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
-    // }
+    if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
+      audio_caps = audio_caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
+    }
     if let Some(hdrext) = audio_hdrext_transport_cc {
       audio_caps = audio_caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_TRANSPORT_CC);
     }
@@ -981,13 +1000,19 @@ impl JingleSession {
     video_capsfilter.set_property("caps", video_caps.build())?;
     pipeline.add(&video_capsfilter)?;
 
-    debug!("linking video payloader -> rtpbin");
-    video_sink_element.link(&video_capsfilter)?;
-    video_capsfilter.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
+    let rtpfunnel = gstreamer::ElementFactory::make("rtpfunnel", None)?;
+    pipeline.add(&rtpfunnel)?;
 
-    debug!("linking audio payloader -> rtpbin");
+    debug!("linking video payloader -> rtpfunnel");
+    video_sink_element.link(&video_capsfilter)?;
+    video_capsfilter.link(&rtpfunnel)?;
+
+    debug!("linking audio payloader -> rtpfunnel");
     audio_sink_element.link(&audio_capsfilter)?;
-    audio_capsfilter.link_pads(None, &rtpbin, Some("send_rtp_sink_1"))?;
+    audio_capsfilter.link(&rtpfunnel)?;
+
+    debug!("linking rtpfunnel -> rtpbin");
+    rtpfunnel.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
 
     debug!("link dtlssrtpdec -> rtpbin");
     dtlssrtpdec.link_pads(Some("rtp_src"), &rtpbin, Some("recv_rtp_sink_0"))?;
@@ -996,8 +1021,6 @@ impl JingleSession {
     debug!("linking rtpbin -> dtlssrtpenc");
     rtpbin.link_pads(Some("send_rtp_src_0"), &dtlssrtpenc, Some("rtp_sink_0"))?;
     rtpbin.link_pads(Some("send_rtcp_src_0"), &dtlssrtpenc, Some("rtcp_sink_0"))?;
-    rtpbin.link_pads(Some("send_rtp_src_1"), &dtlssrtpenc, Some("rtp_sink_1"))?;
-    rtpbin.link_pads(Some("send_rtcp_src_1"), &dtlssrtpenc, Some("rtcp_sink_1"))?;
 
     debug!("linking ice src -> dtlssrtpdec");
     nicesrc.link(&dtlssrtpdec)?;
@@ -1177,15 +1200,12 @@ impl JingleSession {
       };
 
       if initiate_content.name.0 == "audio" {
-        // TODO: fails to negotiate
-        // if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
-        //   if audio_hdrext_supported {
-        //     description.hdrexts.push(RtpHdrext::new(hdrext.to_string(), RTP_HDREXT_SSRC_AUDIO_LEVEL.to_owned()));
-        //   }
-        //   else {
-        //     debug!("ssrc-audio-level hdrext requested but not supported");
-        //   }
-        // }
+        if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
+          description.hdrexts.push(RtpHdrext::new(
+            hdrext.to_string(),
+            RTP_HDREXT_SSRC_AUDIO_LEVEL.to_owned(),
+          ));
+        }
         if let Some(hdrext) = audio_hdrext_transport_cc {
           description.hdrexts.push(RtpHdrext::new(
             hdrext.to_string(),
@@ -1276,21 +1296,24 @@ impl JingleSession {
             .context("missing ssrc-info")?
             .owner
             .clone();
-          if owner == "jvb" {
-            debug!("skipping ssrc (owner = jvb)");
-            continue;
-          }
 
           debug!("adding ssrc to remote_ssrc_map: {:?}", ssrc);
           self.remote_ssrc_map.insert(
             ssrc.id.parse()?,
             Source {
               ssrc: ssrc.id.parse()?,
-              participant_id: owner
-                .split('/')
-                .nth(1)
-                .context("invalid ssrc-info owner")?
-                .to_owned(),
+              participant_id: if owner == "jvb" {
+                None
+              }
+              else {
+                Some(
+                  owner
+                    .split('/')
+                    .nth(1)
+                    .context("invalid ssrc-info owner")?
+                    .to_owned(),
+                )
+              },
               media_type: if description.media == "audio" {
                 MediaType::Audio
               }

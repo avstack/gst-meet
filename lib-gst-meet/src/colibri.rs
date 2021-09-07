@@ -6,11 +6,13 @@ use futures::{
   stream::{StreamExt, TryStreamExt},
 };
 use serde::{Deserialize, Serialize};
+use serde_with::{serde_as, DisplayFromStr};
 use tokio::sync::{mpsc, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_tungstenite::tungstenite::{http::Request, Message};
 use tracing::{debug, error, info, warn};
 
+#[serde_as]
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "colibriClass")]
 pub enum ColibriMessage {
@@ -20,7 +22,11 @@ pub enum ColibriMessage {
     previous_speakers: Vec<String>,
   },
   #[serde(rename_all = "camelCase")]
-  EndpointConnectivityStatusChangeEvent { endpoint: String, active: bool },
+  EndpointConnectivityStatusChangeEvent {
+    endpoint: String,
+    #[serde_as(as = "DisplayFromStr")]
+    active: bool,
+  },
   #[serde(rename_all = "camelCase")]
   EndpointMessage {
     from: String,

@@ -4,17 +4,23 @@ use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
 use futures::stream::StreamExt;
 use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
+use maplit::hashmap;
 use once_cell::sync::Lazy;
+use serde::Serialize;
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::{debug, error, info, trace, warn};
+use uuid::Uuid;
+pub use xmpp_parsers::disco::Feature;
 use xmpp_parsers::{
-  disco::{DiscoInfoQuery, DiscoInfoResult, Feature},
+  disco::{DiscoInfoQuery, DiscoInfoResult},
   ecaps2::{self, ECaps2},
   hashes::Algo,
   iq::{Iq, IqType},
   jingle::{Action, Jingle},
+  message::{Message, MessageType},
   muc::{Muc, MucUser},
+  nick::Nick,
   ns,
   presence::{self, Presence},
   BareJid, Element, FullJid, Jid,
@@ -25,7 +31,8 @@ use crate::{
   jingle::JingleSession,
   source::MediaType,
   stanza_filter::StanzaFilter,
-  xmpp,
+  util::generate_id,
+  xmpp::{self, connection::Connection},
 };
 
 static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| {
@@ -70,6 +77,7 @@ pub struct JitsiConferenceConfig {
   pub nick: String,
   pub region: String,
   pub video_codec: String,
+  pub extra_muc_features: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -79,6 +87,7 @@ pub struct JitsiConference {
   pub(crate) xmpp_tx: mpsc::Sender<Element>,
   pub(crate) config: JitsiConferenceConfig,
   pub(crate) external_services: Vec<xmpp::extdisco::Service>,
+  pub(crate) jingle_session: Arc<Mutex<Option<JingleSession>>>,
   pub(crate) inner: Arc<Mutex<JitsiConferenceInner>>,
 }
 
@@ -94,7 +103,7 @@ impl fmt::Debug for JitsiConference {
 
 #[derive(Debug, Clone)]
 pub struct Participant {
-  pub jid: FullJid,
+  pub jid: Option<FullJid>,
   pub muc_jid: FullJid,
   pub nick: Option<String>,
 }
@@ -102,7 +111,6 @@ pub struct Participant {
 type BoxedResultFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
 
 pub(crate) struct JitsiConferenceInner {
-  pub(crate) jingle_session: Option<JingleSession>,
   participants: HashMap<String, Participant>,
   on_participant:
     Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
@@ -112,7 +120,6 @@ pub(crate) struct JitsiConferenceInner {
     Option<Arc<dyn (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync>>,
   state: JitsiConferenceState,
   connected_tx: Option<oneshot::Sender<()>>,
-  connected_rx: Option<oneshot::Receiver<()>>,
 }
 
 impl fmt::Debug for JitsiConferenceInner {
@@ -124,51 +131,60 @@ impl fmt::Debug for JitsiConferenceInner {
 }
 
 impl JitsiConference {
-  #[tracing::instrument(level = "debug", skip(xmpp_tx), err)]
-  pub(crate) async fn new(
+  #[tracing::instrument(level = "debug", err)]
+  pub async fn join(
+    xmpp_connection: Connection,
     glib_main_context: glib::MainContext,
-    jid: FullJid,
-    xmpp_tx: mpsc::Sender<Element>,
     config: JitsiConferenceConfig,
-    external_services: Vec<xmpp::extdisco::Service>,
   ) -> Result<Self> {
+    let conference_stanza = xmpp::jitsi::Conference {
+      machine_uid: Uuid::new_v4().to_string(),
+      room: config.muc.to_string(),
+      properties: hashmap! {
+        // Disable voice processing
+        // TODO put this in config
+        "stereo".to_string() => "true".to_string(),
+        "startBitrate".to_string() => "800".to_string(),
+      },
+    };
+
     let (tx, rx) = oneshot::channel();
-    Ok(Self {
+
+    let focus = config.focus.clone();
+
+    let conference = Self {
       glib_main_context,
-      jid,
-      xmpp_tx,
+      jid: xmpp_connection
+        .jid()
+        .await
+        .context("not connected (no JID)")?,
+      xmpp_tx: xmpp_connection.tx.clone(),
       config,
-      external_services,
+      external_services: xmpp_connection.external_services().await,
+      jingle_session: Arc::new(Mutex::new(None)),
       inner: Arc::new(Mutex::new(JitsiConferenceInner {
         state: JitsiConferenceState::Discovering,
         participants: HashMap::new(),
         on_participant: None,
         on_participant_left: None,
         on_colibri_message: None,
-        jingle_session: None,
         connected_tx: Some(tx),
-        connected_rx: Some(rx),
       })),
-    })
-  }
-
-  pub(crate) async fn connected(&self) -> Result<()> {
-    let rx = {
-      let mut locked_inner = self.inner.lock().await;
-      locked_inner
-        .connected_rx
-        .take()
-        .context("connected() called twice")?
     };
+
+    xmpp_connection.add_stanza_filter(conference.clone()).await;
+
+    let iq = Iq::from_set(generate_id(), conference_stanza).with_to(Jid::Full(focus));
+    xmpp_connection.tx.send(iq.into()).await?;
+
     rx.await?;
-    Ok(())
+
+    Ok(conference)
   }
 
   #[tracing::instrument(level = "debug", err)]
   pub async fn leave(self) -> Result<()> {
-    let mut inner = self.inner.lock().await;
-
-    if let Some(jingle_session) = inner.jingle_session.take() {
+    if let Some(jingle_session) = self.jingle_session.lock().await.take() {
       debug!("pausing all sinks");
       jingle_session.pause_all_sinks();
 
@@ -224,10 +240,9 @@ impl JitsiConference {
   pub async fn pipeline(&self) -> Result<gstreamer::Pipeline> {
     Ok(
       self
-        .inner
+        .jingle_session
         .lock()
         .await
-        .jingle_session
         .as_ref()
         .context("not connected (no jingle session)")?
         .pipeline(),
@@ -255,10 +270,9 @@ impl JitsiConference {
   pub async fn audio_sink_element(&self) -> Result<gstreamer::Element> {
     Ok(
       self
-        .inner
+        .jingle_session
         .lock()
         .await
-        .jingle_session
         .as_ref()
         .context("not connected (no jingle session)")?
         .audio_sink_element(),
@@ -268,10 +282,9 @@ impl JitsiConference {
   pub async fn video_sink_element(&self) -> Result<gstreamer::Element> {
     Ok(
       self
-        .inner
+        .jingle_session
         .lock()
         .await
-        .jingle_session
         .as_ref()
         .context("not connected (no jingle session)")?
         .video_sink_element(),
@@ -280,10 +293,9 @@ impl JitsiConference {
 
   pub async fn send_colibri_message(&self, message: ColibriMessage) -> Result<()> {
     self
-      .inner
+      .jingle_session
       .lock()
       .await
-      .jingle_session
       .as_ref()
       .context("not connected (no jingle session)")?
       .colibri_channel
@@ -291,6 +303,54 @@ impl JitsiConference {
       .context("no colibri channel")?
       .send(message)
       .await
+  }
+
+  pub async fn send_json_message<T: Serialize>(&self, payload: &T) -> Result<()> {
+    let message = Message {
+      from: Some(Jid::Full(self.jid.clone())),
+      to: Some(Jid::Bare(self.config.muc.clone())),
+      id: Some(Uuid::new_v4().to_string()),
+      type_: MessageType::Groupchat,
+      bodies: Default::default(),
+      subjects: Default::default(),
+      thread: None,
+      payloads: vec![Element::try_from(xmpp::jitsi::JsonMessage {
+        payload: serde_json::to_value(payload)?,
+      })?],
+    };
+    self.xmpp_tx.send(message.into()).await?;
+    Ok(())
+  }
+
+  pub(crate) async fn ensure_participant(&self, id: &str) -> Result<()> {
+    if !self.inner.lock().await.participants.contains_key(id) {
+      let participant = Participant {
+        jid: None,
+        muc_jid: self.config.muc.clone().with_resource(id),
+        nick: None,
+      };
+      self
+        .inner
+        .lock()
+        .await
+        .participants
+        .insert(id.to_owned(), participant.clone());
+      if let Some(f) = self.inner.lock().await.on_participant.as_ref().cloned() {
+        if let Err(e) = f(self.clone(), participant.clone()).await {
+          warn!("on_participant failed: {:?}", e);
+        }
+        else {
+          if let Ok(pipeline) = self.pipeline().await {
+            gstreamer::debug_bin_to_dot_file(
+              &pipeline,
+              gstreamer::DebugGraphDetails::ALL,
+              &format!("participant-added-{}", participant.muc_jid.resource),
+            );
+          }
+        }
+      }
+    }
+    Ok(())
   }
 
   #[tracing::instrument(level = "trace", skip(f))]
@@ -312,6 +372,15 @@ impl JitsiConference {
       );
       if let Err(e) = f(self.clone(), participant.clone()).await {
         warn!("on_participant failed: {:?}", e);
+      }
+      else {
+        if let Ok(pipeline) = self.pipeline().await {
+          gstreamer::debug_bin_to_dot_file(
+            &pipeline,
+            gstreamer::DebugGraphDetails::ALL,
+            &format!("participant-added-{}", participant.muc_jid.resource),
+          );
+        }
       }
     }
   }
@@ -349,10 +418,9 @@ impl StanzaFilter for JitsiConference {
 
   #[tracing::instrument(level = "trace", err)]
   async fn take(&self, element: Element) -> Result<()> {
-    let mut locked_inner = self.inner.lock().await;
-
     use JitsiConferenceState::*;
-    match locked_inner.state {
+    let state = self.inner.lock().await.state;
+    match state {
       Discovering => {
         let iq = Iq::try_from(element)?;
         if let IqType::Result(Some(element)) = iq.payload {
@@ -377,34 +445,40 @@ impl StanzaFilter for JitsiConference {
 
         let jitsi_disco_hash =
           ecaps2::hash_ecaps2(&ecaps2::compute_disco(&jitsi_disco_info)?, Algo::Sha_256)?;
-        self
-          .send_presence(vec![
-            Muc::new().into(),
-            ECaps2::new(vec![jitsi_disco_hash]).into(),
-            Element::builder("stats-id", "").append("gst-meet").build(),
-            Element::builder("jitsi_participant_codecType", "")
-              .append(self.config.video_codec.as_str())
-              .build(),
-            Element::builder("jitsi_participant_region", "")
-              .append(self.config.region.as_str())
-              .build(),
-            Element::builder("audiomuted", "").append("false").build(),
-            Element::builder("videomuted", "").append("false").build(),
-            Element::builder("nick", "http://jabber.org/protocol/nick")
-              .append(self.config.nick.as_str())
-              .build(),
-            Element::builder("region", "http://jitsi.org/jitsi-meet")
-              .attr("id", &self.config.region)
-              .build(),
-          ])
-          .await?;
-        locked_inner.state = JoiningMuc;
+        let mut presence = vec![
+          Muc::new().into(),
+          ECaps2::new(vec![jitsi_disco_hash]).into(),
+          Element::builder("stats-id", "").append("gst-meet").build(),
+          Element::builder("jitsi_participant_codecType", "")
+            .append(self.config.video_codec.as_str())
+            .build(),
+          Element::builder("jitsi_participant_region", "")
+            .append(self.config.region.as_str())
+            .build(),
+          Element::builder("audiomuted", "").append("false").build(),
+          Element::builder("videomuted", "").append("false").build(),
+          Element::builder("nick", "http://jabber.org/protocol/nick")
+            .append(self.config.nick.as_str())
+            .build(),
+          Element::builder("region", "http://jitsi.org/jitsi-meet")
+            .attr("id", &self.config.region)
+            .build(),
+        ];
+        presence.extend(
+          self
+            .config
+            .extra_muc_features
+            .iter()
+            .map(|feature| Element::builder("feature", "").attr("var", feature).build()),
+        );
+        self.send_presence(presence).await?;
+        self.inner.lock().await.state = JoiningMuc;
       },
       JoiningMuc => {
         let presence = Presence::try_from(element)?;
         if BareJid::from(presence.from.as_ref().unwrap().clone()) == self.config.muc {
           debug!("Joined MUC: {}", self.config.muc);
-          locked_inner.state = Idle;
+          self.inner.lock().await.state = Idle;
         }
       },
       Idle => {
@@ -438,7 +512,7 @@ impl StanzaFilter for JitsiConference {
                         .with_from(Jid::Full(self.jid.clone()));
                       self.xmpp_tx.send(result_iq.into()).await?;
 
-                      locked_inner.jingle_session =
+                      *self.jingle_session.lock().await =
                         Some(JingleSession::initiate(self, jingle).await?);
                     }
                     else {
@@ -453,8 +527,10 @@ impl StanzaFilter for JitsiConference {
                       .with_from(Jid::Full(self.jid.clone()));
                     self.xmpp_tx.send(result_iq.into()).await?;
 
-                    locked_inner
+                    self
                       .jingle_session
+                      .lock()
+                      .await
                       .as_mut()
                       .context("not connected (no jingle session")?
                       .source_add(jingle)
@@ -470,11 +546,11 @@ impl StanzaFilter for JitsiConference {
               }
             },
             IqType::Result(_) => {
-              if let Some(jingle_session) = locked_inner.jingle_session.as_ref() {
+              if let Some(jingle_session) = self.jingle_session.lock().await.as_mut() {
                 if Some(iq.id) == jingle_session.accept_iq_id {
                   let colibri_url = jingle_session.colibri_url.clone();
 
-                  locked_inner.jingle_session.as_mut().unwrap().accept_iq_id = None;
+                  jingle_session.accept_iq_id = None;
 
                   debug!("Focus acknowledged session-accept");
 
@@ -483,11 +559,7 @@ impl StanzaFilter for JitsiConference {
                     let colibri_channel = ColibriChannel::new(&colibri_url).await?;
                     let (tx, rx) = mpsc::channel(8);
                     colibri_channel.subscribe(tx).await;
-                    locked_inner
-                      .jingle_session
-                      .as_mut()
-                      .unwrap()
-                      .colibri_channel = Some(colibri_channel);
+                    jingle_session.colibri_channel = Some(colibri_channel);
 
                     let self_ = self.clone();
                     tokio::spawn(async move {
@@ -503,7 +575,7 @@ impl StanzaFilter for JitsiConference {
                     });
                   }
 
-                  if let Some(connected_tx) = locked_inner.connected_tx.take() {
+                  if let Some(connected_tx) = self.inner.lock().await.connected_tx.take() {
                     connected_tx.send(()).unwrap();
                   }
                 }
@@ -522,46 +594,76 @@ impl StanzaFilter for JitsiConference {
             let bare_from: BareJid = from.clone().into();
             if bare_from == self.config.muc && from.resource != "focus" {
               trace!("received MUC presence from {}", from.resource);
-              for payload in presence.payloads {
-                if !payload.is("x", ns::MUC_USER) {
-                  continue;
-                }
-                let muc_user = MucUser::try_from(payload)?;
-                debug!("MUC user presence: {:?}", muc_user);
+              let nick_payload = presence
+                .payloads
+                .iter()
+                .find(|e| e.is("nick", ns::NICK))
+                .map(|e| Nick::try_from(e.clone()))
+                .transpose()?;
+              if let Some(muc_user_payload) = presence
+                .payloads
+                .into_iter()
+                .find(|e| e.is("x", ns::MUC_USER))
+              {
+                let muc_user = MucUser::try_from(muc_user_payload)?;
                 for item in muc_user.items {
                   if let Some(jid) = &item.jid {
                     if jid == &self.jid {
                       continue;
                     }
                     let participant = Participant {
-                      jid: jid.clone(),
+                      jid: Some(jid.clone()),
                       muc_jid: from.clone(),
-                      nick: item.nick,
+                      nick: item
+                        .nick
+                        .or_else(|| nick_payload.as_ref().map(|nick| nick.0.clone())),
                     };
                     if presence.type_ == presence::Type::Unavailable
-                      && locked_inner
+                      && self
+                        .inner
+                        .lock()
+                        .await
                         .participants
                         .remove(&from.resource.clone())
                         .is_some()
                     {
                       debug!("participant left: {:?}", jid);
-                      if let Some(f) = &locked_inner.on_participant_left {
+                      if let Some(f) = &self
+                        .inner
+                        .lock()
+                        .await
+                        .on_participant_left
+                        .as_ref()
+                        .cloned()
+                      {
                         debug!("calling on_participant_left with old participant");
                         if let Err(e) = f(self.clone(), participant).await {
                           warn!("on_participant_left failed: {:?}", e);
                         }
                       }
                     }
-                    else if locked_inner
+                    else if self
+                      .inner
+                      .lock()
+                      .await
                       .participants
                       .insert(from.resource.clone(), participant.clone())
                       .is_none()
                     {
                       debug!("new participant: {:?}", jid);
-                      if let Some(f) = &locked_inner.on_participant {
+                      if let Some(f) = &self.inner.lock().await.on_participant.as_ref().cloned() {
                         debug!("calling on_participant with new participant");
-                        if let Err(e) = f(self.clone(), participant).await {
+                        if let Err(e) = f(self.clone(), participant.clone()).await {
                           warn!("on_participant failed: {:?}", e);
+                        }
+                        else {
+                          if let Some(jingle_session) = self.jingle_session.lock().await.as_ref() {
+                            gstreamer::debug_bin_to_dot_file(
+                              &jingle_session.pipeline(),
+                              gstreamer::DebugGraphDetails::ALL,
+                              &format!("participant-added-{}", participant.muc_jid.resource),
+                            );
+                          }
                         }
                       }
                     }

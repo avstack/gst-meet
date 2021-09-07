@@ -27,6 +27,7 @@ rcgen = { version = "0.8", default-features = false }
 ring = { version = "0.16", default-features = false }
 serde = { version = "1", default-features = false, features = ["derive"] }
 serde_json = { version = "1", default-features = false, features = ["std"] }
+serde_with = { version = "1", default-features = false, features = ["macros"] }
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
 tokio-tungstenite = { version = "0.14", default-features = false, features = ["connect", "rustls-tls"] }
@@ -39,7 +40,7 @@ tracing-subscriber = { version = "0.2", optional = true, default-features = fals
   "tracing-log",
 ] }
 uuid = { version = "0.8", default-features = false, features = ["v4"] }
-xmpp-parsers = { package = "xmpp-parsers-gst-meet", version = "0.18", default-features = false }
+xmpp-parsers = { path = "../../xmpp-rs/xmpp-parsers", package = "xmpp-parsers-gst-meet", version = "0.18", default-features = false }
 
 [features]
 default = []

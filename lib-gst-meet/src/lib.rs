@@ -1,6 +1,5 @@
-pub mod colibri;
+mod colibri;
 mod conference;
-mod connection;
 mod jingle;
 mod pinger;
 mod source;
@@ -10,9 +9,10 @@ mod xmpp;
 
 pub use crate::{
   colibri::ColibriMessage,
-  conference::{JitsiConference, JitsiConferenceConfig, Participant},
-  connection::JitsiConnection,
+  conference::{Feature, JitsiConference, JitsiConferenceConfig, Participant},
   source::MediaType,
+  stanza_filter::StanzaFilter,
+  xmpp::connection::{Authentication, Connection},
 };
 
 #[cfg(feature = "tracing-subscriber")]

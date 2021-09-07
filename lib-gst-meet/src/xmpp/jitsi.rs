@@ -37,3 +37,19 @@ impl From<Conference> for Element {
     builder.build()
   }
 }
+
+pub(crate) struct JsonMessage {
+  pub(crate) payload: serde_json::Value,
+}
+
+impl TryFrom<JsonMessage> for Element {
+  type Error = anyhow::Error;
+
+  fn try_from(message: JsonMessage) -> Result<Element> {
+    Ok(
+      Element::builder("json-message", ns::JITSI_JITMEET)
+        .append(serde_json::to_string(&message.payload)?)
+        .build(),
+    )
+  }
+}

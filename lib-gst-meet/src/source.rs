@@ -1,7 +1,7 @@
 #[derive(Debug, Clone)]
 pub(crate) struct Source {
   pub(crate) ssrc: u32,
-  pub(crate) participant_id: String,
+  pub(crate) participant_id: Option<String>,
   pub(crate) media_type: MediaType,
 }
 

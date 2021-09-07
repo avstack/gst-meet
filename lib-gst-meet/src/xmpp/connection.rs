@@ -23,16 +23,10 @@ use xmpp_parsers::{
   BareJid, Element, FullJid, Jid,
 };
 
-use crate::{
-  conference::{JitsiConference, JitsiConferenceConfig},
-  pinger::Pinger,
-  stanza_filter::StanzaFilter,
-  util::generate_id,
-  xmpp,
-};
+use crate::{pinger::Pinger, stanza_filter::StanzaFilter, util::generate_id, xmpp};
 
 #[derive(Debug, Clone, Copy)]
-enum JitsiConnectionState {
+enum ConnectionState {
   OpeningPreAuthentication,
   ReceivingFeaturesPreAuthentication,
   Authenticating,
@@ -44,35 +38,41 @@ enum JitsiConnectionState {
   Idle,
 }
 
-struct JitsiConnectionInner {
-  state: JitsiConnectionState,
-  xmpp_domain: BareJid,
+struct ConnectionInner {
+  state: ConnectionState,
   jid: Option<FullJid>,
+  xmpp_domain: BareJid,
+  authentication: Authentication,
   external_services: Vec<xmpp::extdisco::Service>,
   connected_tx: Option<oneshot::Sender<Result<()>>>,
   stanza_filters: Vec<Box<dyn StanzaFilter + Send + Sync>>,
 }
 
-impl fmt::Debug for JitsiConnectionInner {
+impl fmt::Debug for ConnectionInner {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    f.debug_struct("JitsiConnectionInner")
+    f.debug_struct("ConnectionInner")
       .field("state", &self.state)
-      .field("xmpp_domain", &self.xmpp_domain)
       .field("jid", &self.jid)
       .finish()
   }
 }
 
 #[derive(Debug, Clone)]
-pub struct JitsiConnection {
-  tx: mpsc::Sender<Element>,
-  inner: Arc<Mutex<JitsiConnectionInner>>,
+pub struct Connection {
+  pub(crate) tx: mpsc::Sender<Element>,
+  inner: Arc<Mutex<ConnectionInner>>,
 }
 
-impl JitsiConnection {
+pub enum Authentication {
+  Anonymous,
+  Plain { username: String, password: String },
+}
+
+impl Connection {
   pub async fn new(
     websocket_url: &str,
     xmpp_domain: &str,
+    authentication: Authentication,
   ) -> Result<(Self, impl Future<Output = ()>)> {
     let websocket_url: Uri = websocket_url.parse().context("invalid WebSocket URL")?;
     let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
@@ -88,10 +88,11 @@ impl JitsiConnection {
     let (sink, stream) = websocket.split();
     let (tx, rx) = mpsc::channel(64);
 
-    let inner = Arc::new(Mutex::new(JitsiConnectionInner {
-      state: JitsiConnectionState::OpeningPreAuthentication,
-      xmpp_domain,
+    let inner = Arc::new(Mutex::new(ConnectionInner {
+      state: ConnectionState::OpeningPreAuthentication,
       jid: None,
+      xmpp_domain,
+      authentication,
       external_services: vec![],
       connected_tx: None,
       stanza_filters: vec![],
@@ -102,8 +103,8 @@ impl JitsiConnection {
       inner: inner.clone(),
     };
 
-    let writer = JitsiConnection::write_loop(rx, sink);
-    let reader = JitsiConnection::read_loop(inner, tx, stream);
+    let writer = Connection::write_loop(rx, sink);
+    let reader = Connection::read_loop(inner, tx, stream);
 
     let background = async move {
       tokio::select! {
@@ -113,6 +114,11 @@ impl JitsiConnection {
     };
 
     Ok((connection, background))
+  }
+
+  pub async fn add_stanza_filter(&self, stanza_filter: impl StanzaFilter + Send + Sync + 'static) {
+    let mut locked_inner = self.inner.lock().await;
+    locked_inner.stanza_filters.push(Box::new(stanza_filter));
   }
 
   pub async fn connect(&self) -> Result<()> {
@@ -128,48 +134,14 @@ impl JitsiConnection {
     rx.await?
   }
 
-  pub async fn join_conference(
-    &self,
-    glib_main_context: glib::MainContext,
-    config: JitsiConferenceConfig,
-  ) -> Result<JitsiConference> {
-    let conference_stanza = xmpp::jitsi::Conference {
-      machine_uid: Uuid::new_v4().to_string(),
-      room: config.muc.to_string(),
-      properties: hashmap! {
-        // Disable voice processing
-        "stereo".to_string() => "true".to_string(),
-        "startBitrate".to_string() => "800".to_string(),
-      },
-    };
+  pub async fn jid(&self) -> Option<FullJid> {
+    let mut locked_inner = self.inner.lock().await;
+    locked_inner.jid.clone()
+  }
 
-    let iq =
-      Iq::from_set(generate_id(), conference_stanza).with_to(Jid::Full(config.focus.clone()));
-    self.tx.send(iq.into()).await?;
-
-    let conference = {
-      let mut locked_inner = self.inner.lock().await;
-      let conference = JitsiConference::new(
-        glib_main_context,
-        locked_inner
-          .jid
-          .as_ref()
-          .context("not connected (no jid)")?
-          .clone(),
-        self.tx.clone(),
-        config,
-        locked_inner.external_services.clone(),
-      )
-      .await?;
-      locked_inner
-        .stanza_filters
-        .push(Box::new(conference.clone()));
-      conference
-    };
-
-    conference.connected().await?;
-
-    Ok(conference)
+  pub async fn external_services(&self) -> Vec<xmpp::extdisco::Service> {
+    let mut locked_inner = self.inner.lock().await;
+    locked_inner.external_services.clone()
   }
 
   async fn write_loop<S>(rx: mpsc::Receiver<Element>, mut sink: S) -> Result<()>
@@ -189,7 +161,7 @@ impl JitsiConnection {
   }
 
   async fn read_loop<S>(
-    inner: Arc<Mutex<JitsiConnectionInner>>,
+    inner: Arc<Mutex<ConnectionInner>>,
     tx: mpsc::Sender<Element>,
     mut stream: S,
   ) -> Result<()>
@@ -217,7 +189,7 @@ impl JitsiConnection {
 
       let mut locked_inner = inner.lock().await;
 
-      use JitsiConnectionState::*;
+      use ConnectionState::*;
       match locked_inner.state {
         OpeningPreAuthentication => {
           Open::try_from(element)?;
@@ -225,9 +197,22 @@ impl JitsiConnection {
           locked_inner.state = ReceivingFeaturesPreAuthentication;
         },
         ReceivingFeaturesPreAuthentication => {
-          let auth = Auth {
-            mechanism: Mechanism::Anonymous,
-            data: vec![],
+          let auth = match &locked_inner.authentication {
+            Authentication::Anonymous => Auth {
+              mechanism: Mechanism::Anonymous,
+              data: vec![],
+            },
+            Authentication::Plain { username, password } => {
+              let mut data = Vec::with_capacity(username.len() + password.len() + 2);
+              data.push(0u8);
+              data.extend_from_slice(username.as_bytes());
+              data.push(0u8);
+              data.extend_from_slice(password.as_bytes());
+              Auth {
+                mechanism: Mechanism::Plain,
+                data,
+              }
+            },
           };
           tx.send(auth.into()).await?;
           locked_inner.state = Authenticating;
@@ -241,8 +226,10 @@ impl JitsiConnection {
         },
         OpeningPostAuthentication => {
           Open::try_from(element)?;
-          info!("Logged in anonymously");
-
+          match &locked_inner.authentication {
+            Authentication::Anonymous => info!("Logged in anonymously"),
+            Authentication::Plain { .. } => info!("Logged in with PLAIN"),
+          }
           locked_inner.state = ReceivingFeaturesPostAuthentication;
         },
         ReceivingFeaturesPostAuthentication => {
@@ -250,28 +237,33 @@ impl JitsiConnection {
           tx.send(iq.into()).await?;
           locked_inner.state = Binding;
         },
-        Binding => {
-          let iq = Iq::try_from(element)?;
-          let jid = if let IqType::Result(Some(element)) = iq.payload {
-            let bind = BindResponse::try_from(element)?;
-            FullJid::try_from(bind)?
-          }
-          else {
-            bail!("bind failed");
-          };
-          info!("My JID: {}", jid);
-          locked_inner.jid = Some(jid.clone());
+        Binding => match Iq::try_from(element) {
+          Ok(iq) => {
+            let jid = if let IqType::Result(Some(element)) = iq.payload {
+              let bind = BindResponse::try_from(element)?;
+              FullJid::try_from(bind)?
+            }
+            else {
+              bail!("bind failed");
+            };
+            info!("My JID: {}", jid);
+            locked_inner.jid = Some(jid.clone());
 
-          locked_inner.stanza_filters.push(Box::new(Pinger {
-            jid: jid.clone(),
-            tx: tx.clone(),
-          }));
+            locked_inner.stanza_filters.push(Box::new(Pinger {
+              jid: jid.clone(),
+              tx: tx.clone(),
+            }));
 
-          let iq = Iq::from_get(generate_id(), DiscoInfoQuery { node: None })
-            .with_from(Jid::Full(jid.clone()))
-            .with_to(Jid::Bare(locked_inner.xmpp_domain.clone()));
-          tx.send(iq.into()).await?;
-          locked_inner.state = Discovering;
+            let iq = Iq::from_get(generate_id(), DiscoInfoQuery { node: None })
+              .with_from(Jid::Full(jid.clone()))
+              .with_to(Jid::Bare(locked_inner.xmpp_domain.clone()));
+            tx.send(iq.into()).await?;
+            locked_inner.state = Discovering;
+          },
+          Err(e) => debug!(
+            "received unexpected element while waiting for bind response: {}",
+            e
+          ),
         },
         Discovering => {
           let iq = Iq::try_from(element)?;

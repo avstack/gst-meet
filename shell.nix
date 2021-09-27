@@ -1,44 +1,46 @@
 with import <nixpkgs> {};
 let
   gstreamer = gst_all_1.gstreamer.overrideAttrs(old: rec {
-    version = "1.19.9999";
-    src = fetchGit {
-      url = "https://gitlab.freedesktop.org/gstreamer/gstreamer.git";
-      rev = "637b0d8dc25b660d3b05370e60a95249a5228a39";
+    version = "1.19.2";
+    src = fetchurl {
+      url = "https://gstreamer.freedesktop.org/src/${old.pname}/${old.pname}-${version}.tar.xz";
+      sha256 = "6e5b7ba5931e5389c21d10986615f72859b2cc8830a5ba8b5253dad1ba7e6e0d";
     };
     patches = [];
+    mesonFlags = old.mesonFlags ++ ["-Dorc=disabled"];
   });
   gst-plugins-base = (gst_all_1.gst-plugins-base.override {
     gstreamer = gstreamer;
   }).overrideAttrs(old: rec {
-    version = "1.19.9999";
-    src = fetchGit {
-      url = "https://gitlab.freedesktop.org/gstreamer/gst-plugins-base.git";
-      rev = "f5a79ce05f62ad98134435955ed3d10d22f17cb9";
+    version = "1.19.2";
+    src = fetchurl {
+      url = "https://gstreamer.freedesktop.org/src/${old.pname}/${old.pname}-${version}.tar.xz";
+      sha256 = "cde304fd3c006b61a97894b5c4e6f4687edd52cab6767d536b09bdb78d31a513";
     };
     patches = [];
+    mesonFlags = old.mesonFlags ++ ["-Dorc=disabled"];
   });
   gst-plugins-good = (gst_all_1.gst-plugins-good.override {
     gst-plugins-base = gst-plugins-base;
   }).overrideAttrs(old: rec {
-    version = "1.19.9999";
-    src = fetchGit {
-      url = "https://gitlab.freedesktop.org/hgr/gst-plugins-good.git";
-      ref = "hgr/twcc-fixes";
-      rev = "3cff164ef4fab1a74ecfe5fd247edb723c9a41a1";
+    version = "1.19.2";
+    src = fetchurl {
+      url = "https://gstreamer.freedesktop.org/src/${old.pname}/${old.pname}-${version}.tar.xz";
+      sha256 = "4be92e021144bc6dca5082d028275d4b6e69183c01b90791e0837173d58d4e2e";
     };
     patches = [];
+    mesonFlags = old.mesonFlags ++ ["-Dorc=disabled"];
   });
   gst-plugins-bad = (gst_all_1.gst-plugins-bad.override {
     gst-plugins-base = gst-plugins-base;
   }).overrideAttrs(old: rec {
-    version = "1.19.9999";
-    src = fetchGit {
-      url = "https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git";
-      rev = "4eb22b769559ef2696a78a03b30de215bd677d47";
+    version = "1.19.2";
+    src = fetchurl {
+      url = "https://gstreamer.freedesktop.org/src/${old.pname}/${old.pname}-${version}.tar.xz";
+      sha256 = "5382f98a9af2c92e5c0ca4fcb3911025cafd9f89b3142b206eb7b92b812e0979";
     };
     patches = [];
-    mesonFlags = old.mesonFlags ++ ["-Dgs=disabled" "-Disac=disabled" "-Dldac=disabled" "-Donnx=disabled" "-Dopenaptx=disabled" "-Dqroverlay=disabled"];
+    mesonFlags = old.mesonFlags ++ ["-Dorc=disabled" "-Dgs=disabled" "-Disac=disabled" "-Dldac=disabled" "-Donnx=disabled" "-Dopenaptx=disabled" "-Dqroverlay=disabled" "-Dtests=disabled"];
   });
   libnice-patched = libnice.override {
     gst_all_1 = {

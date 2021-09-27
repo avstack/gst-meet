@@ -1,4 +1,4 @@
-mod colibri;
+pub mod colibri;
 mod conference;
 mod jingle;
 mod pinger;
@@ -14,6 +14,7 @@ pub use crate::{
   stanza_filter::StanzaFilter,
   xmpp::connection::{Authentication, Connection},
 };
+pub use xmpp_parsers;
 
 #[cfg(feature = "tracing-subscriber")]
 pub fn init_tracing(level: tracing::Level) {

@@ -10,7 +10,7 @@ use gstreamer::{
 };
 use lib_gst_meet::{
   colibri::{ColibriMessage, Constraints, VideoType},
-  init_tracing, JitsiConferenceConfig, JitsiConnection,
+  Authentication, init_tracing, JitsiConference, JitsiConferenceConfig, Connection,
 };
 use structopt::StructOpt;
 use tokio::{signal::ctrl_c, task, time::timeout};
@@ -113,7 +113,7 @@ async fn main_inner() -> Result<()> {
     .transpose()
     .context("failed to parse send pipeline")?;
 
-  let (connection, background) = JitsiConnection::new(&opt.web_socket_url, &opt.xmpp_domain)
+  let (connection, background) = Connection::new(&opt.web_socket_url, &opt.xmpp_domain, Authentication::Anonymous)
     .await
     .context("failed to connect")?;
 
@@ -149,12 +149,12 @@ async fn main_inner() -> Result<()> {
     nick,
     region,
     video_codec,
+    extra_muc_features: vec![],
   };
 
   let main_loop = glib::MainLoop::new(None, false);
 
-  let conference = connection
-    .join_conference(main_loop.context(), config)
+  let conference = JitsiConference::join(connection, main_loop.context(), config)
     .await
     .context("failed to join conference")?;
 
@@ -211,10 +211,10 @@ async fn main_inner() -> Result<()> {
 
         if let Some(template) = recv_pipeline_participant_template {
           let pipeline_description = template
-            .replace("{jid}", &participant.jid.to_string())
+            .replace("{jid}", &participant.jid.as_ref().map(|jid| jid.to_string()).context("missing jid")?)
             .replace(
               "{jid_user}",
-              &participant.jid.node.context("jid missing node")?,
+              participant.jid.as_ref().and_then(|jid| jid.node.as_ref()).context("jid missing node")?,
             )
             .replace("{participant_id}", &participant.muc_jid.resource)
             .replace("{nick}", &participant.nick.unwrap_or_default());

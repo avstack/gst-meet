@@ -8,7 +8,6 @@ mod util;
 mod xmpp;
 
 pub use crate::{
-  colibri::ColibriMessage,
   conference::{Feature, JitsiConference, JitsiConferenceConfig, Participant},
   source::MediaType,
   stanza_filter::StanzaFilter,

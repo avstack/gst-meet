@@ -14,7 +14,7 @@ use glib::{
   translate::{from_glib, from_glib_full, ToGlibPtr},
 };
 use lib_gst_meet::JitsiConferenceConfig;
-pub use lib_gst_meet::{init_tracing, JitsiConference, JitsiConnection, MediaType};
+pub use lib_gst_meet::{init_tracing, Authentication, Connection, JitsiConference, MediaType};
 use tokio::runtime::Runtime;
 
 pub struct Context {
@@ -80,14 +80,15 @@ pub unsafe extern "C" fn gstmeet_connection_new(
   context: *mut Context,
   websocket_url: *const c_char,
   xmpp_domain: *const c_char,
-) -> *mut JitsiConnection {
+) -> *mut Connection {
   let websocket_url = CStr::from_ptr(websocket_url);
   let xmpp_domain = CStr::from_ptr(xmpp_domain);
   (*context)
     .runtime
-    .block_on(JitsiConnection::new(
+    .block_on(Connection::new(
       &websocket_url.to_string_lossy(),
       &xmpp_domain.to_string_lossy(),
+      Authentication::Anonymous,
     ))
     .map(|(connection, background)| {
       (*context).runtime.spawn(background);
@@ -97,14 +98,14 @@ pub unsafe extern "C" fn gstmeet_connection_new(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn gstmeet_connection_free(connection: *mut JitsiConnection) {
+pub unsafe extern "C" fn gstmeet_connection_free(connection: *mut Connection) {
   Box::from_raw(connection);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn gstmeet_connection_connect(
   context: *mut Context,
-  connection: *mut JitsiConnection,
+  connection: *mut Connection,
 ) -> bool {
   (*context)
     .runtime
@@ -116,7 +117,7 @@ pub unsafe extern "C" fn gstmeet_connection_connect(
 #[no_mangle]
 pub unsafe extern "C" fn gstmeet_connection_join_conference(
   context: *mut Context,
-  connection: *mut JitsiConnection,
+  connection: *mut Connection,
   glib_main_context: *mut GMainContext,
   config: *const ConferenceConfig,
 ) -> *mut JitsiConference {
@@ -144,10 +145,11 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
     video_codec: CStr::from_ptr((*config).video_codec)
       .to_string_lossy()
       .to_string(),
+    extra_muc_features: vec![],
   };
   (*context)
     .runtime
-    .block_on((*connection).join_conference(from_glib_full(glib_main_context), config))
+    .block_on(JitsiConference::join((*connection).clone(), from_glib_full(glib_main_context), config))
     .ok_raw_or_log()
 }
 
@@ -233,7 +235,11 @@ pub unsafe extern "C" fn gstmeet_conference_on_participant(
       let ctx = ctx.clone();
       Box::pin(async move {
         let participant = Participant {
-          jid: CString::new(participant.jid.to_string())?.into_raw() as *const _,
+          jid: participant
+            .jid
+            .map(|jid| Ok::<_, anyhow::Error>(CString::new(jid.to_string())?.into_raw() as *const _))
+            .transpose()?
+            .unwrap_or_else(ptr::null),
           muc_jid: CString::new(participant.muc_jid.to_string())?.into_raw() as *const _,
           nick: participant
             .nick

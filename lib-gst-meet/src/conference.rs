@@ -2,6 +2,7 @@ use std::{collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin,
 
 use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
+use colibri::ColibriMessage;
 use futures::stream::StreamExt;
 use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
 use maplit::hashmap;
@@ -27,7 +28,7 @@ use xmpp_parsers::{
 };
 
 use crate::{
-  colibri::{ColibriChannel, ColibriMessage},
+  colibri::ColibriChannel,
   jingle::JingleSession,
   source::MediaType,
   stanza_filter::StanzaFilter,

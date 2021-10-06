@@ -8,10 +8,11 @@ authors = ["Jasper Hugo <jasper@avstack.io>"]
 
 [dependencies]
 anyhow = { version = "1", default-features = false, features = ["std"] }
+colibri = { version = "0.1", default-features = false }
 futures = { version = "0.3", default-features = false }
 glib = { version = "0.14", default-features = false, features = ["log"] }
 gstreamer = { version = "0.17", default-features = false, features = ["v1_16"] }
-lib-gst-meet = { version = "0.3", path = "../lib-gst-meet", default-features = false, features = ["tracing-subscriber"] }
+lib-gst-meet = { version = "0.4", path = "../lib-gst-meet", default-features = false, features = ["tracing-subscriber"] }
 structopt = { version = "0.3", default-features = false }
 tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "signal", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false }

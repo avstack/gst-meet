@@ -3,13 +3,13 @@ use std::time::Duration;
 use anyhow::{bail, Context, Result};
 #[cfg(target_os = "macos")]
 use cocoa::appkit::NSApplication;
+use colibri::{ColibriMessage, Constraints, VideoType};
 use glib::ObjectExt;
 use gstreamer::{
   prelude::{ElementExt, GstBinExt},
   GhostPad,
 };
 use lib_gst_meet::{
-  colibri::{ColibriMessage, Constraints, VideoType},
   Authentication, init_tracing, JitsiConference, JitsiConferenceConfig, Connection,
 };
 use structopt::StructOpt;

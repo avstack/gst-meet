@@ -4,6 +4,9 @@ description = "Connect GStreamer pipelines to Jitsi Meet conferences"
 version = "0.4.0"
 edition = "2018"
 license = "MIT/Apache-2.0"
+readme = "../README.md"
+repository = "https://github.com/avstack/gst-meet"
+documentation = "https://docs.rs/lib-gst-meet/"
 authors = ["Jasper Hugo <jasper@avstack.io>"]
 
 [dependencies]

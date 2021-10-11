@@ -36,8 +36,8 @@ struct Opt {
   video_codec: String,
   #[structopt(long, default_value = "gst-meet")]
   nick: String,
-  #[structopt(long, default_value)]
-  region: String,
+  #[structopt(long)]
+  region: Option<String>,
   #[structopt(long)]
   send_pipeline: Option<String>,
   #[structopt(long)]

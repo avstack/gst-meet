@@ -135,13 +135,18 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
       return ptr::null_mut();
     },
   };
+  let region = if (*config).region.is_null() {
+    None
+  } else {
+    Some(CStr::from_ptr((*config).region)
+      .to_string_lossy()
+      .to_string())
+  };
   let config = JitsiConferenceConfig {
     muc,
     focus,
     nick: CStr::from_ptr((*config).nick).to_string_lossy().to_string(),
-    region: CStr::from_ptr((*config).region)
-      .to_string_lossy()
-      .to_string(),
+    region,
     video_codec: CStr::from_ptr((*config).video_codec)
       .to_string_lossy()
       .to_string(),

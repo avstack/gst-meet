@@ -76,7 +76,7 @@ pub struct JitsiConferenceConfig {
   pub muc: BareJid,
   pub focus: Jid,
   pub nick: String,
-  pub region: String,
+  pub region: Option<String>,
   pub video_codec: String,
   pub extra_muc_features: Vec<String>,
 }
@@ -453,18 +453,22 @@ impl StanzaFilter for JitsiConference {
           Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
             .append(self.config.video_codec.as_str())
             .build(),
-          Element::builder("jitsi_participant_region", ns::DEFAULT_NS)
-            .append(self.config.region.as_str())
-            .build(),
           Element::builder("audiomuted", ns::DEFAULT_NS).append("false").build(),
           Element::builder("videomuted", ns::DEFAULT_NS).append("false").build(),
           Element::builder("nick", "http://jabber.org/protocol/nick")
             .append(self.config.nick.as_str())
             .build(),
-          Element::builder("region", "http://jitsi.org/jitsi-meet")
-            .attr("id", &self.config.region)
-            .build(),
         ];
+        if let Some(region) = &self.config.region {
+          presence.extend([
+            Element::builder("jitsi_participant_region", ns::DEFAULT_NS)
+              .append(region.as_str())
+              .build(),
+            Element::builder("region", "http://jitsi.org/jitsi-meet")
+              .attr("id", region)
+              .build(),
+          ]);
+        }
         presence.extend(
           self
             .config

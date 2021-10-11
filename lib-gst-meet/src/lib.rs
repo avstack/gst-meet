@@ -7,13 +7,14 @@ mod stanza_filter;
 mod util;
 mod xmpp;
 
+pub use xmpp_parsers;
+
 pub use crate::{
   conference::{Feature, JitsiConference, JitsiConferenceConfig, Participant},
   source::MediaType,
   stanza_filter::StanzaFilter,
   xmpp::connection::{Authentication, Connection},
 };
-pub use xmpp_parsers;
 
 #[cfg(feature = "tracing-subscriber")]
 pub fn init_tracing(level: tracing::Level) {

@@ -74,7 +74,7 @@ enum JitsiConferenceState {
 #[derive(Debug, Clone)]
 pub struct JitsiConferenceConfig {
   pub muc: BareJid,
-  pub focus: FullJid,
+  pub focus: Jid,
   pub nick: String,
   pub region: String,
   pub video_codec: String,
@@ -175,7 +175,7 @@ impl JitsiConference {
 
     xmpp_connection.add_stanza_filter(conference.clone()).await;
 
-    let iq = Iq::from_set(generate_id(), conference_stanza).with_to(Jid::Full(focus));
+    let iq = Iq::from_set(generate_id(), conference_stanza).with_to(focus);
     xmpp_connection.tx.send(iq.into()).await?;
 
     rx.await?;

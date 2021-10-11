@@ -290,7 +290,7 @@ impl Connection {
             locked_inner.external_services = services.services;
           }
           else {
-            bail!("extdisco failed");
+            warn!("discovering external services failed: STUN/TURN will not work");
           }
 
           if let Some(tx) = locked_inner.connected_tx.take() {

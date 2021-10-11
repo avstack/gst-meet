@@ -10,7 +10,7 @@ use gstreamer::{
   GhostPad,
 };
 use lib_gst_meet::{
-  Authentication, init_tracing, JitsiConference, JitsiConferenceConfig, Connection,
+  init_tracing, Authentication, Connection, JitsiConference, JitsiConferenceConfig,
 };
 use structopt::StructOpt;
 use tokio::{signal::ctrl_c, task, time::timeout};
@@ -45,9 +45,9 @@ struct Opt {
   #[structopt(long)]
   select_endpoints: Option<String>,
   #[structopt(long)]
-  last_n: Option<u16>,
+  last_n: Option<i32>,
   #[structopt(long)]
-  recv_video_height: Option<u16>,
+  recv_video_height: Option<i32>,
   #[structopt(long)]
   video_type: Option<String>,
   #[structopt(short, long, parse(from_occurrences))]
@@ -113,9 +113,13 @@ async fn main_inner() -> Result<()> {
     .transpose()
     .context("failed to parse send pipeline")?;
 
-  let (connection, background) = Connection::new(&opt.web_socket_url, &opt.xmpp_domain, Authentication::Anonymous)
-    .await
-    .context("failed to connect")?;
+  let (connection, background) = Connection::new(
+    &opt.web_socket_url,
+    &opt.xmpp_domain,
+    Authentication::Anonymous,
+  )
+  .await
+  .context("failed to connect")?;
 
   tokio::spawn(background);
 
@@ -211,10 +215,21 @@ async fn main_inner() -> Result<()> {
 
         if let Some(template) = recv_pipeline_participant_template {
           let pipeline_description = template
-            .replace("{jid}", &participant.jid.as_ref().map(|jid| jid.to_string()).context("missing jid")?)
+            .replace(
+              "{jid}",
+              &participant
+                .jid
+                .as_ref()
+                .map(|jid| jid.to_string())
+                .context("missing jid")?,
+            )
             .replace(
               "{jid_user}",
-              participant.jid.as_ref().and_then(|jid| jid.node.as_ref()).context("jid missing node")?,
+              participant
+                .jid
+                .as_ref()
+                .and_then(|jid| jid.node.as_ref())
+                .context("jid missing node")?,
             )
             .replace("{participant_id}", &participant.muc_jid.resource)
             .replace("{nick}", &participant.nick.unwrap_or_default());

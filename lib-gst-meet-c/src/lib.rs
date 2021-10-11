@@ -149,7 +149,11 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
   };
   (*context)
     .runtime
-    .block_on(JitsiConference::join((*connection).clone(), from_glib_full(glib_main_context), config))
+    .block_on(JitsiConference::join(
+      (*connection).clone(),
+      from_glib_full(glib_main_context),
+      config,
+    ))
     .ok_raw_or_log()
 }
 
@@ -237,7 +241,9 @@ pub unsafe extern "C" fn gstmeet_conference_on_participant(
         let participant = Participant {
           jid: participant
             .jid
-            .map(|jid| Ok::<_, anyhow::Error>(CString::new(jid.to_string())?.into_raw() as *const _))
+            .map(
+              |jid| Ok::<_, anyhow::Error>(CString::new(jid.to_string())?.into_raw() as *const _),
+            )
             .transpose()?
             .unwrap_or_else(ptr::null),
           muc_jid: CString::new(participant.muc_jid.to_string())?.into_raw() as *const _,

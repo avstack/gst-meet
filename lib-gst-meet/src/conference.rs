@@ -231,7 +231,7 @@ impl JitsiConference {
   pub async fn set_muted(&self, media_type: MediaType, muted: bool) -> Result<()> {
     self
       .send_presence(vec![
-        Element::builder(media_type.jitsi_muted_presence_element_name(), "")
+        Element::builder(media_type.jitsi_muted_presence_element_name(), ns::DEFAULT_NS)
           .append(muted.to_string())
           .build(),
       ])
@@ -408,13 +408,13 @@ impl StanzaFilter for JitsiConference {
   #[tracing::instrument(level = "trace")]
   fn filter(&self, element: &Element) -> bool {
     element.attr("from") == Some(self.config.focus.to_string().as_str())
-      && element.is("iq", "jabber:client")
+      && element.is("iq", ns::DEFAULT_NS)
       || element
         .attr("from")
         .and_then(|from| from.parse::<BareJid>().ok())
         .map(|jid| jid == self.config.muc)
         .unwrap_or_default()
-        && (element.is("presence", "jabber:client") || element.is("iq", "jabber:client"))
+        && (element.is("presence", ns::DEFAULT_NS) || element.is("iq", ns::DEFAULT_NS))
   }
 
   #[tracing::instrument(level = "trace", err)]
@@ -449,15 +449,15 @@ impl StanzaFilter for JitsiConference {
         let mut presence = vec![
           Muc::new().into(),
           ECaps2::new(vec![jitsi_disco_hash]).into(),
-          Element::builder("stats-id", "").append("gst-meet").build(),
-          Element::builder("jitsi_participant_codecType", "")
+          Element::builder("stats-id", ns::DEFAULT_NS).append("gst-meet").build(),
+          Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
             .append(self.config.video_codec.as_str())
             .build(),
-          Element::builder("jitsi_participant_region", "")
+          Element::builder("jitsi_participant_region", ns::DEFAULT_NS)
             .append(self.config.region.as_str())
             .build(),
-          Element::builder("audiomuted", "").append("false").build(),
-          Element::builder("videomuted", "").append("false").build(),
+          Element::builder("audiomuted", ns::DEFAULT_NS).append("false").build(),
+          Element::builder("videomuted", ns::DEFAULT_NS).append("false").build(),
           Element::builder("nick", "http://jabber.org/protocol/nick")
             .append(self.config.nick.as_str())
             .build(),
@@ -470,7 +470,9 @@ impl StanzaFilter for JitsiConference {
             .config
             .extra_muc_features
             .iter()
-            .map(|feature| Element::builder("feature", "").attr("var", feature).build()),
+            .cloned()
+            .map(|var| Feature { var })
+            .map(|feature| feature.into()),
         );
         self.send_presence(presence).await?;
         self.inner.lock().await.state = JoiningMuc;

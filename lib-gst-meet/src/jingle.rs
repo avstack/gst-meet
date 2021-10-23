@@ -295,114 +295,7 @@ impl JingleSession {
     }))
   }
 
-  pub(crate) async fn initiate(conference: &JitsiConference, jingle: Jingle) -> Result<Self> {
-    let initiator = jingle
-      .initiator
-      .as_ref()
-      .ok_or_else(|| anyhow!("session-initiate with no initiator"))?
-      .clone();
-
-    debug!("Received Jingle session-initiate from {}", initiator);
-
-    let mut ice_remote_candidates = None;
-    let mut ice_remote_ufrag = None;
-    let mut ice_remote_pwd = None;
-    let mut dtls_fingerprint = None;
-    let mut opus_payload_type = None;
-    let mut opus_rtcp_fbs = None;
-    let mut h264_payload_type = None;
-    let mut h264_rtx_payload_type = None;
-    let mut h264_rtcp_fbs = None;
-    let mut vp8_payload_type = None;
-    let mut vp8_rtx_payload_type = None;
-    let mut vp8_rtcp_fbs = None;
-    let mut vp9_payload_type = None;
-    let mut vp9_rtx_payload_type = None;
-    let mut vp9_rtcp_fbs = None;
-    let mut audio_hdrext_ssrc_audio_level = None;
-    let mut audio_hdrext_transport_cc = None;
-    let mut video_hdrext_abs_send_time = None;
-    let mut video_hdrext_transport_cc = None;
-    let mut colibri_url = None;
-
-    let mut remote_ssrc_map = HashMap::new();
-
-    for content in &jingle.contents {
-      if let Some(Description::Rtp(description)) = &content.description {
-        if let Some(description) = JingleSession::parse_rtp_description(description, &mut remote_ssrc_map)? {
-          opus_payload_type = opus_payload_type.or(description.opus_payload_type);
-          opus_rtcp_fbs = opus_rtcp_fbs.or(description.opus_rtcp_fbs);
-          h264_payload_type = h264_payload_type.or(description.h264_payload_type);
-          h264_rtx_payload_type = h264_rtx_payload_type.or(description.h264_rtx_payload_type);
-          h264_rtcp_fbs = h264_rtcp_fbs.or(description.h264_rtcp_fbs);
-          vp8_payload_type = vp8_payload_type.or(description.vp8_payload_type);
-          vp8_rtx_payload_type = vp8_rtx_payload_type.or(description.vp8_rtx_payload_type);
-          vp8_rtcp_fbs = vp8_rtcp_fbs.or(description.vp8_rtcp_fbs);
-          vp9_payload_type = vp9_payload_type.or(description.vp9_payload_type);
-          vp9_rtx_payload_type = vp9_rtx_payload_type.or(description.vp9_rtx_payload_type);
-          vp9_rtcp_fbs = vp9_rtcp_fbs.or(description.vp9_rtcp_fbs);
-          audio_hdrext_ssrc_audio_level = audio_hdrext_ssrc_audio_level.or(description.audio_hdrext_ssrc_audio_level);
-          audio_hdrext_transport_cc = audio_hdrext_transport_cc.or(description.audio_hdrext_transport_cc);
-          video_hdrext_abs_send_time = video_hdrext_abs_send_time.or(description.video_hdrext_abs_send_time);
-          video_hdrext_transport_cc = video_hdrext_transport_cc.or(description.video_hdrext_transport_cc);
-        }
-      }
-
-      if let Some(Transport::IceUdp(transport)) = &content.transport {
-        if !transport.candidates.is_empty() {
-          ice_remote_candidates = Some(transport.candidates.clone());
-        }
-        if let Some(ufrag) = &transport.ufrag {
-          ice_remote_ufrag = Some(ufrag.to_owned());
-        }
-        if let Some(pwd) = &transport.pwd {
-          ice_remote_pwd = Some(pwd.to_owned());
-        }
-        if let Some(fingerprint) = &transport.fingerprint {
-          if fingerprint.hash != Algo::Sha_256 {
-            bail!("unsupported fingerprint hash: {:?}", fingerprint.hash);
-          }
-          dtls_fingerprint = Some(fingerprint.value.clone());
-        }
-        if let Some(websocket) = &transport.web_socket {
-          colibri_url = Some(websocket.url.clone());
-        }
-      }
-    }
-
-    if let Some(remote_fingerprint) = dtls_fingerprint {
-      warn!(
-        "Remote DTLS fingerprint (verification not implemented yet): {:?}",
-        remote_fingerprint
-      );
-    }
-
-    let mut dtls_cert_params = CertificateParams::new(vec!["gst-meet".to_owned()]);
-    dtls_cert_params.alg = &PKCS_ECDSA_P256_SHA256;
-    let dtls_cert = Certificate::from_params(dtls_cert_params)?;
-    let dtls_cert_der = dtls_cert.serialize_der()?;
-    let fingerprint = digest(&SHA256, &dtls_cert_der).as_ref().to_vec();
-    let fingerprint_str =
-      itertools::join(fingerprint.iter().map(|byte| format!("{:X}", byte)), ":");
-    let dtls_cert_pem = pem::encode(&Pem {
-      tag: "CERTIFICATE".to_string(),
-      contents: dtls_cert_der,
-    });
-    let dtls_private_key_pem = pem::encode(&Pem {
-      tag: "PRIVATE KEY".to_string(),
-      contents: dtls_cert.serialize_private_key_der(),
-    });
-    debug!("Local DTLS certificate:\n{}", dtls_cert_pem);
-    debug!("Local DTLS fingerprint: {}", fingerprint_str);
-
-    let audio_ssrc: u32 = random();
-    let video_ssrc: u32 = random();
-    let video_rtx_ssrc: u32 = random();
-
-    debug!("audio SSRC: {}", audio_ssrc);
-    debug!("video SSRC: {}", video_ssrc);
-    debug!("video RTX SSRC: {}", video_rtx_ssrc);
-
+  async fn setup_ice(conference: &JitsiConference, transport: &IceUdpTransport) -> Result<(nice::Agent, u32, u32)> {
     let ice_agent = nice::Agent::new(&conference.glib_main_context, nice::Compatibility::Rfc5245);
     ice_agent.set_ice_tcp(false);
     ice_agent.set_upnp(false);
@@ -474,11 +367,7 @@ impl JingleSession {
     debug!("ice_stream_id={}", ice_stream_id);
     debug!("ice_component_id={}", ice_component_id);
 
-    let (ice_local_ufrag, ice_local_pwd) = ice_agent
-      .local_credentials(ice_stream_id)
-      .context("no local ICE credentials")?;
-
-    if let (Some(ufrag), Some(pwd)) = (&ice_remote_ufrag, &ice_remote_pwd) {
+    if let (Some(ufrag), Some(pwd)) = (&transport.ufrag, &transport.pwd) {
       debug!("setting ICE remote credentials");
       if !ice_agent.set_remote_credentials(ice_stream_id, ufrag, pwd) {
         warn!("nice_agent_set_remote_candidates failed");
@@ -494,8 +383,8 @@ impl JingleSession {
       warn!("nice_agent_gather_candidates failed");
     }
 
-    if let (Some(ufrag), Some(pwd), Some(remote_candidates)) =
-      (&ice_remote_ufrag, &ice_remote_pwd, &ice_remote_candidates)
+    if let (Some(ufrag), Some(pwd), remote_candidates) =
+      (&transport.ufrag, &transport.pwd, &transport.candidates)
     {
       debug!("setting ICE remote candidates: {:?}", remote_candidates);
       let remote_candidates: Vec<_> = remote_candidates
@@ -524,6 +413,109 @@ impl JingleSession {
         warn!("some remote candidates failed to add: {}", res);
       }
     }
+
+    Ok((ice_agent, ice_stream_id, ice_component_id))
+  }
+
+  pub(crate) async fn initiate(conference: &JitsiConference, jingle: Jingle) -> Result<Self> {
+    let initiator = jingle
+      .initiator
+      .as_ref()
+      .ok_or_else(|| anyhow!("session-initiate with no initiator"))?
+      .clone();
+
+    debug!("Received Jingle session-initiate from {}", initiator);
+
+    let mut ice_transport = None;
+    let mut opus_payload_type = None;
+    let mut opus_rtcp_fbs = None;
+    let mut h264_payload_type = None;
+    let mut h264_rtx_payload_type = None;
+    let mut h264_rtcp_fbs = None;
+    let mut vp8_payload_type = None;
+    let mut vp8_rtx_payload_type = None;
+    let mut vp8_rtcp_fbs = None;
+    let mut vp9_payload_type = None;
+    let mut vp9_rtx_payload_type = None;
+    let mut vp9_rtcp_fbs = None;
+    let mut audio_hdrext_ssrc_audio_level = None;
+    let mut audio_hdrext_transport_cc = None;
+    let mut video_hdrext_abs_send_time = None;
+    let mut video_hdrext_transport_cc = None;
+
+    let mut remote_ssrc_map = HashMap::new();
+
+    for content in &jingle.contents {
+      if let Some(Description::Rtp(description)) = &content.description {
+        if let Some(description) = JingleSession::parse_rtp_description(description, &mut remote_ssrc_map)? {
+          opus_payload_type = opus_payload_type.or(description.opus_payload_type);
+          opus_rtcp_fbs = opus_rtcp_fbs.or(description.opus_rtcp_fbs);
+          h264_payload_type = h264_payload_type.or(description.h264_payload_type);
+          h264_rtx_payload_type = h264_rtx_payload_type.or(description.h264_rtx_payload_type);
+          h264_rtcp_fbs = h264_rtcp_fbs.or(description.h264_rtcp_fbs);
+          vp8_payload_type = vp8_payload_type.or(description.vp8_payload_type);
+          vp8_rtx_payload_type = vp8_rtx_payload_type.or(description.vp8_rtx_payload_type);
+          vp8_rtcp_fbs = vp8_rtcp_fbs.or(description.vp8_rtcp_fbs);
+          vp9_payload_type = vp9_payload_type.or(description.vp9_payload_type);
+          vp9_rtx_payload_type = vp9_rtx_payload_type.or(description.vp9_rtx_payload_type);
+          vp9_rtcp_fbs = vp9_rtcp_fbs.or(description.vp9_rtcp_fbs);
+          audio_hdrext_ssrc_audio_level = audio_hdrext_ssrc_audio_level.or(description.audio_hdrext_ssrc_audio_level);
+          audio_hdrext_transport_cc = audio_hdrext_transport_cc.or(description.audio_hdrext_transport_cc);
+          video_hdrext_abs_send_time = video_hdrext_abs_send_time.or(description.video_hdrext_abs_send_time);
+          video_hdrext_transport_cc = video_hdrext_transport_cc.or(description.video_hdrext_transport_cc);
+        }
+      }
+
+      if let Some(Transport::IceUdp(transport)) = &content.transport {
+        if let Some(fingerprint) = &transport.fingerprint {
+          if fingerprint.hash != Algo::Sha_256 {
+            bail!("unsupported fingerprint hash: {:?}", fingerprint.hash);
+          }
+        }
+        ice_transport = Some(transport);
+      }
+    }
+
+    let ice_transport = ice_transport.context("missing ICE transport")?;
+
+    if let Some(remote_fingerprint) = &ice_transport.fingerprint {
+      warn!(
+        "Remote DTLS fingerprint (verification not implemented yet): {:?}",
+        remote_fingerprint
+      );
+    }
+
+    let mut dtls_cert_params = CertificateParams::new(vec!["gst-meet".to_owned()]);
+    dtls_cert_params.alg = &PKCS_ECDSA_P256_SHA256;
+    let dtls_cert = Certificate::from_params(dtls_cert_params)?;
+    let dtls_cert_der = dtls_cert.serialize_der()?;
+    let fingerprint = digest(&SHA256, &dtls_cert_der).as_ref().to_vec();
+    let fingerprint_str =
+      itertools::join(fingerprint.iter().map(|byte| format!("{:X}", byte)), ":");
+    let dtls_cert_pem = pem::encode(&Pem {
+      tag: "CERTIFICATE".to_string(),
+      contents: dtls_cert_der,
+    });
+    let dtls_private_key_pem = pem::encode(&Pem {
+      tag: "PRIVATE KEY".to_string(),
+      contents: dtls_cert.serialize_private_key_der(),
+    });
+    debug!("Local DTLS certificate:\n{}", dtls_cert_pem);
+    debug!("Local DTLS fingerprint: {}", fingerprint_str);
+
+    let audio_ssrc: u32 = random();
+    let video_ssrc: u32 = random();
+    let video_rtx_ssrc: u32 = random();
+
+    debug!("audio SSRC: {}", audio_ssrc);
+    debug!("video SSRC: {}", video_ssrc);
+    debug!("video RTX SSRC: {}", video_rtx_ssrc);
+
+    let (ice_agent, ice_stream_id, ice_component_id) = JingleSession::setup_ice(conference, ice_transport).await?;
+
+    let (ice_local_ufrag, ice_local_pwd) = ice_agent
+      .local_credentials(ice_stream_id)
+      .context("no local ICE credentials")?;
 
     debug!("building gstreamer pipeline");
 
@@ -1352,7 +1344,7 @@ impl JingleSession {
       remote_ssrc_map,
       _ice_agent: ice_agent,
       accept_iq_id: Some(accept_iq_id),
-      colibri_url,
+      colibri_url: ice_transport.web_socket.clone().map(|ws| ws.url),
       colibri_channel: None,
       pipeline_state_null_rx,
     })

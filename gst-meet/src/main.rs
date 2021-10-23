@@ -10,7 +10,7 @@ use gstreamer::{
   GhostPad,
 };
 use lib_gst_meet::{
-  init_tracing, Authentication, Connection, JitsiConference, JitsiConferenceConfig,
+  init_tracing, Authentication, Connection, JitsiConference, JitsiConferenceConfig, MediaType,
 };
 use structopt::StructOpt;
 use tokio::{signal::ctrl_c, task, time::timeout};
@@ -199,12 +199,22 @@ async fn main_inner() -> Result<()> {
       let audio_sink = conference.audio_sink_element().await?;
       audio.link(&audio_sink)?;
     }
+    else {
+      conference.set_muted(MediaType::Audio, true).await?;
+    }
 
     if let Some(video) = bin.by_name("video") {
       info!("Found video element in pipeline, linking...");
       let video_sink = conference.video_sink_element().await?;
       video.link(&video_sink)?;
     }
+    else {
+      conference.set_muted(MediaType::Video, true).await?;
+    }
+  }
+  else {
+    conference.set_muted(MediaType::Audio, true).await?;
+    conference.set_muted(MediaType::Video, true).await?;
   }
 
   conference

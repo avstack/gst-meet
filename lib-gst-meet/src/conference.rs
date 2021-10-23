@@ -20,7 +20,7 @@ use xmpp_parsers::{
   iq::{Iq, IqType},
   jingle::{Action, Jingle},
   message::{Message, MessageType},
-  muc::{Muc, MucUser},
+  muc::{Muc, MucUser, user::Status as MucStatus},
   nick::Nick,
   ns,
   presence::{self, Presence},
@@ -483,9 +483,12 @@ impl StanzaFilter for JitsiConference {
       },
       JoiningMuc => {
         let presence = Presence::try_from(element)?;
-        if BareJid::from(presence.from.as_ref().unwrap().clone()) == self.config.muc {
-          debug!("Joined MUC: {}", self.config.muc);
-          self.inner.lock().await.state = Idle;
+        if let Some(payload) = presence.payloads.iter().find(|payload| payload.is("x", ns::MUC_USER)) {
+          let muc_user = MucUser::try_from(payload.clone())?;
+          if muc_user.status.contains(&MucStatus::SelfPresence) {
+            debug!("Joined MUC: {}", self.config.muc);
+            self.inner.lock().await.state = Idle;
+          }
         }
       },
       Idle => {

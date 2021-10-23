@@ -10,6 +10,9 @@ generate_element!(
     attributes: [
         /// Maps to the ssrc-id parameter.
         id: Required<String> = "ssrc",
+
+        /// XXX: wtf is that?  It can be either name='jvb-a0' or name='jvb-v0' at avstack’s jicofo.
+        name: Option<String> = "name",
     ],
     children: [
         /// List of attributes for this source.
@@ -27,6 +30,7 @@ impl Source {
             id,
             parameters: Vec::new(),
             info: None,
+            name: None,
         }
     }
 }

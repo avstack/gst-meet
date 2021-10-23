@@ -128,114 +128,83 @@ impl JingleSession {
     let mut video_hdrext_transport_cc = None;
 
     if description.media == "audio" {
-      opus_payload_type = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("opus"))
-        .map(|pt| pt.id);
-      opus_rtcp_fbs = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("opus"))
-        .map(|pt| pt.rtcp_fbs.clone());
-      audio_hdrext_ssrc_audio_level = description
-        .hdrexts
-        .iter()
-        .find(|hdrext| hdrext.uri == RTP_HDREXT_SSRC_AUDIO_LEVEL)
-        .map(|hdrext| hdrext.id.parse::<u8>())
-        .transpose()?;
-      audio_hdrext_transport_cc = description
-        .hdrexts
-        .iter()
-        .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
-        .map(|hdrext| hdrext.id.parse::<u8>())
-        .transpose()?;
+      for pt in description.payload_types.iter() {
+        // We don’t support any static codec, so name MUST be set.
+        if let Some(name) = &pt.name {
+          match name.as_str() {
+            "opus" => {
+              opus_payload_type = Some(pt.id);
+              opus_rtcp_fbs = Some(pt.rtcp_fbs.clone());
+            }
+            _ => (),
+          }
+        }
+      }
+      for hdrext in description.hdrexts.iter() {
+        // TODO: .parse::<u8>() won’t be needed after updating xmpp-parsers, it is now a u16 as
+        // defined in the XEP and related RFC.
+        if hdrext.uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
+          audio_hdrext_ssrc_audio_level = Some(hdrext.id.parse::<u8>()?);
+        }
+        else if hdrext.uri == RTP_HDREXT_TRANSPORT_CC {
+          audio_hdrext_transport_cc = Some(hdrext.id.parse::<u8>()?);
+        }
+      }
     }
     else if description.media == "video" {
-      h264_payload_type = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("H264"))
-        .map(|pt| pt.id);
-      h264_rtx_payload_type = description
-        .payload_types
-        .iter()
-        .find(|pt| {
-          pt.name.as_deref() == Some("rtx")
-            && pt.parameters.iter().any(|param| {
-              param.name == "apt"
-                && param.value
-                  == h264_payload_type
-                    .map(|pt| pt.to_string())
-                    .unwrap_or_default()
-            })
-        })
-        .map(|pt| pt.id);
-      h264_rtcp_fbs = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("H264"))
-        .map(|pt| pt.rtcp_fbs.clone());
-      vp8_payload_type = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("VP8"))
-        .map(|pt| pt.id);
-      vp8_rtx_payload_type = description
-        .payload_types
-        .iter()
-        .find(|pt| {
-          pt.name.as_deref() == Some("rtx")
-            && pt.parameters.iter().any(|param| {
-              param.name == "apt"
-                && param.value
-                  == vp8_payload_type
-                    .map(|pt| pt.to_string())
-                    .unwrap_or_default()
-            })
-        })
-        .map(|pt| pt.id);
-      vp8_rtcp_fbs = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("VP8"))
-        .map(|pt| pt.rtcp_fbs.clone());
-      vp9_payload_type = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("VP9"))
-        .map(|pt| pt.id);
-      vp9_rtx_payload_type = description
-        .payload_types
-        .iter()
-        .find(|pt| {
-          pt.name.as_deref() == Some("rtx")
-            && pt.parameters.iter().any(|param| {
-              param.name == "apt"
-                && param.value
-                  == vp9_payload_type
-                    .map(|pt| pt.to_string())
-                    .unwrap_or_default()
-            })
-        })
-        .map(|pt| pt.id);
-      vp9_rtcp_fbs = description
-        .payload_types
-        .iter()
-        .find(|pt| pt.name.as_deref() == Some("VP9"))
-        .map(|pt| pt.rtcp_fbs.clone());
-      video_hdrext_abs_send_time = description
-        .hdrexts
-        .iter()
-        .find(|hdrext| hdrext.uri == RTP_HDREXT_ABS_SEND_TIME)
-        .map(|hdrext| hdrext.id.parse::<u8>())
-        .transpose()?;
-      video_hdrext_transport_cc = description
-        .hdrexts
-        .iter()
-        .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
-        .map(|hdrext| hdrext.id.parse::<u8>())
-        .transpose()?;
+      for pt in description.payload_types.iter() {
+        // We don’t support any static codec, so name MUST be set.
+        if let Some(name) = &pt.name {
+          match name.as_str() {
+            "H264" => {
+              h264_payload_type = Some(pt.id);
+              h264_rtcp_fbs = Some(pt.rtcp_fbs.clone());
+            }
+            "VP8" => {
+              vp8_payload_type = Some(pt.id);
+              vp8_rtcp_fbs = Some(pt.rtcp_fbs.clone());
+            }
+            "VP9" => {
+              vp9_payload_type = Some(pt.id);
+              vp9_rtcp_fbs = Some(pt.rtcp_fbs.clone());
+            }
+            _ => (),
+          }
+        }
+      }
+      for pt in description.payload_types.iter() {
+        if let Some(name) = &pt.name {
+          if name == "rtx" {
+            for param in pt.parameters.iter() {
+              if param.name == "apt" {
+                let pt: u8 = param.value.parse()?;
+                if Some(pt) == h264_payload_type {
+                  h264_rtx_payload_type = Some(pt);
+                }
+                else if Some(pt) == h264_payload_type {
+                  h264_rtx_payload_type = Some(pt);
+                }
+                else if Some(pt) == h264_payload_type {
+                  h264_rtx_payload_type = Some(pt);
+                }
+                else {
+                  bail!("unknown rtx apt: {}", pt);
+                }
+              }
+            }
+          }
+        }
+      }
+      for hdrext in description.hdrexts.iter() {
+        // TODO: .parse::<u8>() won’t be needed after updating xmpp-parsers, it is now a u16 as
+        // defined in the XEP and related RFC.
+        if hdrext.uri == RTP_HDREXT_ABS_SEND_TIME {
+          video_hdrext_abs_send_time = Some(hdrext.id.parse::<u8>()?);
+        }
+        else if hdrext.uri == RTP_HDREXT_TRANSPORT_CC {
+          video_hdrext_transport_cc = Some(hdrext.id.parse::<u8>()?);
+        }
+      }
     }
     else {
       debug!("skipping media: {}", description.media);

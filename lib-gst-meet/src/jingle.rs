@@ -19,6 +19,7 @@ use xmpp_parsers::{
   jingle::{Action, Content, Creator, Description, Jingle, Senders, Transport},
   jingle_dtls_srtp::{Fingerprint, Setup},
   jingle_ice_udp::{self, Transport as IceUdpTransport},
+  jingle_rtcp_fb::RtcpFb,
   jingle_rtp::{self, Description as RtpDescription, PayloadType, RtcpMux},
   jingle_rtp_hdrext::RtpHdrext,
   jingle_ssma::{self, Parameter},
@@ -39,6 +40,24 @@ const RTP_HDREXT_TRANSPORT_CC: &str =
 
 const DEFAULT_STUN_PORT: u16 = 3478;
 const DEFAULT_TURNS_PORT: u16 = 5349;
+
+struct ParsedRtpDescription {
+    opus_payload_type: Option<u8>,
+    opus_rtcp_fbs: Option<Vec<RtcpFb>>,
+    h264_payload_type: Option<u8>,
+    h264_rtx_payload_type: Option<u8>,
+    h264_rtcp_fbs: Option<Vec<RtcpFb>>,
+    vp8_payload_type: Option<u8>,
+    vp8_rtx_payload_type: Option<u8>,
+    vp8_rtcp_fbs: Option<Vec<RtcpFb>>,
+    vp9_payload_type: Option<u8>,
+    vp9_rtx_payload_type: Option<u8>,
+    vp9_rtcp_fbs: Option<Vec<RtcpFb>>,
+    audio_hdrext_ssrc_audio_level: Option<u8>,
+    audio_hdrext_transport_cc: Option<u8>,
+    video_hdrext_abs_send_time: Option<u8>,
+    video_hdrext_transport_cc: Option<u8>,
+}
 
 pub(crate) struct JingleSession {
   pipeline: gstreamer::Pipeline,
@@ -91,6 +110,191 @@ impl JingleSession {
     Ok(self.pipeline_state_null_rx.await?)
   }
 
+  fn parse_rtp_description(description: &RtpDescription, remote_ssrc_map: &mut HashMap<u32, Source>) -> Result<Option<ParsedRtpDescription>> {
+    let mut opus_payload_type = None;
+    let mut opus_rtcp_fbs = None;
+    let mut h264_payload_type = None;
+    let mut h264_rtx_payload_type = None;
+    let mut h264_rtcp_fbs = None;
+    let mut vp8_payload_type = None;
+    let mut vp8_rtx_payload_type = None;
+    let mut vp8_rtcp_fbs = None;
+    let mut vp9_payload_type = None;
+    let mut vp9_rtx_payload_type = None;
+    let mut vp9_rtcp_fbs = None;
+    let mut audio_hdrext_ssrc_audio_level = None;
+    let mut audio_hdrext_transport_cc = None;
+    let mut video_hdrext_abs_send_time = None;
+    let mut video_hdrext_transport_cc = None;
+
+    if description.media == "audio" {
+      opus_payload_type = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("opus"))
+        .map(|pt| pt.id);
+      opus_rtcp_fbs = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("opus"))
+        .map(|pt| pt.rtcp_fbs.clone());
+      audio_hdrext_ssrc_audio_level = description
+        .hdrexts
+        .iter()
+        .find(|hdrext| hdrext.uri == RTP_HDREXT_SSRC_AUDIO_LEVEL)
+        .map(|hdrext| hdrext.id.parse::<u8>())
+        .transpose()?;
+      audio_hdrext_transport_cc = description
+        .hdrexts
+        .iter()
+        .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
+        .map(|hdrext| hdrext.id.parse::<u8>())
+        .transpose()?;
+    }
+    else if description.media == "video" {
+      h264_payload_type = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("H264"))
+        .map(|pt| pt.id);
+      h264_rtx_payload_type = description
+        .payload_types
+        .iter()
+        .find(|pt| {
+          pt.name.as_deref() == Some("rtx")
+            && pt.parameters.iter().any(|param| {
+              param.name == "apt"
+                && param.value
+                  == h264_payload_type
+                    .map(|pt| pt.to_string())
+                    .unwrap_or_default()
+            })
+        })
+        .map(|pt| pt.id);
+      h264_rtcp_fbs = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("H264"))
+        .map(|pt| pt.rtcp_fbs.clone());
+      vp8_payload_type = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("VP8"))
+        .map(|pt| pt.id);
+      vp8_rtx_payload_type = description
+        .payload_types
+        .iter()
+        .find(|pt| {
+          pt.name.as_deref() == Some("rtx")
+            && pt.parameters.iter().any(|param| {
+              param.name == "apt"
+                && param.value
+                  == vp8_payload_type
+                    .map(|pt| pt.to_string())
+                    .unwrap_or_default()
+            })
+        })
+        .map(|pt| pt.id);
+      vp8_rtcp_fbs = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("VP8"))
+        .map(|pt| pt.rtcp_fbs.clone());
+      vp9_payload_type = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("VP9"))
+        .map(|pt| pt.id);
+      vp9_rtx_payload_type = description
+        .payload_types
+        .iter()
+        .find(|pt| {
+          pt.name.as_deref() == Some("rtx")
+            && pt.parameters.iter().any(|param| {
+              param.name == "apt"
+                && param.value
+                  == vp9_payload_type
+                    .map(|pt| pt.to_string())
+                    .unwrap_or_default()
+            })
+        })
+        .map(|pt| pt.id);
+      vp9_rtcp_fbs = description
+        .payload_types
+        .iter()
+        .find(|pt| pt.name.as_deref() == Some("VP9"))
+        .map(|pt| pt.rtcp_fbs.clone());
+      video_hdrext_abs_send_time = description
+        .hdrexts
+        .iter()
+        .find(|hdrext| hdrext.uri == RTP_HDREXT_ABS_SEND_TIME)
+        .map(|hdrext| hdrext.id.parse::<u8>())
+        .transpose()?;
+      video_hdrext_transport_cc = description
+        .hdrexts
+        .iter()
+        .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
+        .map(|hdrext| hdrext.id.parse::<u8>())
+        .transpose()?;
+    }
+    else {
+      debug!("skipping media: {}", description.media);
+      return Ok(None);
+    }
+
+    for ssrc in &description.ssrcs {
+      let owner = ssrc
+        .info
+        .as_ref()
+        .context("missing ssrc-info")?
+        .owner
+        .clone();
+
+      debug!("adding ssrc to remote_ssrc_map: {:?}", ssrc);
+      remote_ssrc_map.insert(
+        ssrc.id.parse()?,
+        Source {
+          ssrc: ssrc.id.parse()?,
+          participant_id: if owner == "jvb" {
+            None
+          }
+          else {
+            Some(
+              owner
+                .split('/')
+                .nth(1)
+                .context("invalid ssrc-info owner")?
+                .to_owned(),
+            )
+          },
+          media_type: if description.media == "audio" {
+            MediaType::Audio
+          }
+          else {
+            MediaType::Video
+          },
+        },
+      );
+    }
+    Ok(Some(ParsedRtpDescription {
+        opus_payload_type,
+        opus_rtcp_fbs,
+        h264_payload_type,
+        h264_rtx_payload_type,
+        h264_rtcp_fbs,
+        vp8_payload_type,
+        vp8_rtx_payload_type,
+        vp8_rtcp_fbs,
+        vp9_payload_type,
+        vp9_rtx_payload_type,
+        vp9_rtcp_fbs,
+        audio_hdrext_ssrc_audio_level,
+        audio_hdrext_transport_cc,
+        video_hdrext_abs_send_time,
+        video_hdrext_transport_cc,
+    }))
+  }
+
   pub(crate) async fn initiate(conference: &JitsiConference, jingle: Jingle) -> Result<Self> {
     let initiator = jingle
       .initiator
@@ -125,154 +329,22 @@ impl JingleSession {
 
     for content in &jingle.contents {
       if let Some(Description::Rtp(description)) = &content.description {
-        if description.media == "audio" {
-          opus_payload_type = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("opus"))
-            .map(|pt| pt.id);
-          opus_rtcp_fbs = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("opus"))
-            .map(|pt| pt.rtcp_fbs.clone());
-          audio_hdrext_ssrc_audio_level = description
-            .hdrexts
-            .iter()
-            .find(|hdrext| hdrext.uri == RTP_HDREXT_SSRC_AUDIO_LEVEL)
-            .map(|hdrext| hdrext.id.parse::<u8>())
-            .transpose()?;
-          audio_hdrext_transport_cc = description
-            .hdrexts
-            .iter()
-            .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
-            .map(|hdrext| hdrext.id.parse::<u8>())
-            .transpose()?;
-        }
-        else if description.media == "video" {
-          h264_payload_type = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("H264"))
-            .map(|pt| pt.id);
-          h264_rtx_payload_type = description
-            .payload_types
-            .iter()
-            .find(|pt| {
-              pt.name.as_deref() == Some("rtx")
-                && pt.parameters.iter().any(|param| {
-                  param.name == "apt"
-                    && param.value
-                      == h264_payload_type
-                        .map(|pt| pt.to_string())
-                        .unwrap_or_default()
-                })
-            })
-            .map(|pt| pt.id);
-          h264_rtcp_fbs = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("H264"))
-            .map(|pt| pt.rtcp_fbs.clone());
-          vp8_payload_type = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("VP8"))
-            .map(|pt| pt.id);
-          vp8_rtx_payload_type = description
-            .payload_types
-            .iter()
-            .find(|pt| {
-              pt.name.as_deref() == Some("rtx")
-                && pt.parameters.iter().any(|param| {
-                  param.name == "apt"
-                    && param.value
-                      == vp8_payload_type
-                        .map(|pt| pt.to_string())
-                        .unwrap_or_default()
-                })
-            })
-            .map(|pt| pt.id);
-          vp8_rtcp_fbs = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("VP8"))
-            .map(|pt| pt.rtcp_fbs.clone());
-          vp9_payload_type = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("VP9"))
-            .map(|pt| pt.id);
-          vp9_rtx_payload_type = description
-            .payload_types
-            .iter()
-            .find(|pt| {
-              pt.name.as_deref() == Some("rtx")
-                && pt.parameters.iter().any(|param| {
-                  param.name == "apt"
-                    && param.value
-                      == vp9_payload_type
-                        .map(|pt| pt.to_string())
-                        .unwrap_or_default()
-                })
-            })
-            .map(|pt| pt.id);
-          vp9_rtcp_fbs = description
-            .payload_types
-            .iter()
-            .find(|pt| pt.name.as_deref() == Some("VP9"))
-            .map(|pt| pt.rtcp_fbs.clone());
-          video_hdrext_abs_send_time = description
-            .hdrexts
-            .iter()
-            .find(|hdrext| hdrext.uri == RTP_HDREXT_ABS_SEND_TIME)
-            .map(|hdrext| hdrext.id.parse::<u8>())
-            .transpose()?;
-          video_hdrext_transport_cc = description
-            .hdrexts
-            .iter()
-            .find(|hdrext| hdrext.uri == RTP_HDREXT_TRANSPORT_CC)
-            .map(|hdrext| hdrext.id.parse::<u8>())
-            .transpose()?;
-        }
-        else {
-          debug!("skipping media: {}", description.media);
-          continue;
-        }
-
-        for ssrc in &description.ssrcs {
-          let owner = ssrc
-            .info
-            .as_ref()
-            .context("missing ssrc-info")?
-            .owner
-            .clone();
-
-          debug!("adding ssrc to remote_ssrc_map: {:?}", ssrc);
-          remote_ssrc_map.insert(
-            ssrc.id.parse()?,
-            Source {
-              ssrc: ssrc.id.parse()?,
-              participant_id: if owner == "jvb" {
-                None
-              }
-              else {
-                Some(
-                  owner
-                    .split('/')
-                    .nth(1)
-                    .context("invalid ssrc-info owner")?
-                    .to_owned(),
-                )
-              },
-              media_type: if description.media == "audio" {
-                MediaType::Audio
-              }
-              else {
-                MediaType::Video
-              },
-            },
-          );
+        if let Some(description) = JingleSession::parse_rtp_description(description, &mut remote_ssrc_map)? {
+          opus_payload_type = opus_payload_type.or(description.opus_payload_type);
+          opus_rtcp_fbs = opus_rtcp_fbs.or(description.opus_rtcp_fbs);
+          h264_payload_type = h264_payload_type.or(description.h264_payload_type);
+          h264_rtx_payload_type = h264_rtx_payload_type.or(description.h264_rtx_payload_type);
+          h264_rtcp_fbs = h264_rtcp_fbs.or(description.h264_rtcp_fbs);
+          vp8_payload_type = vp8_payload_type.or(description.vp8_payload_type);
+          vp8_rtx_payload_type = vp8_rtx_payload_type.or(description.vp8_rtx_payload_type);
+          vp8_rtcp_fbs = vp8_rtcp_fbs.or(description.vp8_rtcp_fbs);
+          vp9_payload_type = vp9_payload_type.or(description.vp9_payload_type);
+          vp9_rtx_payload_type = vp9_rtx_payload_type.or(description.vp9_rtx_payload_type);
+          vp9_rtcp_fbs = vp9_rtcp_fbs.or(description.vp9_rtcp_fbs);
+          audio_hdrext_ssrc_audio_level = audio_hdrext_ssrc_audio_level.or(description.audio_hdrext_ssrc_audio_level);
+          audio_hdrext_transport_cc = audio_hdrext_transport_cc.or(description.audio_hdrext_transport_cc);
+          video_hdrext_abs_send_time = video_hdrext_abs_send_time.or(description.video_hdrext_abs_send_time);
+          video_hdrext_transport_cc = video_hdrext_transport_cc.or(description.video_hdrext_transport_cc);
         }
       }
 

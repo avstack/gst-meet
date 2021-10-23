@@ -14,9 +14,10 @@ use tracing::{debug, error, info, trace, warn};
 use uuid::Uuid;
 pub use xmpp_parsers::disco::Feature;
 use xmpp_parsers::{
-  disco::{DiscoInfoQuery, DiscoInfoResult},
+  disco::{DiscoInfoQuery, DiscoInfoResult, Identity},
+  caps::{self, Caps},
   ecaps2::{self, ECaps2},
-  hashes::Algo,
+  hashes::{Algo, Hash},
   iq::{Iq, IqType},
   jingle::{Action, Jingle},
   message::{Message, MessageType},
@@ -24,6 +25,7 @@ use xmpp_parsers::{
   nick::Nick,
   ns,
   presence::{self, Presence},
+  stanza_error::{DefinedCondition, ErrorType, StanzaError},
   BareJid, Element, FullJid, Jid,
 };
 
@@ -36,8 +38,11 @@ use crate::{
   xmpp::{self, connection::Connection},
 };
 
+const DISCO_NODE: &str = "https://github.com/avstack/gst-meet";
+
 static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| {
   let mut features = vec![
+    Feature::new(ns::DISCO_INFO),
     Feature::new(ns::JINGLE_RTP_AUDIO),
     Feature::new(ns::JINGLE_RTP_VIDEO),
     Feature::new(ns::JINGLE_ICE_UDP),
@@ -54,14 +59,21 @@ static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| {
   else {
     warn!("Upgrade GStreamer to 1.19 or later to enable RTP header extensions");
   }
+  let identities = vec![
+    Identity::new("client", "bot", "en", "gst-meet"),
+  ];
   // Not supported yet:
   // Feature::new("http://jitsi.org/opus-red")
   DiscoInfoResult {
     node: None,
-    identities: vec![],
+    identities,
     features,
     extensions: vec![],
   }
+});
+
+static COMPUTED_CAPS_HASH: Lazy<Hash> = Lazy::new(|| {
+  caps::hash_caps(&caps::compute_disco(&DISCO_INFO), Algo::Sha_1).unwrap()
 });
 
 #[derive(Debug, Clone, Copy)]
@@ -437,18 +449,12 @@ impl StanzaFilter for JitsiConference {
           bail!("focus IQ failed");
         };
 
-        let jitsi_disco_info = DiscoInfoResult {
-          node: Some("http://jitsi.org/jitsimeet".to_string()),
-          identities: vec![],
-          features: vec![],
-          extensions: vec![],
-        };
-
-        let jitsi_disco_hash =
-          ecaps2::hash_ecaps2(&ecaps2::compute_disco(&jitsi_disco_info)?, Algo::Sha_256)?;
+        let ecaps2_hash =
+          ecaps2::hash_ecaps2(&ecaps2::compute_disco(&DISCO_INFO)?, Algo::Sha_256)?;
         let mut presence = vec![
           Muc::new().into(),
-          ECaps2::new(vec![jitsi_disco_hash]).into(),
+          Caps::new(DISCO_NODE, COMPUTED_CAPS_HASH.clone()).into(),
+          ECaps2::new(vec![ecaps2_hash]).into(),
           Element::builder("stats-id", ns::DEFAULT_NS).append("gst-meet").build(),
           Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
             .append(self.config.video_codec.as_str())
@@ -501,14 +507,33 @@ impl StanzaFilter for JitsiConference {
                   iq.from.as_ref().unwrap(),
                   query.node
                 );
-                if query.node.is_none() {
+                if let Some(node) = query.node {
+                  match node.splitn(2, '#').collect::<Vec<_>>().as_slice() {
+                    // TODO: also support ecaps2, as we send it in our presence.
+                    [uri, hash] if *uri == DISCO_NODE && *hash == COMPUTED_CAPS_HASH.to_base64() => {
+                      let mut disco_info = DISCO_INFO.clone();
+                      disco_info.node = Some(node);
+                      let iq = Iq::from_result(iq.id, Some(disco_info))
+                        .with_from(Jid::Full(self.jid.clone()))
+                        .with_to(iq.from.unwrap());
+                      self.xmpp_tx.send(iq.into()).await?;
+                    }
+                    _ => {
+                      let error = StanzaError::new(
+                        ErrorType::Cancel, DefinedCondition::ItemNotFound,
+                        "en", format!("Unknown disco#info node: {}", node));
+                      let iq = Iq::from_error(iq.id, error)
+                        .with_from(Jid::Full(self.jid.clone()))
+                        .with_to(iq.from.unwrap());
+                      self.xmpp_tx.send(iq.into()).await?;
+                    }
+                  }
+                }
+                else {
                   let iq = Iq::from_result(iq.id, Some(DISCO_INFO.clone()))
                     .with_from(Jid::Full(self.jid.clone()))
                     .with_to(iq.from.unwrap());
                   self.xmpp_tx.send(iq.into()).await?;
-                }
-                else {
-                  panic!("don't know how to handle disco info node: {:?}", query.node);
                 }
               }
             },

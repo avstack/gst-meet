@@ -34,7 +34,7 @@ serde_json = { version = "1", default-features = false, features = ["std"] }
 serde_with = { version = "1", default-features = false, features = ["macros"] }
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
-tokio-tungstenite = { version = "0.14", default-features = false, features = ["connect", "rustls-tls"] }
+tokio-tungstenite = { version = "0.14", default-features = false, features = ["connect"] }
 tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
 tracing-subscriber = { version = "0.2", optional = true, default-features = false, features = [
   "chrono",
@@ -47,4 +47,7 @@ uuid = { version = "0.8", default-features = false, features = ["v4"] }
 xmpp-parsers = { path = "../xmpp-parsers", package = "xmpp-parsers-gst-meet", version = "0.18", default-features = false }
 
 [features]
-default = []
+default = ["tls-native"]
+tls-native = ["tokio-tungstenite/native-tls"]
+tls-native-vendored = ["tokio-tungstenite/native-tls-vendored"]
+tls-rustls = ["tokio-tungstenite/rustls-tls"]

@@ -20,3 +20,9 @@ tracing = { version = "0.1", default-features = false, features = ["attributes",
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = { version = "0.24", default-features = false }
+
+[features]
+default = ["tls-native"]
+tls-native = ["lib-gst-meet/tls-native"]
+tls-native-vendored = ["lib-gst-meet/tls-native-vendored"]
+tls-rustls = ["lib-gst-meet/tls-rustls"]

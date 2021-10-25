@@ -5,7 +5,6 @@ use futures::{
   sink::{Sink, SinkExt},
   stream::{Stream, StreamExt, TryStreamExt},
 };
-use maplit::hashmap;
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_tungstenite::tungstenite::{
@@ -13,7 +12,6 @@ use tokio_tungstenite::tungstenite::{
   Message,
 };
 use tracing::{debug, error, info, warn};
-use uuid::Uuid;
 use xmpp_parsers::{
   bind::{BindQuery, BindResponse},
   disco::{DiscoInfoQuery, DiscoInfoResult},
@@ -135,12 +133,12 @@ impl Connection {
   }
 
   pub async fn jid(&self) -> Option<FullJid> {
-    let mut locked_inner = self.inner.lock().await;
+    let locked_inner = self.inner.lock().await;
     locked_inner.jid.clone()
   }
 
   pub async fn external_services(&self) -> Vec<xmpp::extdisco::Service> {
-    let mut locked_inner = self.inner.lock().await;
+    let locked_inner = self.inner.lock().await;
     locked_inner.external_services.clone()
   }
 

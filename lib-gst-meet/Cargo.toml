@@ -31,7 +31,6 @@ rcgen = { version = "0.8", default-features = false }
 ring = { version = "0.16", default-features = false }
 serde = { version = "1", default-features = false, features = ["derive"] }
 serde_json = { version = "1", default-features = false, features = ["std"] }
-serde_with = { version = "1", default-features = false, features = ["macros"] }
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
 tokio-tungstenite = { version = "0.14", default-features = false, features = ["connect"] }

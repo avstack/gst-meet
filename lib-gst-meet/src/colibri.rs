@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
 use anyhow::Result;
 use colibri::ColibriMessage;
@@ -6,8 +6,6 @@ use futures::{
   sink::SinkExt,
   stream::{StreamExt, TryStreamExt},
 };
-use serde::{Deserialize, Serialize};
-use serde_with::{serde_as, DisplayFromStr};
 use tokio::sync::{mpsc, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_tungstenite::tungstenite::{http::Request, Message};

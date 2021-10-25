@@ -231,15 +231,15 @@ async fn main_inner() -> Result<()> {
                 .jid
                 .as_ref()
                 .map(|jid| jid.to_string())
-                .context("missing jid")?,
+                .unwrap_or_default(),
             )
             .replace(
               "{jid_user}",
               participant
                 .jid
                 .as_ref()
-                .and_then(|jid| jid.node.as_ref())
-                .context("jid missing node")?,
+                .and_then(|jid| jid.node.as_deref())
+                .unwrap_or_default(),
             )
             .replace("{participant_id}", &participant.muc_jid.resource)
             .replace("{nick}", &participant.nick.unwrap_or_default());

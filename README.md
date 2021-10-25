@@ -6,13 +6,28 @@ gst-meet provides a library and tool for integrating Jitsi Meet conferences with
 
 Thanks to GStreamer's flexibility and wide range of plugins, this enables many new possibilities.
 
+## Dependencies
+
+* `glib`
+* `gstreamer` 1.19 or later. Most distributions do not package this version yet, so you may need to build from source
+* Any GStreamer plugins that you want to use in your pipelines
+* `libnice`
+* A TLS library (usually installed by default, but you may need to install `openssl-dev` or similar on minimal Linux distributions)
+* A Rust toolchain ([rustup](https://rustup.rs/) is the easiest way to install one)
+
 ## Installation
 
-You will need the dependencies `glib`, `gstreamer` and `libnice`, as well as any GStreamer plugins you want to use in your pipelines, and a Rust toolchain ([rustup](https://rustup.rs/) is the easiest way to install one).
+`cargo install --force gst-meet` (`--force` will upgrade `gst-meet` if you have already installed it.)
 
-Then: `cargo install --force gst-meet` (`--force` will upgrade `gst-meet` if you have already installed it.)
+To integrate gst-meet into your own application, add a Cargo dependency on `lib-gst-meet`.
 
-To integrate gst-meet into your own application, look at `lib-gst-meet`.
+## Development
+
+For nix users, a `shell.nix` is provided. Within the repository, run `nix-shell --pure` to get a shell with access to all needed dependencies (and nothing else).
+
+Otherwise, install the dependencies described above, along with their `-dev` packages if your distribution uses them.
+
+`cargo build` should then successfully build the libraries and `gst-meet` binary.
 
 ## Pipeline Structure
 

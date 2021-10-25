@@ -99,9 +99,9 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
 By default, the system native TLS library is used. This can be turned off by passing `--no-default-features` to Cargo, and one of the following features can be enabled:
 
 ```
-tls-native-tls             (the default) link to the system native TLS library
-tls-native-tls-vendored    automatically build a copy of OpenSSL and statically link to it
-tls-rustls                 use rustls for TLS (note that rustls may not accept some server certificates)
+tls-native            (the default) link to the system native TLS library
+tls-native-vendored   automatically build a copy of OpenSSL and statically link to it
+tls-rustls            use rustls for TLS (note that rustls may not accept some server certificates)
 ```
 
 These options only affect the TLS library used for the WebSocket connections (to the XMPP server and to the JVB).

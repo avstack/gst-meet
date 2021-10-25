@@ -186,9 +186,9 @@ dependencies = [
 
 [[package]]
 name = "colibri"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b66649321a779420276afffc6b421952c1c973ba1a4434f1d1e11b9bf1b312b"
+checksum = "6e879b92a1d6a52a71cad0dd30e7ee47f977f26c7841045fa6709eaef350e8a4"
 dependencies = [
  "serde",
  "serde_json",

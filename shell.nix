@@ -58,14 +58,10 @@ let
   });
   libnice-patched = (libnice.override {
     meson = meson-patched;
-    gst_all_1 = {
-      gstreamer = gstreamer;
-      gst-plugins-base = gst-plugins-base;
-    };
   }).overrideAttrs(old: rec {
     buildInputs = [
-      gst_all_1.gstreamer
-      gst_all_1.gst-plugins-base
+      gstreamer
+      gst-plugins-base
       openssl
     ];
     outputs = [ "bin" "out" "dev" ];

@@ -42,12 +42,19 @@ let
     patches = [];
     mesonFlags = old.mesonFlags ++ ["-Dorc=disabled" "-Dgs=disabled" "-Disac=disabled" "-Dldac=disabled" "-Donnx=disabled" "-Dopenaptx=disabled" "-Dqroverlay=disabled" "-Dtests=disabled"];
   });
-  libnice-patched = libnice.override {
+  libnice-patched = (libnice.override {
     gst_all_1 = {
       gstreamer = gstreamer;
       gst-plugins-base = gst-plugins-base;
     };
-  };
+  }).overrideAttrs(old: rec {
+    buildInputs = [
+      gst_all_1.gstreamer
+      gst_all_1.gst-plugins-base
+      openssl
+    ];
+    mesonFlags = old.mesonFlags ++ ["-Dgupnp=disabled"];
+  });
 in
 mkShell {
   name = "gst-meet";

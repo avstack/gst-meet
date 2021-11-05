@@ -131,6 +131,7 @@ pub(crate) struct JitsiConferenceInner {
     Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
   on_colibri_message:
     Option<Arc<dyn (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync>>,
+  presence: Vec<Element>,
   state: JitsiConferenceState,
   connected_tx: Option<oneshot::Sender<()>>,
 }
@@ -165,6 +166,41 @@ impl JitsiConference {
 
     let focus = config.focus.clone();
 
+    let ecaps2_hash =
+      ecaps2::hash_ecaps2(&ecaps2::compute_disco(&DISCO_INFO)?, Algo::Sha_256)?;
+    let mut presence = vec![
+      Muc::new().into(),
+      Caps::new(DISCO_NODE, COMPUTED_CAPS_HASH.clone()).into(),
+      ECaps2::new(vec![ecaps2_hash]).into(),
+      Element::builder("stats-id", ns::DEFAULT_NS).append("gst-meet").build(),
+      Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
+        .append(config.video_codec.as_str())
+        .build(),
+      Element::builder("audiomuted", ns::DEFAULT_NS).append("false").build(),
+      Element::builder("videomuted", ns::DEFAULT_NS).append("false").build(),
+      Element::builder("nick", "http://jabber.org/protocol/nick")
+        .append(config.nick.as_str())
+        .build(),
+    ];
+    if let Some(region) = &config.region {
+      presence.extend([
+        Element::builder("jitsi_participant_region", ns::DEFAULT_NS)
+          .append(region.as_str())
+          .build(),
+        Element::builder("region", "http://jitsi.org/jitsi-meet")
+          .attr("id", region)
+          .build(),
+      ]);
+    }
+    presence.extend(
+      config
+        .extra_muc_features
+        .iter()
+        .cloned()
+        .map(|var| Feature { var })
+        .map(|feature| feature.into()),
+    );
+
     let conference = Self {
       glib_main_context,
       jid: xmpp_connection
@@ -177,6 +213,7 @@ impl JitsiConference {
       jingle_session: Arc::new(Mutex::new(None)),
       inner: Arc::new(Mutex::new(JitsiConferenceInner {
         state: JitsiConferenceState::Discovering,
+        presence,
         participants: HashMap::new(),
         on_participant: None,
         on_participant_left: None,
@@ -232,21 +269,23 @@ impl JitsiConference {
   }
 
   #[tracing::instrument(level = "debug", err)]
-  async fn send_presence(&self, payloads: Vec<Element>) -> Result<()> {
+  async fn send_presence(&self, payloads: &[Element]) -> Result<()> {
     let mut presence = Presence::new(presence::Type::None).with_to(self.jid_in_muc()?);
-    presence.payloads = payloads;
+    presence.payloads = payloads.to_owned();
     self.xmpp_tx.send(presence.into()).await?;
     Ok(())
   }
 
   #[tracing::instrument(level = "debug", err)]
   pub async fn set_muted(&self, media_type: MediaType, muted: bool) -> Result<()> {
+    let mut locked_inner = self.inner.lock().await;
+    let element = Element::builder(media_type.jitsi_muted_presence_element_name(), ns::DEFAULT_NS)
+      .append(muted.to_string())
+      .build();
+    locked_inner.presence.retain(|el| el.name() != media_type.jitsi_muted_presence_element_name());
+    locked_inner.presence.push(element);
     self
-      .send_presence(vec![
-        Element::builder(media_type.jitsi_muted_presence_element_name(), ns::DEFAULT_NS)
-          .append(muted.to_string())
-          .build(),
-      ])
+      .send_presence(&locked_inner.presence)
       .await
   }
 
@@ -449,43 +488,9 @@ impl StanzaFilter for JitsiConference {
           bail!("focus IQ failed");
         };
 
-        let ecaps2_hash =
-          ecaps2::hash_ecaps2(&ecaps2::compute_disco(&DISCO_INFO)?, Algo::Sha_256)?;
-        let mut presence = vec![
-          Muc::new().into(),
-          Caps::new(DISCO_NODE, COMPUTED_CAPS_HASH.clone()).into(),
-          ECaps2::new(vec![ecaps2_hash]).into(),
-          Element::builder("stats-id", ns::DEFAULT_NS).append("gst-meet").build(),
-          Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
-            .append(self.config.video_codec.as_str())
-            .build(),
-          Element::builder("audiomuted", ns::DEFAULT_NS).append("false").build(),
-          Element::builder("videomuted", ns::DEFAULT_NS).append("false").build(),
-          Element::builder("nick", "http://jabber.org/protocol/nick")
-            .append(self.config.nick.as_str())
-            .build(),
-        ];
-        if let Some(region) = &self.config.region {
-          presence.extend([
-            Element::builder("jitsi_participant_region", ns::DEFAULT_NS)
-              .append(region.as_str())
-              .build(),
-            Element::builder("region", "http://jitsi.org/jitsi-meet")
-              .attr("id", region)
-              .build(),
-          ]);
-        }
-        presence.extend(
-          self
-            .config
-            .extra_muc_features
-            .iter()
-            .cloned()
-            .map(|var| Feature { var })
-            .map(|feature| feature.into()),
-        );
-        self.send_presence(presence).await?;
-        self.inner.lock().await.state = JoiningMuc;
+        let mut locked_inner = self.inner.lock().await;
+        self.send_presence(&locked_inner.presence).await?;
+        locked_inner.state = JoiningMuc;
       },
       JoiningMuc => {
         let presence = Presence::try_from(element)?;

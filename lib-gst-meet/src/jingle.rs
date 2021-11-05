@@ -1018,38 +1018,14 @@ impl JingleSession {
     }
     pipeline.add(&video_sink_element)?;
 
-    let mut audio_caps = gstreamer::Caps::builder("application/x-rtp");
-    if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
-      audio_caps = audio_caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
-    }
-    if let Some(hdrext) = audio_hdrext_transport_cc {
-      audio_caps = audio_caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_TRANSPORT_CC);
-    }
-    let audio_capsfilter = gstreamer::ElementFactory::make("capsfilter", None)?;
-    audio_capsfilter.set_property("caps", audio_caps.build())?;
-    pipeline.add(&audio_capsfilter)?;
-
-    let mut video_caps = gstreamer::Caps::builder("application/x-rtp");
-    // if let Some(hdrext) = video_hdrext_abs_send_time {
-    //   video_caps = video_caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_ABS_SEND_TIME);
-    // }
-    if let Some(hdrext) = video_hdrext_transport_cc {
-      video_caps = video_caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_TRANSPORT_CC);
-    }
-    let video_capsfilter = gstreamer::ElementFactory::make("capsfilter", None)?;
-    video_capsfilter.set_property("caps", video_caps.build())?;
-    pipeline.add(&video_capsfilter)?;
-
     let rtpfunnel = gstreamer::ElementFactory::make("rtpfunnel", None)?;
     pipeline.add(&rtpfunnel)?;
 
     debug!("linking video payloader -> rtpfunnel");
-    video_sink_element.link(&video_capsfilter)?;
-    video_capsfilter.link(&rtpfunnel)?;
+    video_sink_element.link(&rtpfunnel)?;
 
     debug!("linking audio payloader -> rtpfunnel");
-    audio_sink_element.link(&audio_capsfilter)?;
-    audio_capsfilter.link(&rtpfunnel)?;
+    audio_sink_element.link(&rtpfunnel)?;
 
     debug!("linking rtpfunnel -> rtpbin");
     rtpfunnel.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;

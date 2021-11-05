@@ -1,6 +1,17 @@
 with import <nixpkgs> {};
 let
-  gstreamer = gst_all_1.gstreamer.overrideAttrs(old: rec {
+  meson-patched = meson.overridePythonAttrs(old: rec {
+    version = "0.59.4";
+    src = pythonPackages.fetchPypi {
+      inherit version;
+      pname = old.pname;
+      sha256 = "a77988cc50554f73ede075bc9bf77a2d7ecb6ff892f2a0180d4940920eaaec84";
+    };
+    patches = builtins.filter (patch: baseNameOf patch != "gir-fallback-path.patch") old.patches;
+  });
+  gstreamer = (gst_all_1.gstreamer.override {
+    meson = meson-patched;
+  }).overrideAttrs(old: rec {
     version = "1.19.3";
     src = fetchurl {
       url = "https://gstreamer.freedesktop.org/src/${old.pname}/${old.pname}-${version}.tar.xz";
@@ -10,6 +21,7 @@ let
     mesonFlags = old.mesonFlags ++ ["-Dorc=disabled"];
   });
   gst-plugins-base = (gst_all_1.gst-plugins-base.override {
+    meson = meson-patched;
     gstreamer = gstreamer;
   }).overrideAttrs(old: rec {
     version = "1.19.3";
@@ -21,6 +33,7 @@ let
     mesonFlags = old.mesonFlags ++ ["-Dorc=disabled"];
   });
   gst-plugins-good = (gst_all_1.gst-plugins-good.override {
+    meson = meson-patched;
     gst-plugins-base = gst-plugins-base;
   }).overrideAttrs(old: rec {
     version = "1.19.3";
@@ -32,6 +45,7 @@ let
     mesonFlags = old.mesonFlags ++ ["-Dorc=disabled"];
   });
   gst-plugins-bad = (gst_all_1.gst-plugins-bad.override {
+    meson = meson-patched;
     gst-plugins-base = gst-plugins-base;
   }).overrideAttrs(old: rec {
     version = "1.19.3";
@@ -40,9 +54,10 @@ let
       sha256 = "50193a23b13713ccb32ee5d1852faeeaed29b91f8398285acdfd522fa3e16835";
     };
     patches = [];
-    mesonFlags = old.mesonFlags ++ ["-Dorc=disabled" "-Dgs=disabled" "-Disac=disabled" "-Dldac=disabled" "-Donnx=disabled" "-Dopenaptx=disabled" "-Dqroverlay=disabled" "-Dtests=disabled"];
+    mesonFlags = old.mesonFlags ++ ["-Dorc=disabled" "-Dgs=disabled" "-Disac=disabled" "-Dldac=disabled" "-Donnx=disabled" "-Dopenaptx=disabled" "-Dqroverlay=disabled" "-Dtests=disabled" "-Dfaad=disabled" "-Dmpeg2enc=disabled" "-Dmplex=disabled" "-Dresindvd=disabled" "-Dx265=disabled"];
   });
   libnice-patched = (libnice.override {
+    meson = meson-patched;
     gst_all_1 = {
       gstreamer = gstreamer;
       gst-plugins-base = gst-plugins-base;
@@ -53,7 +68,8 @@ let
       gst_all_1.gst-plugins-base
       openssl
     ];
-    mesonFlags = old.mesonFlags ++ ["-Dgupnp=disabled"];
+    outputs = [ "bin" "out" "dev" ];
+    mesonFlags = old.mesonFlags ++ ["-Dgupnp=disabled" "-Dgtk_doc=disabled"];
   });
 in
 mkShell {

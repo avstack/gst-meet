@@ -18,6 +18,7 @@ use xmpp_parsers::{
   iq::Iq,
   jingle::{Action, Content, Creator, Description, Jingle, Senders, Transport},
   jingle_dtls_srtp::{Fingerprint, Setup},
+  jingle_grouping::{self, Semantics},
   jingle_ice_udp::{self, Transport as IceUdpTransport},
   jingle_rtcp_fb::RtcpFb,
   jingle_rtp::{self, Description as RtpDescription, PayloadType, RtcpMux},
@@ -34,7 +35,6 @@ use crate::{
 };
 
 const RTP_HDREXT_SSRC_AUDIO_LEVEL: &str = "urn:ietf:params:rtp-hdrext:ssrc-audio-level";
-const RTP_HDREXT_ABS_SEND_TIME: &str = "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time";
 const RTP_HDREXT_TRANSPORT_CC: &str =
   "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
 
@@ -119,7 +119,6 @@ struct ParsedRtpDescription {
     codecs: Vec<Codec>,
     audio_hdrext_ssrc_audio_level: Option<u8>,
     audio_hdrext_transport_cc: Option<u8>,
-    video_hdrext_abs_send_time: Option<u8>,
     video_hdrext_transport_cc: Option<u8>,
 }
 
@@ -181,7 +180,6 @@ impl JingleSession {
     let mut vp9 = None;
     let mut audio_hdrext_ssrc_audio_level = None;
     let mut audio_hdrext_transport_cc = None;
-    let mut video_hdrext_abs_send_time = None;
     let mut video_hdrext_transport_cc = None;
 
     if description.media == "audio" {
@@ -274,10 +272,7 @@ impl JingleSession {
       for hdrext in description.hdrexts.iter() {
         // TODO: .parse::<u8>() won’t be needed after updating xmpp-parsers, it is now a u16 as
         // defined in the XEP and related RFC.
-        if hdrext.uri == RTP_HDREXT_ABS_SEND_TIME {
-          video_hdrext_abs_send_time = Some(hdrext.id.parse::<u8>()?);
-        }
-        else if hdrext.uri == RTP_HDREXT_TRANSPORT_CC {
+        if hdrext.uri == RTP_HDREXT_TRANSPORT_CC {
           video_hdrext_transport_cc = Some(hdrext.id.parse::<u8>()?);
         }
       }
@@ -327,7 +322,6 @@ impl JingleSession {
         codecs,
         audio_hdrext_ssrc_audio_level,
         audio_hdrext_transport_cc,
-        video_hdrext_abs_send_time,
         video_hdrext_transport_cc,
     }))
   }
@@ -467,7 +461,6 @@ impl JingleSession {
     let mut codecs = vec![];
     let mut audio_hdrext_ssrc_audio_level = None;
     let mut audio_hdrext_transport_cc = None;
-    let mut video_hdrext_abs_send_time = None;
     let mut video_hdrext_transport_cc = None;
 
     let mut remote_ssrc_map = HashMap::new();
@@ -478,7 +471,6 @@ impl JingleSession {
           codecs.extend(description.codecs);
           audio_hdrext_ssrc_audio_level = audio_hdrext_ssrc_audio_level.or(description.audio_hdrext_ssrc_audio_level);
           audio_hdrext_transport_cc = audio_hdrext_transport_cc.or(description.audio_hdrext_transport_cc);
-          video_hdrext_abs_send_time = video_hdrext_abs_send_time.or(description.video_hdrext_abs_send_time);
           video_hdrext_transport_cc = video_hdrext_transport_cc.or(description.video_hdrext_transport_cc);
         }
       }
@@ -597,9 +589,6 @@ impl JingleSession {
                   .field("media", "video")
                   .field("clock-rate", 90000)
                   .field("encoding-name", codec.encoding_name());
-                // if let Some(hdrext) = video_hdrext_abs_send_time {
-                //   caps = caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_ABS_SEND_TIME);
-                // }
                 if let Some(hdrext) = video_hdrext_transport_cc {
                   caps = caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_TRANSPORT_CC);
                 }
@@ -828,10 +817,10 @@ impl JingleSession {
                 let hdrext = RTPHeaderExtension::create_from_uri(&ext_uri)
                   .context("failed to create hdrext")?;
                 hdrext.set_id(ext_id);
-                if ext_uri == RTP_HDREXT_ABS_SEND_TIME {}
                 if ext_uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
                 }
                 else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
+                  // hdrext.set_property("n-streams", 2u32)?;
                 }
                 else {
                   bail!("unknown rtp hdrext: {}", ext_uri);
@@ -938,9 +927,7 @@ impl JingleSession {
           let hdrext =
             RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
           hdrext.set_id(ext_id);
-          if ext_uri == RTP_HDREXT_ABS_SEND_TIME {
-          }
-          else if ext_uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
+          if ext_uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
           }
           else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
             // hdrext.set_property("n-streams", 2u32)?;
@@ -994,9 +981,7 @@ impl JingleSession {
           let hdrext =
             RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
           hdrext.set_id(ext_id);
-          if ext_uri == RTP_HDREXT_ABS_SEND_TIME {
-          }
-          else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
+          if ext_uri == RTP_HDREXT_TRANSPORT_CC {
             // hdrext.set_property("n-streams", 2u32)?;
           }
           else {
@@ -1197,9 +1182,6 @@ impl JingleSession {
         }
       }
       else if initiate_content.name.0 == "video" {
-        // if let Some(hdrext) = video_hdrext_abs_send_time {
-        //   description.hdrexts.push(RtpHdrext::new(hdrext.to_string(), RTP_HDREXT_ABS_SEND_TIME.to_owned()));
-        // }
         if let Some(hdrext) = video_hdrext_transport_cc {
           description.hdrexts.push(RtpHdrext::new(
             hdrext.to_string(),
@@ -1249,6 +1231,14 @@ impl JingleSession {
           .with_transport(transport),
       );
     }
+
+    jingle_accept = jingle_accept.set_group(jingle_grouping::Group {
+      semantics: Semantics::Bundle,
+      contents: vec![
+        jingle_grouping::Content::new("video"),
+        jingle_grouping::Content::new("audio"),
+      ],
+    });
 
     let accept_iq_id = generate_id();
     let session_accept_iq = Iq::from_set(accept_iq_id.clone(), jingle_accept)

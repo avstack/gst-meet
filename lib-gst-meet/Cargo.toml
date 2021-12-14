@@ -25,7 +25,7 @@ libc = { version = "0.2", default-features = false }
 maplit = { version = "1", default-features = false }
 nice-gst-meet = { version = "0.1", path = "../nice-gst-meet", default-features = false, features = ["v0_1_16"] }
 once_cell = { version = "1", default-features = false, features = ["std"] }
-pem = { version = "0.8", default-features = false }
+pem = { version = "1", default-features = false }
 rand = { version = "0.8", default-features = false, features = ["std", "std_rng"] }
 rcgen = { version = "0.8", default-features = false }
 ring = { version = "0.16", default-features = false }
@@ -33,11 +33,11 @@ serde = { version = "1", default-features = false, features = ["derive"] }
 serde_json = { version = "1", default-features = false, features = ["std"] }
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
-tokio-tungstenite = { version = "0.14", default-features = false, features = ["connect"] }
+tokio-tungstenite = { version = "0.16", default-features = false, features = ["connect"] }
 tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
-tracing-subscriber = { version = "0.2", optional = true, default-features = false, features = [
-  "chrono",
+tracing-subscriber = { version = "0.3", optional = true, default-features = false, features = [
   "fmt",
+  "registry",
   "smallvec",
   "parking_lot",
   "tracing-log",
@@ -49,4 +49,5 @@ xmpp-parsers = { path = "../xmpp-parsers", package = "xmpp-parsers-gst-meet", ve
 default = ["tls-native"]
 tls-native = ["tokio-tungstenite/native-tls"]
 tls-native-vendored = ["tokio-tungstenite/native-tls-vendored"]
-tls-rustls = ["tokio-tungstenite/rustls-tls"]
+tls-rustls-native-roots = ["tokio-tungstenite/rustls-tls-native-roots"]
+tls-rustls-webpki-roots = ["tokio-tungstenite/rustls-tls-webpki-roots"]

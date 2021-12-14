@@ -25,4 +25,5 @@ cocoa = { version = "0.24", default-features = false }
 default = ["tls-native"]
 tls-native = ["lib-gst-meet/tls-native"]
 tls-native-vendored = ["lib-gst-meet/tls-native-vendored"]
-tls-rustls = ["lib-gst-meet/tls-rustls"]
+tls-rustls-native-roots = ["lib-gst-meet/tls-rustls-native-roots"]
+tls-rustls-webpki-roots = ["lib-gst-meet/tls-rustls-webpki-roots"]

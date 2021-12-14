@@ -1,5 +1,5 @@
-FROM docker.io/rust:1.54-alpine3.14 AS builder
-RUN apk --update --no-cache add build-base pkgconf glib-dev gstreamer-dev libnice-dev
+FROM docker.io/rust:1.57-alpine3.14 AS builder
+RUN apk --update --no-cache add build-base pkgconf glib-dev gstreamer-dev libnice-dev openssl-dev
 COPY . .
 RUN cargo build --release -p gst-meet
 

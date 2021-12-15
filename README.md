@@ -22,13 +22,17 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 
 To integrate gst-meet into your own application, add a Cargo dependency on `lib-gst-meet`.
 
-## Development
+## Docker
+
+A `Dockerfile` is provided that uses AVStack-built Alpine APKs for gstreamer 1.19.x.
+
+## Nix
 
 For nix users, a `shell.nix` is provided. Within the repository, run `nix-shell --pure` to get a shell with access to all needed dependencies (and nothing else).
 
-Otherwise, install the dependencies described above, along with their `-dev` packages if your distribution uses them.
+## Development
 
-`cargo build` should then successfully build the libraries and `gst-meet` binary.
+Install the dependencies described above, along with their `-dev` packages if your distribution uses them. `cargo build` should then successfully build the libraries and `gst-meet` binary.
 
 ## Pipeline Structure
 

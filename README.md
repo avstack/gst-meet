@@ -100,7 +100,7 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
                                                capsfilter caps=video/x-vp8 name=video ! muxer.video_0"
 ```
 
-Play a YouTube video in the conference. By requesting Opus audio and VP9 video from YouTube, and setting the Jitsi Meet video codec to VP9, no transcoding is necessary:
+Play a YouTube video in the conference. By requesting Opus audio and VP9 video from YouTube, and setting the Jitsi Meet video codec to VP9, no transcoding is necessary. Note that not every YouTube video has VP9 and Opus available, so the pipeline may need adjusting for other videos.
 
 ```
 YOUTUBE_URL="https://www.youtube.com/watch?v=vjV_2Ri2rfE"

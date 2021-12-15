@@ -12,6 +12,7 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 * `gstreamer` 1.19 or later. Most distributions do not package this version yet, so you may need to build from source
 * `gst-plugins-bad` (same version as `gstreamer`) and any other plugins that you want to use in your pipelines
 * `libnice`
+* `pkg-config`
 * A TLS library (usually installed by default, but you may need to install `openssl-dev` or similar on minimal Linux distributions)
 * A Rust toolchain ([rustup](https://rustup.rs/) is the easiest way to install one)
 

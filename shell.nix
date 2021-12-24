@@ -73,6 +73,7 @@ mkShell {
   buildInputs = [
     cargo
     pkg-config
+    openssl
     glib
     glib-networking
     gstreamer

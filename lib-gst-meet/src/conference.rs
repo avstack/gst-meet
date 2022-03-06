@@ -15,13 +15,13 @@ use tracing::{debug, error, info, trace, warn};
 use uuid::Uuid;
 pub use xmpp_parsers::disco::Feature;
 use xmpp_parsers::{
-  disco::{DiscoInfoQuery, DiscoInfoResult, Identity},
   caps::{self, Caps},
+  disco::{DiscoInfoQuery, DiscoInfoResult, Identity},
   ecaps2::{self, ECaps2},
   hashes::{Algo, Hash},
   iq::{Iq, IqType},
   message::{Message, MessageType},
-  muc::{Muc, MucUser, user::Status as MucStatus},
+  muc::{user::Status as MucStatus, Muc, MucUser},
   nick::Nick,
   ns,
   presence::{self, Presence},
@@ -42,9 +42,7 @@ const DISCO_NODE: &str = "https://github.com/avstack/gst-meet";
 
 static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| DiscoInfoResult {
   node: None,
-  identities: vec![
-    Identity::new("client", "bot", "en", "gst-meet"),
-  ],
+  identities: vec![Identity::new("client", "bot", "en", "gst-meet")],
   features: vec![
     Feature::new(ns::DISCO_INFO),
     Feature::new(ns::JINGLE_RTP_AUDIO),
@@ -59,9 +57,8 @@ static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| DiscoInfoResult {
   extensions: vec![],
 });
 
-static COMPUTED_CAPS_HASH: Lazy<Hash> = Lazy::new(|| {
-  caps::hash_caps(&caps::compute_disco(&DISCO_INFO), Algo::Sha_1).unwrap()
-});
+static COMPUTED_CAPS_HASH: Lazy<Hash> =
+  Lazy::new(|| caps::hash_caps(&caps::compute_disco(&DISCO_INFO), Algo::Sha_1).unwrap());
 
 #[derive(Debug, Clone, Copy)]
 enum JitsiConferenceState {
@@ -154,18 +151,23 @@ impl JitsiConference {
 
     let focus = config.focus.clone();
 
-    let ecaps2_hash =
-      ecaps2::hash_ecaps2(&ecaps2::compute_disco(&DISCO_INFO)?, Algo::Sha_256)?;
+    let ecaps2_hash = ecaps2::hash_ecaps2(&ecaps2::compute_disco(&DISCO_INFO)?, Algo::Sha_256)?;
     let mut presence = vec![
       Muc::new().into(),
       Caps::new(DISCO_NODE, COMPUTED_CAPS_HASH.clone()).into(),
       ECaps2::new(vec![ecaps2_hash]).into(),
-      Element::builder("stats-id", ns::DEFAULT_NS).append("gst-meet").build(),
+      Element::builder("stats-id", ns::DEFAULT_NS)
+        .append("gst-meet")
+        .build(),
       Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
         .append(config.video_codec.as_str())
         .build(),
-      Element::builder("audiomuted", ns::DEFAULT_NS).append("false").build(),
-      Element::builder("videomuted", ns::DEFAULT_NS).append("false").build(),
+      Element::builder("audiomuted", ns::DEFAULT_NS)
+        .append("false")
+        .build(),
+      Element::builder("videomuted", ns::DEFAULT_NS)
+        .append("false")
+        .build(),
       Element::builder("nick", "http://jabber.org/protocol/nick")
         .append(config.nick.as_str())
         .build(),
@@ -268,14 +270,17 @@ impl JitsiConference {
   #[tracing::instrument(level = "debug", err)]
   pub async fn set_muted(&self, media_type: MediaType, muted: bool) -> Result<()> {
     let mut locked_inner = self.inner.lock().await;
-    let element = Element::builder(media_type.jitsi_muted_presence_element_name(), ns::DEFAULT_NS)
-      .append(muted.to_string())
-      .build();
-    locked_inner.presence.retain(|el| el.name() != media_type.jitsi_muted_presence_element_name());
+    let element = Element::builder(
+      media_type.jitsi_muted_presence_element_name(),
+      ns::DEFAULT_NS,
+    )
+    .append(muted.to_string())
+    .build();
+    locked_inner
+      .presence
+      .retain(|el| el.name() != media_type.jitsi_muted_presence_element_name());
     locked_inner.presence.push(element);
-    self
-      .send_presence(&locked_inner.presence)
-      .await
+    self.send_presence(&locked_inner.presence).await
   }
 
   pub async fn pipeline(&self) -> Result<gstreamer::Pipeline> {
@@ -479,7 +484,11 @@ impl StanzaFilter for JitsiConference {
       },
       JoiningMuc => {
         let presence = Presence::try_from(element)?;
-        if let Some(payload) = presence.payloads.iter().find(|payload| payload.is("x", ns::MUC_USER)) {
+        if let Some(payload) = presence
+          .payloads
+          .iter()
+          .find(|payload| payload.is("x", ns::MUC_USER))
+        {
           let muc_user = MucUser::try_from(payload.clone())?;
           if muc_user.status.contains(&MucStatus::SelfPresence) {
             debug!("Joined MUC: {}", self.config.muc);
@@ -500,23 +509,28 @@ impl StanzaFilter for JitsiConference {
                 if let Some(node) = query.node {
                   match node.splitn(2, '#').collect::<Vec<_>>().as_slice() {
                     // TODO: also support ecaps2, as we send it in our presence.
-                    [uri, hash] if *uri == DISCO_NODE && *hash == COMPUTED_CAPS_HASH.to_base64() => {
+                    [uri, hash]
+                      if *uri == DISCO_NODE && *hash == COMPUTED_CAPS_HASH.to_base64() =>
+                    {
                       let mut disco_info = DISCO_INFO.clone();
                       disco_info.node = Some(node);
                       let iq = Iq::from_result(iq.id, Some(disco_info))
                         .with_from(Jid::Full(self.jid.clone()))
                         .with_to(iq.from.unwrap());
                       self.xmpp_tx.send(iq.into()).await?;
-                    }
+                    },
                     _ => {
                       let error = StanzaError::new(
-                        ErrorType::Cancel, DefinedCondition::ItemNotFound,
-                        "en", format!("Unknown disco#info node: {}", node));
+                        ErrorType::Cancel,
+                        DefinedCondition::ItemNotFound,
+                        "en",
+                        format!("Unknown disco#info node: {}", node),
+                      );
                       let iq = Iq::from_error(iq.id, error)
                         .with_from(Jid::Full(self.jid.clone()))
                         .with_to(iq.from.unwrap());
                       self.xmpp_tx.send(iq.into()).await?;
-                    }
+                    },
                   }
                 }
                 else {
@@ -579,7 +593,8 @@ impl StanzaFilter for JitsiConference {
 
                   if let Some(colibri_url) = colibri_url {
                     info!("Connecting Colibri WebSocket to {}", colibri_url);
-                    let colibri_channel = ColibriChannel::new(&colibri_url, self.tls_insecure).await?;
+                    let colibri_channel =
+                      ColibriChannel::new(&colibri_url, self.tls_insecure).await?;
                     let (tx, rx) = mpsc::channel(8);
                     colibri_channel.subscribe(tx).await;
                     jingle_session.colibri_channel = Some(colibri_channel);
@@ -592,8 +607,7 @@ impl StanzaFilter for JitsiConference {
 
                         // End-to-end ping
                         if let ColibriMessage::EndpointMessage { to, .. } = &msg {
-                          // if to == 
-
+                          // if to ==
                         }
 
                         let locked_inner = self_.inner.lock().await;
@@ -687,7 +701,9 @@ impl StanzaFilter for JitsiConference {
                         if let Err(e) = f(self.clone(), participant.clone()).await {
                           warn!("on_participant failed: {:?}", e);
                         }
-                        else if let Some(jingle_session) = self.jingle_session.lock().await.as_ref() {
+                        else if let Some(jingle_session) =
+                          self.jingle_session.lock().await.as_ref()
+                        {
                           gstreamer::debug_bin_to_dot_file(
                             &jingle_session.pipeline(),
                             gstreamer::DebugGraphDetails::ALL,

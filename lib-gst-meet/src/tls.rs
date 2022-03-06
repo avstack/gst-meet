@@ -1,4 +1,7 @@
-#[cfg(any(feature = "tls-rustls-native-roots", feature = "tls-rustls-webpki-roots"))]
+#[cfg(any(
+  feature = "tls-rustls-native-roots",
+  feature = "tls-rustls-webpki-roots"
+))]
 use std::sync::Arc;
 
 #[cfg(not(feature = "tls-insecure"))]
@@ -19,11 +22,15 @@ pub(crate) fn wss_connector(insecure: bool) -> Result<tokio_tungstenite::Connect
     .with_no_client_auth();
   #[cfg(feature = "tls-insecure")]
   if insecure {
-    config.dangerous().set_certificate_verifier(Arc::new(InsecureServerCertVerifier));
+    config
+      .dangerous()
+      .set_certificate_verifier(Arc::new(InsecureServerCertVerifier));
   }
   #[cfg(not(feature = "tls-insecure"))]
   if insecure {
-    bail!("Insecure TLS mode can only be enabled if the tls-insecure feature was enabled at compile time.")
+    bail!(
+      "Insecure TLS mode can only be enabled if the tls-insecure feature was enabled at compile time."
+    )
   }
   Ok(Connector::Rustls(Arc::new(config)))
 }
@@ -31,15 +38,13 @@ pub(crate) fn wss_connector(insecure: bool) -> Result<tokio_tungstenite::Connect
 #[cfg(feature = "tls-rustls-webpki-roots")]
 pub(crate) fn wss_connector(insecure: bool) -> Result<tokio_tungstenite::Connector> {
   let mut roots = rustls::RootCertStore::empty();
-  roots.add_server_trust_anchors(
-    webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
-      rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-        ta.subject,
-        ta.spki,
-        ta.name_constraints,
-      )
-    })
-  );
+  roots.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.0.iter().map(|ta| {
+    rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
+      ta.subject,
+      ta.spki,
+      ta.name_constraints,
+    )
+  }));
 
   let config = rustls::ClientConfig::builder()
     .with_safe_defaults()
@@ -47,11 +52,15 @@ pub(crate) fn wss_connector(insecure: bool) -> Result<tokio_tungstenite::Connect
     .with_no_client_auth();
   #[cfg(feature = "tls-insecure")]
   if insecure {
-    config.dangerous().set_certificate_verifier(Arc::new(InsecureServerCertVerifier));
+    config
+      .dangerous()
+      .set_certificate_verifier(Arc::new(InsecureServerCertVerifier));
   }
   #[cfg(not(feature = "tls-insecure"))]
   if insecure {
-    bail!("Insecure TLS mode can only be enabled if the tls-insecure feature was enabled at compile time.")
+    bail!(
+      "Insecure TLS mode can only be enabled if the tls-insecure feature was enabled at compile time."
+    )
   }
   Ok(Connector::Rustls(Arc::new(config)))
 }
@@ -67,17 +76,39 @@ pub(crate) fn wss_connector(insecure: bool) -> Result<tokio_tungstenite::Connect
   }
   #[cfg(not(feature = "tls-insecure"))]
   if insecure {
-    bail!("Insecure TLS mode can only be enabled if the tls-insecure feature was enabled at compile time.")
+    bail!(
+      "Insecure TLS mode can only be enabled if the tls-insecure feature was enabled at compile time."
+    )
   }
   Ok(Connector::NativeTls(builder.build()?))
 }
 
-#[cfg(all(feature = "tls-insecure", any(feature = "tls-rustls-native-roots", feature = "tls-rustls-webpki-roots")))]
+#[cfg(all(
+  feature = "tls-insecure",
+  any(
+    feature = "tls-rustls-native-roots",
+    feature = "tls-rustls-webpki-roots"
+  )
+))]
 struct InsecureServerCertVerifier;
 
-#[cfg(all(feature = "tls-insecure", any(feature = "tls-rustls-native-roots", feature = "tls-rustls-webpki-roots")))]
+#[cfg(all(
+  feature = "tls-insecure",
+  any(
+    feature = "tls-rustls-native-roots",
+    feature = "tls-rustls-webpki-roots"
+  )
+))]
 impl rustls::client::ServerCertVerifier for InsecureServerCertVerifier {
-  fn verify_server_cert(&self, _end_entity: &rustls::Certificate, _intermediates: &[rustls::Certificate], _server_name: &rustls::ServerName, _scts: &mut dyn Iterator<Item = &[u8]>, _ocsp_response: &[u8], _now: std::time::SystemTime) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
+  fn verify_server_cert(
+    &self,
+    _end_entity: &rustls::Certificate,
+    _intermediates: &[rustls::Certificate],
+    _server_name: &rustls::ServerName,
+    _scts: &mut dyn Iterator<Item = &[u8]>,
+    _ocsp_response: &[u8],
+    _now: std::time::SystemTime,
+  ) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
     Ok(rustls::client::ServerCertVerified::assertion())
   }
 }

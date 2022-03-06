@@ -6,7 +6,7 @@ use futures::{
   sink::SinkExt,
   stream::{StreamExt, TryStreamExt},
 };
-use rand::{RngCore, thread_rng};
+use rand::{thread_rng, RngCore};
 use tokio::{
   sync::{mpsc, Mutex},
   time::sleep,
@@ -46,7 +46,13 @@ impl ColibriChannel {
         .header("connection", "Upgrade")
         .header("upgrade", "websocket")
         .body(())?;
-      match tokio_tungstenite::connect_async_tls_with_config(request, None, Some(wss_connector(tls_insecure)?)).await {
+      match tokio_tungstenite::connect_async_tls_with_config(
+        request,
+        None,
+        Some(wss_connector(tls_insecure)?),
+      )
+      .await
+      {
         Ok((websocket, _)) => break websocket,
         Err(e) => {
           if retries < MAX_CONNECT_RETRIES {
@@ -57,7 +63,7 @@ impl ColibriChannel {
           else {
             return Err(e).context("Failed to connect Colibri WebSocket");
           }
-        }
+        },
       }
     };
 

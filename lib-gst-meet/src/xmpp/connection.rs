@@ -5,7 +5,7 @@ use futures::{
   sink::{Sink, SinkExt},
   stream::{Stream, StreamExt, TryStreamExt},
 };
-use rand::{RngCore, thread_rng};
+use rand::{thread_rng, RngCore};
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_tungstenite::tungstenite::{
@@ -22,7 +22,9 @@ use xmpp_parsers::{
   BareJid, Element, FullJid, Jid,
 };
 
-use crate::{pinger::Pinger, stanza_filter::StanzaFilter, tls::wss_connector, util::generate_id, xmpp};
+use crate::{
+  pinger::Pinger, stanza_filter::StanzaFilter, tls::wss_connector, util::generate_id, xmpp,
+};
 
 #[derive(Debug, Clone, Copy)]
 enum ConnectionState {
@@ -85,14 +87,23 @@ impl Connection {
       .header("sec-websocket-protocol", "xmpp")
       .header("sec-websocket-key", base64::encode(&key))
       .header("sec-websocket-version", "13")
-      .header("host", websocket_url.host().context("invalid WebSocket URL: missing host")?)
+      .header(
+        "host",
+        websocket_url
+          .host()
+          .context("invalid WebSocket URL: missing host")?,
+      )
       .header("connection", "Upgrade")
       .header("upgrade", "websocket")
       .body(())
       .context("failed to build WebSocket request")?;
-    let (websocket, _response) = tokio_tungstenite::connect_async_tls_with_config(request, None, Some(wss_connector(tls_insecure)?))
-      .await
-      .context("failed to connect XMPP WebSocket")?;
+    let (websocket, _response) = tokio_tungstenite::connect_async_tls_with_config(
+      request,
+      None,
+      Some(wss_connector(tls_insecure)?),
+    )
+    .await
+    .context("failed to connect XMPP WebSocket")?;
     let (sink, stream) = websocket.split();
     let (tx, rx) = mpsc::channel(64);
 

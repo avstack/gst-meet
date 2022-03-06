@@ -8,57 +8,57 @@
 
 macro_rules! get_attr {
   ($elem:ident, $attr:tt, $type:tt) => {
-      get_attr!($elem, $attr, $type, value, value.parse()?)
+    get_attr!($elem, $attr, $type, value, value.parse()?)
   };
   ($elem:ident, $attr:tt, OptionEmpty, $value:ident, $func:expr) => {
-      match $elem.attr($attr) {
-          Some("") => None,
-          Some($value) => Some($func),
-          None => None,
-      }
+    match $elem.attr($attr) {
+      Some("") => None,
+      Some($value) => Some($func),
+      None => None,
+    }
   };
   ($elem:ident, $attr:tt, Option, $value:ident, $func:expr) => {
-      match $elem.attr($attr) {
-          Some($value) => Some($func),
-          None => None,
-      }
+    match $elem.attr($attr) {
+      Some($value) => Some($func),
+      None => None,
+    }
   };
   ($elem:ident, $attr:tt, Required, $value:ident, $func:expr) => {
-      match $elem.attr($attr) {
-          Some($value) => $func,
-          None => {
-              return Err(xmpp_parsers::Error::ParseError(concat!(
-                  "Required attribute '",
-                  $attr,
-                  "' missing."
-              )));
-          }
-      }
+    match $elem.attr($attr) {
+      Some($value) => $func,
+      None => {
+        return Err(xmpp_parsers::Error::ParseError(concat!(
+          "Required attribute '",
+          $attr,
+          "' missing."
+        )));
+      },
+    }
   };
   ($elem:ident, $attr:tt, RequiredNonEmpty, $value:ident, $func:expr) => {
-      match $elem.attr($attr) {
-          Some("") => {
-              return Err(xmpp_parsers::Error::ParseError(concat!(
-                  "Required attribute '",
-                  $attr,
-                  "' must not be empty."
-              )));
-          }
-          Some($value) => $func,
-          None => {
-              return Err(xmpp_parsers::Error::ParseError(concat!(
-                  "Required attribute '",
-                  $attr,
-                  "' missing."
-              )));
-          }
-      }
+    match $elem.attr($attr) {
+      Some("") => {
+        return Err(xmpp_parsers::Error::ParseError(concat!(
+          "Required attribute '",
+          $attr,
+          "' must not be empty."
+        )));
+      },
+      Some($value) => $func,
+      None => {
+        return Err(xmpp_parsers::Error::ParseError(concat!(
+          "Required attribute '",
+          $attr,
+          "' missing."
+        )));
+      },
+    }
   };
   ($elem:ident, $attr:tt, Default, $value:ident, $func:expr) => {
-      match $elem.attr($attr) {
-          Some($value) => $func,
-          None => ::std::default::Default::default(),
-      }
+    match $elem.attr($attr) {
+      Some($value) => $func,
+      None => ::std::default::Default::default(),
+    }
   };
 }
 
@@ -300,28 +300,28 @@ macro_rules! generate_attribute_enum {
 
 macro_rules! check_self {
   ($elem:ident, $name:tt, $ns:ident) => {
-      check_self!($elem, $name, $ns, $name);
+    check_self!($elem, $name, $ns, $name);
   };
   ($elem:ident, $name:tt, $ns:ident, $pretty_name:tt) => {
-      if !$elem.is($name, $ns) {
-          return Err(xmpp_parsers::Error::ParseError(concat!(
-              "This is not a ",
-              $pretty_name,
-              " element."
-          )));
-      }
+    if !$elem.is($name, $ns) {
+      return Err(xmpp_parsers::Error::ParseError(concat!(
+        "This is not a ",
+        $pretty_name,
+        " element."
+      )));
+    }
   };
 }
 
 macro_rules! check_ns_only {
   ($elem:ident, $name:tt, $ns:ident) => {
-      if !$elem.has_ns($ns) {
-          return Err(xmpp_parsers::Error::ParseError(concat!(
-              "This is not a ",
-              $name,
-              " element."
-          )));
-      }
+    if !$elem.has_ns($ns) {
+      return Err(xmpp_parsers::Error::ParseError(concat!(
+        "This is not a ",
+        $name,
+        " element."
+      )));
+    }
   };
 }
 
@@ -437,141 +437,142 @@ macro_rules! start_decl {
 
 macro_rules! start_parse_elem {
   ($temp:ident: Vec) => {
-      let mut $temp = Vec::new();
+    let mut $temp = Vec::new();
   };
   ($temp:ident: Option) => {
-      let mut $temp = None;
+    let mut $temp = None;
   };
   ($temp:ident: Required) => {
-      let mut $temp = None;
+    let mut $temp = None;
   };
   ($temp:ident: Present) => {
-      let mut $temp = false;
+    let mut $temp = false;
   };
 }
 
 macro_rules! do_parse {
   ($elem:ident, Element) => {
-      $elem.clone()
+    $elem.clone()
   };
   ($elem:ident, String) => {
-      $elem.text()
+    $elem.text()
   };
   ($elem:ident, $constructor:ident) => {
-      $constructor::try_from($elem.clone())?
+    $constructor::try_from($elem.clone())?
   };
 }
 
 macro_rules! do_parse_elem {
   ($temp:ident: Vec = $constructor:ident => $elem:ident, $name:tt, $parent_name:tt) => {
-      $temp.push(do_parse!($elem, $constructor));
+    $temp.push(do_parse!($elem, $constructor));
   };
   ($temp:ident: Option = $constructor:ident => $elem:ident, $name:tt, $parent_name:tt) => {
-      if $temp.is_some() {
-          return Err(xmpp_parsers::Error::ParseError(concat!(
-              "Element ",
-              $parent_name,
-              " must not have more than one ",
-              $name,
-              " child."
-          )));
-      }
-      $temp = Some(do_parse!($elem, $constructor));
+    if $temp.is_some() {
+      return Err(xmpp_parsers::Error::ParseError(concat!(
+        "Element ",
+        $parent_name,
+        " must not have more than one ",
+        $name,
+        " child."
+      )));
+    }
+    $temp = Some(do_parse!($elem, $constructor));
   };
   ($temp:ident: Required = $constructor:ident => $elem:ident, $name:tt, $parent_name:tt) => {
-      if $temp.is_some() {
-          return Err(xmpp_parsers::Error::ParseError(concat!(
-              "Element ",
-              $parent_name,
-              " must not have more than one ",
-              $name,
-              " child."
-          )));
-      }
-      $temp = Some(do_parse!($elem, $constructor));
+    if $temp.is_some() {
+      return Err(xmpp_parsers::Error::ParseError(concat!(
+        "Element ",
+        $parent_name,
+        " must not have more than one ",
+        $name,
+        " child."
+      )));
+    }
+    $temp = Some(do_parse!($elem, $constructor));
   };
   ($temp:ident: Present = $constructor:ident => $elem:ident, $name:tt, $parent_name:tt) => {
-      if $temp {
-          return Err(xmpp_parsers::Error::ParseError(concat!(
-              "Element ",
-              $parent_name,
-              " must not have more than one ",
-              $name,
-              " child."
-          )));
-      }
-      $temp = true;
+    if $temp {
+      return Err(xmpp_parsers::Error::ParseError(concat!(
+        "Element ",
+        $parent_name,
+        " must not have more than one ",
+        $name,
+        " child."
+      )));
+    }
+    $temp = true;
   };
 }
 
 macro_rules! finish_parse_elem {
   ($temp:ident: Vec = $name:tt, $parent_name:tt) => {
-      $temp
+    $temp
   };
   ($temp:ident: Option = $name:tt, $parent_name:tt) => {
-      $temp
+    $temp
   };
   ($temp:ident: Required = $name:tt, $parent_name:tt) => {
-      $temp.ok_or(xmpp_parsers::Error::ParseError(concat!(
-          "Missing child ",
-          $name,
-          " in ",
-          $parent_name,
-          " element."
-      )))?
+    $temp.ok_or(xmpp_parsers::Error::ParseError(concat!(
+      "Missing child ",
+      $name,
+      " in ",
+      $parent_name,
+      " element."
+    )))?
   };
   ($temp:ident: Present = $name:tt, $parent_name:tt) => {
-      $temp
+    $temp
   };
 }
 
 macro_rules! generate_serialiser {
   ($builder:ident, $parent:ident, $elem:ident, Required, String, ($name:tt, $ns:ident)) => {
-      $builder.append(
-          xmpp_parsers::Element::builder($name, $ns)
-              .append(::minidom::Node::Text($parent.$elem)),
-      )
+    $builder.append(
+      xmpp_parsers::Element::builder($name, $ns).append(::minidom::Node::Text($parent.$elem)),
+    )
   };
   ($builder:ident, $parent:ident, $elem:ident, Option, String, ($name:tt, $ns:ident)) => {
-      $builder.append_all($parent.$elem.map(|elem| {
-          xmpp_parsers::Element::builder($name, $ns).append(::minidom::Node::Text(elem))
-      }))
+    $builder.append_all(
+      $parent
+        .$elem
+        .map(|elem| xmpp_parsers::Element::builder($name, $ns).append(::minidom::Node::Text(elem))),
+    )
   };
   ($builder:ident, $parent:ident, $elem:ident, Option, $constructor:ident, ($name:tt, *)) => {
-      $builder.append_all(
-          $parent
-              .$elem
-              .map(|elem| ::minidom::Node::Element(xmpp_parsers::Element::from(elem))),
-      )
+    $builder.append_all(
+      $parent
+        .$elem
+        .map(|elem| ::minidom::Node::Element(xmpp_parsers::Element::from(elem))),
+    )
   };
   ($builder:ident, $parent:ident, $elem:ident, Option, $constructor:ident, ($name:tt, $ns:ident)) => {
-      $builder.append_all(
-          $parent
-              .$elem
-              .map(|elem| ::minidom::Node::Element(xmpp_parsers::Element::from(elem))),
-      )
+    $builder.append_all(
+      $parent
+        .$elem
+        .map(|elem| ::minidom::Node::Element(xmpp_parsers::Element::from(elem))),
+    )
   };
   ($builder:ident, $parent:ident, $elem:ident, Vec, $constructor:ident, ($name:tt, $ns:ident)) => {
-      $builder.append_all($parent.$elem.into_iter())
+    $builder.append_all($parent.$elem.into_iter())
   };
   ($builder:ident, $parent:ident, $elem:ident, Present, $constructor:ident, ($name:tt, $ns:ident)) => {
-      $builder.append(::minidom::Node::Element(
-          xmpp_parsers::Element::builder($name, $ns).build(),
-      ))
+    $builder.append(::minidom::Node::Element(
+      xmpp_parsers::Element::builder($name, $ns).build(),
+    ))
   };
   ($builder:ident, $parent:ident, $elem:ident, $_:ident, $constructor:ident, ($name:tt, $ns:ident)) => {
-      $builder.append(::minidom::Node::Element(xmpp_parsers::Element::from(
-          $parent.$elem,
-      )))
+    $builder.append(::minidom::Node::Element(xmpp_parsers::Element::from(
+      $parent.$elem,
+    )))
   };
 }
 
 macro_rules! generate_child_test {
   ($child:ident, $name:tt, *) => {
-      $child.is($name, ::minidom::NSChoice::Any)
+    $child.is($name, ::minidom::NSChoice::Any)
   };
   ($child:ident, $name:tt, $ns:tt) => {
-      $child.is($name, $ns)
+    $child.is($name, $ns)
   };
 }
 
@@ -671,48 +672,48 @@ macro_rules! assert_size (
 // TODO: move that to src/pubsub/mod.rs, once we figure out how to use macros from there.
 macro_rules! impl_pubsub_item {
   ($item:ident, $ns:ident) => {
-      impl ::std::convert::TryFrom<xmpp_parsers::Element> for $item {
-          type Error = Error;
+    impl ::std::convert::TryFrom<xmpp_parsers::Element> for $item {
+      type Error = Error;
 
-          fn try_from(elem: xmpp_parsers::Element) -> Result<$item, Error> {
-              check_self!(elem, "item", $ns);
-              let mut payloads = elem.children().cloned().collect::<Vec<_>>();
-              let payload = payloads.pop();
-              if !payloads.is_empty() {
-                  return Err(Error::ParseError(
-                      "More than a single payload in item element.",
-                  ));
-              }
-              Ok($item(xmpp_parsers::pubsub::Item {
-                  id: get_attr!(elem, "id", Option),
-                  publisher: get_attr!(elem, "publisher", Option),
-                  payload,
-              }))
-          }
+      fn try_from(elem: xmpp_parsers::Element) -> Result<$item, Error> {
+        check_self!(elem, "item", $ns);
+        let mut payloads = elem.children().cloned().collect::<Vec<_>>();
+        let payload = payloads.pop();
+        if !payloads.is_empty() {
+          return Err(Error::ParseError(
+            "More than a single payload in item element.",
+          ));
+        }
+        Ok($item(xmpp_parsers::pubsub::Item {
+          id: get_attr!(elem, "id", Option),
+          publisher: get_attr!(elem, "publisher", Option),
+          payload,
+        }))
       }
+    }
 
-      impl From<$item> for xmpp_parsers::Element {
-          fn from(item: $item) -> xmpp_parsers::Element {
-              xmpp_parsers::Element::builder("item", $ns)
-                  .attr("id", item.0.id)
-                  .attr("publisher", item.0.publisher)
-                  .append_all(item.0.payload)
-                  .build()
-          }
+    impl From<$item> for xmpp_parsers::Element {
+      fn from(item: $item) -> xmpp_parsers::Element {
+        xmpp_parsers::Element::builder("item", $ns)
+          .attr("id", item.0.id)
+          .attr("publisher", item.0.publisher)
+          .append_all(item.0.payload)
+          .build()
       }
+    }
 
-      impl ::std::ops::Deref for $item {
-          type Target = xmpp_parsers::pubsub::Item;
+    impl ::std::ops::Deref for $item {
+      type Target = xmpp_parsers::pubsub::Item;
 
-          fn deref(&self) -> &Self::Target {
-              &self.0
-          }
+      fn deref(&self) -> &Self::Target {
+        &self.0
       }
+    }
 
-      impl ::std::ops::DerefMut for $item {
-          fn deref_mut(&mut self) -> &mut Self::Target {
-              &mut self.0
-          }
+    impl ::std::ops::DerefMut for $item {
+      fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
       }
+    }
   };
 }

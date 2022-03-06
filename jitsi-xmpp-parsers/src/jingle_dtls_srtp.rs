@@ -26,22 +26,21 @@ generate_element!(
 impl Fingerprint {
   /// Create a new Fingerprint from a Setup and a Hash.
   pub fn from_hash(setup: Setup, hash: Hash) -> Fingerprint {
-      Fingerprint {
-          hash: hash.algo,
-          setup: Some(setup),
-          value: hash.hash,
-      }
+    Fingerprint {
+      hash: hash.algo,
+      setup: Some(setup),
+      value: hash.hash,
+    }
   }
 
   /// Create a new Fingerprint from a Setup and parsing the hash.
   pub fn from_colon_separated_hex(
-      setup: Setup,
-      algo: &str,
-      hash: &str,
+    setup: Setup,
+    algo: &str,
+    hash: &str,
   ) -> Result<Fingerprint, Error> {
-      let algo = algo.parse()?;
-      let hash = Hash::from_colon_separated_hex(algo, hash)?;
-      Ok(Fingerprint::from_hash(setup, hash))
+    let algo = algo.parse()?;
+    let hash = Hash::from_colon_separated_hex(algo, hash)?;
+    Ok(Fingerprint::from_hash(setup, hash))
   }
 }
-

@@ -43,14 +43,14 @@ generate_element!(
 impl Description {
   /// Create a new RTP description.
   pub fn new(media: String) -> Description {
-      Description {
-          media,
-          ssrc: None,
-          payload_types: Vec::new(),
-          rtcp_mux: None,
-          ssrc_groups: Vec::new(),
-          ssrcs: Vec::new(),
-          hdrexts: Vec::new(),
-      }
+    Description {
+      media,
+      ssrc: None,
+      payload_types: Vec::new(),
+      rtcp_mux: None,
+      ssrc_groups: Vec::new(),
+      ssrcs: Vec::new(),
+      hdrexts: Vec::new(),
+    }
   }
 }

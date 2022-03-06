@@ -3,10 +3,7 @@ use xmpp_parsers::{
   ns::{JINGLE_DTLS, JINGLE_ICE_UDP},
 };
 
-use crate::{
-  jingle_dtls_srtp::Fingerprint,
-  ns::JITSI_COLIBRI,
-};
+use crate::{jingle_dtls_srtp::Fingerprint, ns::JITSI_COLIBRI};
 
 generate_element!(
   /// Wrapper element for an ICE-UDP transport.

@@ -53,7 +53,10 @@ struct Opt {
   #[structopt(short, long, parse(from_occurrences))]
   verbose: u8,
   #[cfg(feature = "tls-insecure")]
-  #[structopt(long, help = "Disable TLS certificate verification (use with extreme caution)")]
+  #[structopt(
+    long,
+    help = "Disable TLS certificate verification (use with extreme caution)"
+  )]
   tls_insecure: bool,
 }
 

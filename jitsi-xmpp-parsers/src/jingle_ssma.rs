@@ -1,4 +1,7 @@
-use xmpp_parsers::{jingle_ssma::{Parameter, Semantics}, ns::JINGLE_SSMA};
+use xmpp_parsers::{
+  jingle_ssma::{Parameter, Semantics},
+  ns::JINGLE_SSMA,
+};
 
 use crate::ns::JITSI_MEET;
 

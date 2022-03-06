@@ -2,7 +2,7 @@ use std::{collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin,
 
 use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
-use colibri::ColibriMessage;
+use colibri::{ColibriMessage, JsonMessage};
 use futures::stream::StreamExt;
 use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
 use jitsi_xmpp_parsers::jingle::{Action, Jingle};
@@ -597,6 +597,7 @@ impl StanzaFilter for JitsiConference {
                       ColibriChannel::new(&colibri_url, self.tls_insecure).await?;
                     let (tx, rx) = mpsc::channel(8);
                     colibri_channel.subscribe(tx).await;
+                    let colibri_channel_ = colibri_channel.clone();
                     jingle_session.colibri_channel = Some(colibri_channel);
 
                     let self_ = self.clone();
@@ -606,8 +607,25 @@ impl StanzaFilter for JitsiConference {
                         // Some message types are handled internally rather than passed to the on_colibri_message handler.
 
                         // End-to-end ping
-                        if let ColibriMessage::EndpointMessage { to, .. } = &msg {
-                          // if to ==
+                        if let ColibriMessage::EndpointMessage { to, from, msg_payload } = &msg {
+                          if let Some(to) = to {
+                            let my_endpoint_id = self_.jid.to_string().split('-').next().unwrap().to_owned();
+                            if to == &my_endpoint_id {
+                              match serde_json::from_value::<JsonMessage>(msg_payload.clone()) {
+                                Ok(JsonMessage::E2ePingRequest { id }) => {
+                                  if let Err(e) = colibri_channel_.send(ColibriMessage::EndpointMessage {
+                                    from: Some(my_endpoint_id),
+                                    to: from.clone(),
+                                    msg_payload: serde_json::to_value(JsonMessage::E2ePingResponse { id }).unwrap(),
+                                  }).await {
+                                    warn!("failed to send e2e ping response: {:?}", e);
+                                  }
+                                  continue;
+                                },
+                                _ => {},
+                              }
+                            }
+                          }
                         }
 
                         let locked_inner = self_.inner.lock().await;

@@ -23,6 +23,7 @@ use crate::tls::wss_connector;
 const MAX_CONNECT_RETRIES: u8 = 3;
 const CONNECT_RETRY_SLEEP: Duration = Duration::from_secs(3);
 
+#[derive(Clone)]
 pub(crate) struct ColibriChannel {
   send_tx: mpsc::Sender<ColibriMessage>,
   recv_tx: Arc<Mutex<Vec<mpsc::Sender<ColibriMessage>>>>,

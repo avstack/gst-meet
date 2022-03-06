@@ -1,16 +1,40 @@
-use std::convert::TryFrom;
+use std::{convert::TryFrom, time::Duration};
 
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use tokio::sync::mpsc;
-use xmpp_parsers::{iq::Iq, Element, FullJid, Jid};
+use tokio::{sync::mpsc, task::JoinHandle, time};
+use tracing::warn;
+use xmpp_parsers::{iq::Iq, Element, FullJid, Jid, ping::Ping};
 
-use crate::stanza_filter::StanzaFilter;
+use crate::{stanza_filter::StanzaFilter, util::generate_id};
+
+const PING_INTERVAL: Duration = Duration::from_secs(30);
 
 #[derive(Debug)]
 pub(crate) struct Pinger {
   pub(crate) jid: FullJid,
   pub(crate) tx: mpsc::Sender<Element>,
+  pub(crate) ping_task: JoinHandle<()>,
+}
+
+impl Pinger {
+  pub(crate) fn new(jid: FullJid, tx: mpsc::Sender<Element>) -> Pinger {
+    let ping_tx = tx.clone();
+    let ping_task = tokio::spawn(async move {
+      let mut interval = time::interval(PING_INTERVAL);
+      loop {
+        interval.tick().await;
+        if let Err(e) = ping_tx.send(Iq::from_get(generate_id(), Ping).into()).await {
+          warn!("failed to send XMPP ping: {:?}", e);
+        }
+      }
+    });
+    Pinger {
+      jid,
+      tx,
+      ping_task,
+    }
+  }
 }
 
 #[async_trait]

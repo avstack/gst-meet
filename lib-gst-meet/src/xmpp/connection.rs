@@ -269,10 +269,7 @@ impl Connection {
             info!("My JID: {}", jid);
             locked_inner.jid = Some(jid.clone());
 
-            locked_inner.stanza_filters.push(Box::new(Pinger {
-              jid: jid.clone(),
-              tx: tx.clone(),
-            }));
+            locked_inner.stanza_filters.push(Box::new(Pinger::new(jid.clone(), tx.clone())));
 
             let iq = Iq::from_get(generate_id(), DiscoInfoQuery { node: None })
               .with_from(Jid::Full(jid.clone()))

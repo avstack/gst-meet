@@ -18,6 +18,8 @@ use tokio_tungstenite::tungstenite::{
 };
 use tracing::{debug, error, info, warn};
 
+use crate::tls::wss_connector;
+
 const MAX_CONNECT_RETRIES: u8 = 3;
 const CONNECT_RETRY_SLEEP: Duration = Duration::from_secs(3);
 
@@ -27,7 +29,7 @@ pub(crate) struct ColibriChannel {
 }
 
 impl ColibriChannel {
-  pub(crate) async fn new(uri: &str) -> Result<Self> {
+  pub(crate) async fn new(uri: &str, tls_insecure: bool) -> Result<Self> {
     let uri: Uri = uri.parse()?;
     let host = uri.host().context("invalid WebSocket URL: missing host")?;
 
@@ -44,7 +46,7 @@ impl ColibriChannel {
         .header("connection", "Upgrade")
         .header("upgrade", "websocket")
         .body(())?;
-      match tokio_tungstenite::connect_async(request).await {
+      match tokio_tungstenite::connect_async_tls_with_config(request, None, Some(wss_connector(tls_insecure)?)).await {
         Ok((websocket, _)) => break websocket,
         Err(e) => {
           if retries < MAX_CONNECT_RETRIES {

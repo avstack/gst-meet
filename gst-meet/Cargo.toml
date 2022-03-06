@@ -22,7 +22,8 @@ tracing = { version = "0.1", default-features = false, features = ["attributes",
 cocoa = { version = "0.24", default-features = false }
 
 [features]
-default = ["tls-native"]
+default = ["tls-rustls-native-roots"]
+tls-insecure = ["lib-gst-meet/tls-insecure"]
 tls-native = ["lib-gst-meet/tls-native"]
 tls-native-vendored = ["lib-gst-meet/tls-native-vendored"]
 tls-rustls-native-roots = ["lib-gst-meet/tls-rustls-native-roots"]

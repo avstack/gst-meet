@@ -45,13 +45,16 @@ struct Opt {
   #[structopt(long)]
   select_endpoints: Option<String>,
   #[structopt(long)]
-  last_n: Option<i32>,
+  last_n: Option<u16>,
   #[structopt(long)]
-  recv_video_height: Option<i32>,
+  recv_video_height: Option<u16>,
   #[structopt(long)]
   video_type: Option<String>,
   #[structopt(short, long, parse(from_occurrences))]
   verbose: u8,
+  #[cfg(feature = "tls-insecure")]
+  #[structopt(long, help = "Disable TLS certificate verification (use with extreme caution)")]
+  tls_insecure: bool,
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -117,9 +120,13 @@ async fn main_inner() -> Result<()> {
     &opt.web_socket_url,
     &opt.xmpp_domain,
     Authentication::Anonymous,
+    #[cfg(feature = "tls-insecure")]
+    opt.tls_insecure,
+    #[cfg(not(feature = "tls-insecure"))]
+    false,
   )
   .await
-  .context("failed to connect")?;
+  .context("failed to build connection")?;
 
   tokio::spawn(background);
 
@@ -165,13 +172,13 @@ async fn main_inner() -> Result<()> {
   if opt.select_endpoints.is_some() || opt.last_n.is_some() || opt.recv_video_height.is_some() {
     conference
       .send_colibri_message(ColibriMessage::ReceiverVideoConstraints {
-        last_n: opt.last_n,
+        last_n: Some(opt.last_n.map(i32::from).unwrap_or(-1)),
         selected_endpoints: opt
           .select_endpoints
           .map(|endpoints| endpoints.split(',').map(ToOwned::to_owned).collect()),
         on_stage_endpoints: None,
         default_constraints: opt.recv_video_height.map(|height| Constraints {
-          max_height: Some(height),
+          max_height: Some(height.into()),
           ideal_height: None,
         }),
         constraints: None,

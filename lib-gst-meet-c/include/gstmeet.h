@@ -39,7 +39,8 @@ void gstmeet_deinit(struct Context *context);
 
 JitsiConnection *gstmeet_connection_new(struct Context *context,
                                         const char *websocket_url,
-                                        const char *xmpp_domain);
+                                        const char *xmpp_domain,
+                                        bool tls_insecure);
 
 void gstmeet_connection_free(JitsiConnection *connection);
 

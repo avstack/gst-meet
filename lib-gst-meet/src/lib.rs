@@ -4,6 +4,7 @@ mod jingle;
 mod pinger;
 mod source;
 mod stanza_filter;
+mod tls;
 mod util;
 mod xmpp;
 

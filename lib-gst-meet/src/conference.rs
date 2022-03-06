@@ -40,8 +40,12 @@ use crate::{
 
 const DISCO_NODE: &str = "https://github.com/avstack/gst-meet";
 
-static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| {
-  let mut features = vec![
+static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| DiscoInfoResult {
+  node: None,
+  identities: vec![
+    Identity::new("client", "bot", "en", "gst-meet"),
+  ],
+  features: vec![
     Feature::new(ns::DISCO_INFO),
     Feature::new(ns::JINGLE_RTP_AUDIO),
     Feature::new(ns::JINGLE_RTP_VIDEO),
@@ -50,26 +54,9 @@ static DISCO_INFO: Lazy<DiscoInfoResult> = Lazy::new(|| {
     Feature::new("urn:ietf:rfc:5888"), // BUNDLE
     Feature::new("urn:ietf:rfc:5761"), // RTCP-MUX
     Feature::new("urn:ietf:rfc:4588"), // RTX
-  ];
-  let gst_version = gstreamer::version();
-  if gst_version.0 >= 1 && gst_version.1 >= 19 {
-    // RTP header extensions are supported on GStreamer 1.19+
-    features.push(Feature::new("http://jitsi.org/tcc"));
-  }
-  else {
-    warn!("Upgrade GStreamer to 1.19 or later to enable RTP header extensions");
-  }
-  let identities = vec![
-    Identity::new("client", "bot", "en", "gst-meet"),
-  ];
-  // Not supported yet:
-  // Feature::new("http://jitsi.org/opus-red")
-  DiscoInfoResult {
-    node: None,
-    identities,
-    features,
-    extensions: vec![],
-  }
+    Feature::new("http://jitsi.org/tcc"),
+  ],
+  extensions: vec![],
 });
 
 static COMPUTED_CAPS_HASH: Lazy<Hash> = Lazy::new(|| {
@@ -102,6 +89,7 @@ pub struct JitsiConference {
   pub(crate) external_services: Vec<xmpp::extdisco::Service>,
   pub(crate) jingle_session: Arc<Mutex<Option<JingleSession>>>,
   pub(crate) inner: Arc<Mutex<JitsiConferenceInner>>,
+  pub(crate) tls_insecure: bool,
 }
 
 impl fmt::Debug for JitsiConference {
@@ -220,6 +208,7 @@ impl JitsiConference {
         on_colibri_message: None,
         connected_tx: Some(tx),
       })),
+      tls_insecure: xmpp_connection.tls_insecure,
     };
 
     xmpp_connection.add_stanza_filter(conference.clone()).await;
@@ -590,7 +579,7 @@ impl StanzaFilter for JitsiConference {
 
                   if let Some(colibri_url) = colibri_url {
                     info!("Connecting Colibri WebSocket to {}", colibri_url);
-                    let colibri_channel = ColibriChannel::new(&colibri_url).await?;
+                    let colibri_channel = ColibriChannel::new(&colibri_url, self.tls_insecure).await?;
                     let (tx, rx) = mpsc::channel(8);
                     colibri_channel.subscribe(tx).await;
                     jingle_session.colibri_channel = Some(colibri_channel);
@@ -599,6 +588,14 @@ impl StanzaFilter for JitsiConference {
                     tokio::spawn(async move {
                       let mut stream = ReceiverStream::new(rx);
                       while let Some(msg) = stream.next().await {
+                        // Some message types are handled internally rather than passed to the on_colibri_message handler.
+
+                        // End-to-end ping
+                        if let ColibriMessage::EndpointMessage { to, .. } = &msg {
+                          // if to == 
+
+                        }
+
                         let locked_inner = self_.inner.lock().await;
                         if let Some(f) = &locked_inner.on_colibri_message {
                           if let Err(e) = f(self_.clone(), msg).await {

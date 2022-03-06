@@ -755,12 +755,15 @@ dependencies = [
  "jitsi-xmpp-parsers",
  "libc",
  "maplit",
+ "native-tls",
  "nice-gst-meet",
  "once_cell",
  "pem",
  "rand",
  "rcgen",
  "ring",
+ "rustls",
+ "rustls-native-certs",
  "serde",
  "serde_json",
  "tokio",
@@ -769,6 +772,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+ "webpki-roots",
  "xmpp-parsers",
 ]
 

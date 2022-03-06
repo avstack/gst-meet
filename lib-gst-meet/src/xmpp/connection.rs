@@ -22,7 +22,7 @@ use xmpp_parsers::{
   BareJid, Element, FullJid, Jid,
 };
 
-use crate::{pinger::Pinger, stanza_filter::StanzaFilter, util::generate_id, xmpp};
+use crate::{pinger::Pinger, stanza_filter::StanzaFilter, tls::wss_connector, util::generate_id, xmpp};
 
 #[derive(Debug, Clone, Copy)]
 enum ConnectionState {
@@ -60,6 +60,7 @@ impl fmt::Debug for ConnectionInner {
 pub struct Connection {
   pub(crate) tx: mpsc::Sender<Element>,
   inner: Arc<Mutex<ConnectionInner>>,
+  pub(crate) tls_insecure: bool,
 }
 
 pub enum Authentication {
@@ -72,6 +73,7 @@ impl Connection {
     websocket_url: &str,
     xmpp_domain: &str,
     authentication: Authentication,
+    tls_insecure: bool,
   ) -> Result<(Self, impl Future<Output = ()>)> {
     let websocket_url: Uri = websocket_url.parse().context("invalid WebSocket URL")?;
     let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
@@ -88,7 +90,7 @@ impl Connection {
       .header("upgrade", "websocket")
       .body(())
       .context("failed to build WebSocket request")?;
-    let (websocket, _response) = tokio_tungstenite::connect_async(request)
+    let (websocket, _response) = tokio_tungstenite::connect_async_tls_with_config(request, None, Some(wss_connector(tls_insecure)?))
       .await
       .context("failed to connect XMPP WebSocket")?;
     let (sink, stream) = websocket.split();
@@ -107,6 +109,7 @@ impl Connection {
     let connection = Self {
       tx: tx.clone(),
       inner: inner.clone(),
+      tls_insecure,
     };
 
     let writer = Connection::write_loop(rx, sink);

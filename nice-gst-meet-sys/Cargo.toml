@@ -50,11 +50,11 @@ name = "nice_sys"
 
 [dependencies]
 libc = { version = "0.2", default-features = false }
-glib = { version = "0.14", default-features = false }
-gio = { version = "0.14", default-features = false }
+glib = { version = "0.15", default-features = false }
+gio = { version = "0.15", default-features = false }
 
 [build-dependencies]
-system-deps = { version = "3", default-features = false }
+system-deps = { version = "6", default-features = false }
 
 [dev-dependencies]
 shell-words = { version = "1", default-features = false }

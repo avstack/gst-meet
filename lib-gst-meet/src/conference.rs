@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use colibri::ColibriMessage;
 use futures::stream::StreamExt;
 use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
+use jitsi_xmpp_parsers::jingle::{Action, Jingle};
 use maplit::hashmap;
 use once_cell::sync::Lazy;
 use serde::Serialize;
@@ -19,7 +20,6 @@ use xmpp_parsers::{
   ecaps2::{self, ECaps2},
   hashes::{Algo, Hash},
   iq::{Iq, IqType},
-  jingle::{Action, Jingle},
   message::{Message, MessageType},
   muc::{Muc, MucUser, user::Status as MucStatus},
   nick::Nick,
@@ -391,14 +391,12 @@ impl JitsiConference {
         if let Err(e) = f(self.clone(), participant.clone()).await {
           warn!("on_participant failed: {:?}", e);
         }
-        else {
-          if let Ok(pipeline) = self.pipeline().await {
-            gstreamer::debug_bin_to_dot_file(
-              &pipeline,
-              gstreamer::DebugGraphDetails::ALL,
-              &format!("participant-added-{}", participant.muc_jid.resource),
-            );
-          }
+        else if let Ok(pipeline) = self.pipeline().await {
+          gstreamer::debug_bin_to_dot_file(
+            &pipeline,
+            gstreamer::DebugGraphDetails::ALL,
+            &format!("participant-added-{}", participant.muc_jid.resource),
+          );
         }
       }
     }
@@ -425,14 +423,12 @@ impl JitsiConference {
       if let Err(e) = f(self.clone(), participant.clone()).await {
         warn!("on_participant failed: {:?}", e);
       }
-      else {
-        if let Ok(pipeline) = self.pipeline().await {
-          gstreamer::debug_bin_to_dot_file(
-            &pipeline,
-            gstreamer::DebugGraphDetails::ALL,
-            &format!("participant-added-{}", participant.muc_jid.resource),
-          );
-        }
+      else if let Ok(pipeline) = self.pipeline().await {
+        gstreamer::debug_bin_to_dot_file(
+          &pipeline,
+          gstreamer::DebugGraphDetails::ALL,
+          &format!("participant-added-{}", participant.muc_jid.resource),
+        );
       }
     }
   }
@@ -542,8 +538,8 @@ impl StanzaFilter for JitsiConference {
                 }
               }
             },
-            IqType::Set(element) => {
-              if let Ok(jingle) = Jingle::try_from(element) {
+            IqType::Set(element) => match Jingle::try_from(element) {
+              Ok(jingle) => {
                 if let Some(Jid::Full(from_jid)) = iq.from {
                   if jingle.action == Action::SessionInitiate {
                     if from_jid.resource == "focus" {
@@ -580,10 +576,8 @@ impl StanzaFilter for JitsiConference {
                 else {
                   debug!("Received Jingle IQ from invalid JID: {:?}", iq.from);
                 }
-              }
-              else {
-                debug!("Received non-Jingle IQ");
-              }
+              },
+              Err(e) => debug!("IQ did not successfully parse as Jingle: {:?}", e),
             },
             IqType::Result(_) => {
               if let Some(jingle_session) = self.jingle_session.lock().await.as_mut() {
@@ -696,14 +690,12 @@ impl StanzaFilter for JitsiConference {
                         if let Err(e) = f(self.clone(), participant.clone()).await {
                           warn!("on_participant failed: {:?}", e);
                         }
-                        else {
-                          if let Some(jingle_session) = self.jingle_session.lock().await.as_ref() {
-                            gstreamer::debug_bin_to_dot_file(
-                              &jingle_session.pipeline(),
-                              gstreamer::DebugGraphDetails::ALL,
-                              &format!("participant-added-{}", participant.muc_jid.resource),
-                            );
-                          }
+                        else if let Some(jingle_session) = self.jingle_session.lock().await.as_ref() {
+                          gstreamer::debug_bin_to_dot_file(
+                            &jingle_session.pipeline(),
+                            gstreamer::DebugGraphDetails::ALL,
+                            &format!("participant-added-{}", participant.muc_jid.resource),
+                          );
                         }
                       }
                     }

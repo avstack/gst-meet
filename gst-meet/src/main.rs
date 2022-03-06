@@ -270,7 +270,7 @@ async fn main_inner() -> Result<()> {
           bin.set_property(
             "name",
             format!("participant_{}", participant.muc_jid.resource),
-          )?;
+          );
           conference.add_bin(&bin).await?;
         }
         else {

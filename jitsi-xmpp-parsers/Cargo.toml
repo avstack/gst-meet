@@ -1,0 +1,18 @@
+[package]
+name = "jitsi-xmpp-parsers"
+description = "Provides types for non-standard XMPP elements used by Jitsi Meet"
+version = "0.1.0"
+edition = "2018"
+license = "MPL-2.0"
+readme = "../README.md"
+repository = "https://github.com/avstack/gst-meet"
+documentation = "https://docs.rs/jitsi-xmpp-parsers/"
+authors = ["Jasper Hugo <jasper@avstack.io>"]
+
+[dependencies]
+jid = { version = "0.9", default-features = false, features = ["minidom"] }
+minidom = { version = "0.14", default-features = false }
+xmpp-parsers = { git = "https://gitlab.com/xmpp-rs/xmpp-rs.git", default-features = false, features = ["disable-validation"] }
+
+[package.metadata.docs.rs]
+rustdoc-args = [ "--sort-modules-by-appearance", "-Zunstable-options" ]

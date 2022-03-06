@@ -1,15 +1,25 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use colibri::ColibriMessage;
 use futures::{
   sink::SinkExt,
   stream::{StreamExt, TryStreamExt},
 };
-use tokio::sync::{mpsc, Mutex};
+use rand::{RngCore, thread_rng};
+use tokio::{
+  sync::{mpsc, Mutex},
+  time::sleep,
+};
 use tokio_stream::wrappers::ReceiverStream;
-use tokio_tungstenite::tungstenite::{http::Request, Message};
+use tokio_tungstenite::tungstenite::{
+  http::{Request, Uri},
+  Message,
+};
 use tracing::{debug, error, info, warn};
+
+const MAX_CONNECT_RETRIES: u8 = 3;
+const CONNECT_RETRY_SLEEP: Duration = Duration::from_secs(3);
 
 pub(crate) struct ColibriChannel {
   send_tx: mpsc::Sender<ColibriMessage>,
@@ -17,9 +27,37 @@ pub(crate) struct ColibriChannel {
 }
 
 impl ColibriChannel {
-  pub(crate) async fn new(colibri_url: &str) -> Result<Self> {
-    let request = Request::get(colibri_url).body(())?;
-    let (colibri_websocket, _response) = tokio_tungstenite::connect_async(request).await?;
+  pub(crate) async fn new(uri: &str) -> Result<Self> {
+    let uri: Uri = uri.parse()?;
+    let host = uri.host().context("invalid WebSocket URL: missing host")?;
+
+    let mut retries = 0;
+    let colibri_websocket = loop {
+      let mut key = [0u8; 16];
+      thread_rng().fill_bytes(&mut key);
+      let request = Request::get(&uri)
+        .header("sec-websocket-key", base64::encode(&key))
+        .header("sec-websocket-version", "13")
+        .header("host", host)
+        // TODO: the server should probably not enforce this since non-browser clients are now possible
+        .header("origin", format!("https://{}", host))
+        .header("connection", "Upgrade")
+        .header("upgrade", "websocket")
+        .body(())?;
+      match tokio_tungstenite::connect_async(request).await {
+        Ok((websocket, _)) => break websocket,
+        Err(e) => {
+          if retries < MAX_CONNECT_RETRIES {
+            warn!("Failed to connect Colibri WebSocket, will retry: {:?}", e);
+            sleep(CONNECT_RETRY_SLEEP).await;
+            retries += 1;
+          }
+          else {
+            return Err(e).context("Failed to connect Colibri WebSocket");
+          }
+        }
+      }
+    };
 
     info!("Connected Colibri WebSocket");
 
@@ -37,7 +75,7 @@ impl ColibriChannel {
                   let mut txs = recv_tx.lock().await;
                   let txs_clone = txs.clone();
                   for (i, tx) in txs_clone.iter().enumerate().rev() {
-                    if let Err(_) = tx.send(colibri_msg.clone()).await {
+                    if tx.send(colibri_msg.clone()).await.is_err() {
                       debug!("colibri subscriber closed, removing");
                       txs.remove(i);
                     }
@@ -53,12 +91,12 @@ impl ColibriChannel {
               "received unexpected {} byte binary frame on colibri websocket",
               data.len()
             ),
-            Message::Ping(_) | Message::Pong(_) => {}, // handled automatically by tungstenite
             Message::Close(_) => {
               debug!("received close frame on colibri websocket");
               // TODO reconnect
               break;
             },
+            Message::Frame(_) | Message::Ping(_) | Message::Pong(_) => {}, // handled automatically by tungstenite
           }
         }
         Ok::<_, anyhow::Error>(())

@@ -47,7 +47,7 @@ impl<'a> ToGlibPtr<'a, *mut ffi::NiceCandidate> for Candidate {
 
   #[inline]
   fn to_glib_none(&'a self) -> Stash<'a, *mut ffi::NiceCandidate, Self> {
-    Stash(&*self.0 as *const _ as *mut _, self)
+    Stash(&*self.inner as *const _ as *mut _, self)
   }
 }
 
@@ -58,26 +58,26 @@ impl Candidate {
   }
 
   pub fn type_(&self) -> CandidateType {
-    unsafe { CandidateType::from_glib(self.0.type_) }
+    unsafe { CandidateType::from_glib(self.inner.type_) }
   }
 
   #[cfg(any(feature = "v0_1_18", feature = "dox"))]
   #[cfg_attr(feature = "dox", doc(cfg(feature = "v0_1_18")))]
   pub fn transport(&self) -> CandidateTransport {
-    unsafe { CandidateTransport::from_glib(self.0.transport) }
+    unsafe { CandidateTransport::from_glib(self.inner.transport) }
   }
 
   #[cfg(any(feature = "v0_1_18", feature = "dox"))]
   #[cfg_attr(feature = "dox", doc(cfg(feature = "v0_1_18")))]
   pub fn set_transport(&mut self, transport: CandidateTransport) {
-    self.0.transport = transport.into_glib();
+    self.inner.transport = transport.into_glib();
   }
 
   pub fn addr(&self) -> SocketAddr {
     unsafe {
-      match AddressFamily::from_i32(self.0.addr.s.addr.sa_family as i32).unwrap() {
-        AddressFamily::Inet => InetAddr::V4(self.0.addr.s.ip4).to_std(),
-        AddressFamily::Inet6 => InetAddr::V6(self.0.addr.s.ip6).to_std(),
+      match AddressFamily::from_i32(self.inner.addr.s.addr.sa_family as i32).unwrap() {
+        AddressFamily::Inet => InetAddr::V4(self.inner.addr.s.ip4).to_std(),
+        AddressFamily::Inet6 => InetAddr::V6(self.inner.addr.s.ip6).to_std(),
         other => panic!("unsupported address family: {:?}", other),
       }
     }
@@ -87,21 +87,21 @@ impl Candidate {
     match InetAddr::from_std(&addr) {
       InetAddr::V4(ip4) => unsafe {
         ffi::nice_address_set_ipv4(
-          &mut self.0.addr as *mut _,
+          &mut self.inner.addr as *mut _,
           u32::from_be(ip4.sin_addr.s_addr),
         );
         ffi::nice_address_set_port(
-          &mut self.0.addr as *mut _,
+          &mut self.inner.addr as *mut _,
           u16::from_be(ip4.sin_port) as u32,
         );
       },
       InetAddr::V6(ip6) => unsafe {
         ffi::nice_address_set_ipv6(
-          &mut self.0.addr as *mut _,
+          &mut self.inner.addr as *mut _,
           &ip6.sin6_addr.s6_addr as *const _,
         );
         ffi::nice_address_set_port(
-          &mut self.0.addr as *mut _,
+          &mut self.inner.addr as *mut _,
           u16::from_be(ip6.sin6_port) as u32,
         );
       },
@@ -109,31 +109,31 @@ impl Candidate {
   }
 
   pub fn priority(&self) -> u32 {
-    self.0.priority
+    self.inner.priority
   }
 
   pub fn set_priority(&mut self, priority: u32) {
-    self.0.priority = priority;
+    self.inner.priority = priority;
   }
 
   pub fn stream_id(&self) -> u32 {
-    self.0.stream_id
+    self.inner.stream_id
   }
 
   pub fn set_stream_id(&mut self, stream_id: u32) {
-    self.0.stream_id = stream_id;
+    self.inner.stream_id = stream_id;
   }
 
   pub fn component_id(&self) -> u32 {
-    self.0.component_id
+    self.inner.component_id
   }
 
   pub fn set_component_id(&mut self, component_id: u32) {
-    self.0.component_id = component_id;
+    self.inner.component_id = component_id;
   }
 
   pub fn foundation(&self) -> Result<&str, std::str::Utf8Error> {
-    unsafe { CStr::from_ptr(&self.0.foundation as *const c_char).to_str() }
+    unsafe { CStr::from_ptr(&self.inner.foundation as *const c_char).to_str() }
   }
 
   pub fn set_foundation(&mut self, foundation: &str) {
@@ -144,33 +144,33 @@ impl Candidate {
       .map(|c| *c as c_char)
       .collect();
     bytes.resize(33, 0);
-    self.0.foundation.copy_from_slice(&bytes);
+    self.inner.foundation.copy_from_slice(&bytes);
   }
 
   pub fn username(&self) -> Result<&str, std::str::Utf8Error> {
-    if self.0.username.is_null() {
+    if self.inner.username.is_null() {
       Ok("")
     }
     else {
-      unsafe { CStr::from_ptr(self.0.username).to_str() }
+      unsafe { CStr::from_ptr(self.inner.username).to_str() }
     }
   }
 
   pub fn set_username(&mut self, username: &str) {
-    self.0.username = username.to_owned().to_glib_full();
+    self.inner.username = username.to_owned().to_glib_full();
   }
 
   pub fn password(&self) -> Result<&str, std::str::Utf8Error> {
-    if self.0.password.is_null() {
+    if self.inner.password.is_null() {
       Ok("")
     }
     else {
-      unsafe { CStr::from_ptr(self.0.password).to_str() }
+      unsafe { CStr::from_ptr(self.inner.password).to_str() }
     }
   }
 
   pub fn set_password(&mut self, password: &str) {
-    self.0.password = password.to_owned().to_glib_full();
+    self.inner.password = password.to_owned().to_glib_full();
   }
 
   #[cfg(any(feature = "v0_1_15", feature = "dox"))]

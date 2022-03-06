@@ -5,7 +5,7 @@
 use std::{
   boxed::Box as Box_,
   fmt,
-  mem::{self, transmute},
+  mem::transmute,
   ptr, slice,
 };
 
@@ -48,7 +48,7 @@ extern "C" fn attach_recv_cb(
   user_data: gpointer,
 ) {
   if !user_data.is_null() {
-    let closure: &mut Box<dyn FnMut(Agent, u32, u32, &str)> = unsafe { mem::transmute(user_data) };
+    let closure: &mut Box<dyn FnMut(Agent, u32, u32, &str)> = unsafe { &mut *(user_data as *mut _) };
     let slice = unsafe { slice::from_raw_parts(data, len as usize) };
     let bytes: Vec<_> = slice.iter().map(|b| *b as u8).collect();
     if let Ok(s) = std::str::from_utf8(&bytes) {
@@ -419,6 +419,7 @@ impl Agent {
     }
   }
 
+  #[allow(clippy::too_many_arguments)]
   #[doc(alias = "nice_agent_set_relay_info")]
   pub fn set_relay_info(
     &self,

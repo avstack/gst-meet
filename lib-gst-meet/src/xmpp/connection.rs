@@ -5,6 +5,7 @@ use futures::{
   sink::{Sink, SinkExt},
   stream::{Stream, StreamExt, TryStreamExt},
 };
+use rand::{RngCore, thread_rng};
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_tungstenite::tungstenite::{
@@ -76,8 +77,15 @@ impl Connection {
     let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
 
     info!("Connecting XMPP WebSocket to {}", websocket_url);
-    let request = Request::get(websocket_url)
-      .header("Sec-Websocket-Protocol", "xmpp")
+    let mut key = [0u8; 16];
+    thread_rng().fill_bytes(&mut key);
+    let request = Request::get(&websocket_url)
+      .header("sec-websocket-protocol", "xmpp")
+      .header("sec-websocket-key", base64::encode(&key))
+      .header("sec-websocket-version", "13")
+      .header("host", websocket_url.host().context("invalid WebSocket URL: missing host")?)
+      .header("connection", "Upgrade")
+      .header("upgrade", "websocket")
       .body(())
       .context("failed to build WebSocket request")?;
     let (websocket, _response) = tokio_tungstenite::connect_async(request)

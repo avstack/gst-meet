@@ -58,6 +58,12 @@ struct Opt {
     help = "Disable TLS certificate verification (use with extreme caution)"
   )]
   tls_insecure: bool,
+  #[cfg(feature = "log-rtp")]
+  #[structopt(
+    long,
+    help = "Log all RTP/RTCP packets at DEBUG level"
+  )]
+  log_rtp: bool,
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -154,6 +160,8 @@ async fn main_inner() -> Result<()> {
     region,
     video_codec,
     recv_pipeline_participant_template,
+    #[cfg(feature = "log-rtp")]
+    log_rtp,
     ..
   } = opt;
 
@@ -164,6 +172,10 @@ async fn main_inner() -> Result<()> {
     region,
     video_codec,
     extra_muc_features: vec![],
+    start_bitrate: 800,
+    stereo: false,
+    #[cfg(feature = "log-rtp")]
+    log_rtp,
   };
 
   let main_loop = glib::MainLoop::new(None, false);

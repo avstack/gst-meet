@@ -23,6 +23,7 @@ cocoa = { version = "0.24", default-features = false }
 
 [features]
 default = ["tls-rustls-native-roots"]
+log-rtp = ["lib-gst-meet/log-rtp"]
 tls-insecure = ["lib-gst-meet/tls-insecure"]
 tls-native = ["lib-gst-meet/tls-native"]
 tls-native-vendored = ["lib-gst-meet/tls-native-vendored"]

@@ -156,6 +156,13 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
       .to_string_lossy()
       .to_string(),
     extra_muc_features: vec![],
+
+    // TODO
+    start_bitrate: 800,
+    stereo: false,
+    
+    #[cfg(feature = "log-rtp")]
+    log_rtp: false,
   };
   (*context)
     .runtime

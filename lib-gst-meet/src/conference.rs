@@ -75,6 +75,10 @@ pub struct JitsiConferenceConfig {
   pub region: Option<String>,
   pub video_codec: String,
   pub extra_muc_features: Vec<String>,
+  pub start_bitrate: u32,
+  pub stereo: bool,
+  #[cfg(feature = "log-rtp")]
+  pub log_rtp: bool,
 }
 
 #[derive(Clone)]
@@ -140,10 +144,8 @@ impl JitsiConference {
       machine_uid: Uuid::new_v4().to_string(),
       room: config.muc.to_string(),
       properties: hashmap! {
-        // Disable voice processing
-        // TODO put this in config
-        "stereo".to_string() => "true".to_string(),
-        "startBitrate".to_string() => "800".to_string(),
+        "stereo".to_string() => config.stereo.to_string(),
+        "startBitrate".to_string() => config.start_bitrate.to_string(),
       },
     };
 

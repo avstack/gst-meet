@@ -684,6 +684,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ipnet"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35e70ee094dc02fd9c13fdad4940090f22dbd6ac7c9e7094a46cf0232a50bc7c"
+
+[[package]]
 name = "itertools"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -762,6 +768,7 @@ dependencies = [
  "rand",
  "rcgen",
  "ring",
+ "rtcp",
  "rustls",
  "rustls-native-certs",
  "serde",
@@ -1065,12 +1072,37 @@ dependencies = [
 
 [[package]]
 name = "parking_lot"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
+dependencies = [
+ "instant",
+ "lock_api",
+ "parking_lot_core 0.8.5",
+]
+
+[[package]]
+name = "parking_lot"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87f5ec2493a61ac0506c0f4199f99070cbe83857b0337006a30f3e6719b8ef58"
 dependencies = [
  "lock_api",
- "parking_lot_core",
+ "parking_lot_core 0.9.1",
+]
+
+[[package]]
+name = "parking_lot_core"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d76e8e1493bcac0d2766c42737f34458f1c8c50c0d23bcb24ea953affb273216"
+dependencies = [
+ "cfg-if",
+ "instant",
+ "libc",
+ "redox_syscall",
+ "smallvec",
+ "winapi",
 ]
 
 [[package]]
@@ -1270,6 +1302,17 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi",
+]
+
+[[package]]
+name = "rtcp"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80d9625e47edb43aca711ec826ad12154d364ada9e60f4e6f8d40471b3e1e156"
+dependencies = [
+ "bytes",
+ "thiserror",
+ "webrtc-util",
 ]
 
 [[package]]
@@ -1653,6 +1696,7 @@ dependencies = [
  "mio",
  "num_cpus",
  "once_cell",
+ "parking_lot 0.12.0",
  "pin-project-lite",
  "signal-hook-registry",
  "socket2",
@@ -1781,7 +1825,7 @@ version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e0ab7bdc962035a87fba73f3acca9b8a8d0034c2e6f60b84aeaaddddc155dce"
 dependencies = [
- "parking_lot",
+ "parking_lot 0.12.0",
  "sharded-slab",
  "smallvec",
  "thread_local",
@@ -1994,6 +2038,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "552ceb903e957524388c4d3475725ff2c8b7960922063af6ce53c9a43da07449"
 dependencies = [
  "webpki",
+]
+
+[[package]]
+name = "webrtc-util"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60b69bdea720881eddee50bd969be052ed95f04ccc5a6f684495131afb87e31c"
+dependencies = [
+ "async-trait",
+ "bitflags",
+ "bytes",
+ "cc",
+ "ipnet",
+ "lazy_static",
+ "libc",
+ "log",
+ "nix",
+ "parking_lot 0.11.2",
+ "rand",
+ "thiserror",
+ "tokio",
+ "winapi",
 ]
 
 [[package]]

@@ -17,3 +17,7 @@ tracing = { version = "0.1", default-features = false }
 [lib]
 name = "gstmeet"
 crate_type = ["staticlib", "cdylib"]
+
+[features]
+default = []
+log-rtp = ["lib-gst-meet/log-rtp"]

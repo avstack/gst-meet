@@ -5,6 +5,8 @@ use futures::stream::StreamExt;
 use glib::{ObjectExt, ToValue};
 use gstreamer::prelude::{ElementExt, GObjectExtManualGst, GstBinExt, PadExt};
 use gstreamer_rtp::{prelude::RTPHeaderExtensionExt, RTPHeaderExtension};
+#[cfg(feature = "log-rtp")]
+use gstreamer_rtp::RTPBuffer;
 use jitsi_xmpp_parsers::{
   jingle::{Action, Content, Description, Jingle, Transport},
   jingle_dtls_srtp::Fingerprint,
@@ -126,7 +128,6 @@ impl Codec {
 struct ParsedRtpDescription {
   codecs: Vec<Codec>,
   audio_hdrext_ssrc_audio_level: Option<u16>,
-  audio_hdrext_transport_cc: Option<u16>,
   video_hdrext_transport_cc: Option<u16>,
 }
 
@@ -190,7 +191,6 @@ impl JingleSession {
     let mut vp8 = None;
     let mut vp9 = None;
     let mut audio_hdrext_ssrc_audio_level = None;
-    let mut audio_hdrext_transport_cc = None;
     let mut video_hdrext_transport_cc = None;
 
     if description.media == "audio" {
@@ -208,9 +208,6 @@ impl JingleSession {
       for hdrext in description.hdrexts.iter() {
         if hdrext.uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
           audio_hdrext_ssrc_audio_level = Some(hdrext.id);
-        }
-        else if hdrext.uri == RTP_HDREXT_TRANSPORT_CC {
-          audio_hdrext_transport_cc = Some(hdrext.id);
         }
       }
     }
@@ -274,8 +271,6 @@ impl JingleSession {
         }
       }
       for hdrext in description.hdrexts.iter() {
-        // TODO: .parse::<u8>() won’t be needed after updating xmpp-parsers, it is now a u16 as
-        // defined in the XEP and related RFC.
         if hdrext.uri == RTP_HDREXT_TRANSPORT_CC {
           video_hdrext_transport_cc = Some(hdrext.id);
         }
@@ -325,7 +320,6 @@ impl JingleSession {
     Ok(Some(ParsedRtpDescription {
       codecs,
       audio_hdrext_ssrc_audio_level,
-      audio_hdrext_transport_cc,
       video_hdrext_transport_cc,
     }))
   }
@@ -467,7 +461,6 @@ impl JingleSession {
     let mut ice_transport = None;
     let mut codecs = vec![];
     let mut audio_hdrext_ssrc_audio_level = None;
-    let mut audio_hdrext_transport_cc = None;
     let mut video_hdrext_transport_cc = None;
 
     let mut remote_ssrc_map = HashMap::new();
@@ -480,8 +473,6 @@ impl JingleSession {
           codecs.extend(description.codecs);
           audio_hdrext_ssrc_audio_level =
             audio_hdrext_ssrc_audio_level.or(description.audio_hdrext_ssrc_audio_level);
-          audio_hdrext_transport_cc =
-            audio_hdrext_transport_cc.or(description.audio_hdrext_transport_cc);
           video_hdrext_transport_cc =
             video_hdrext_transport_cc.or(description.video_hdrext_transport_cc);
         }
@@ -591,9 +582,6 @@ impl JingleSession {
                   .field("clock-rate", 48000);
                 if let Some(hdrext) = audio_hdrext_ssrc_audio_level {
                   caps = caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
-                }
-                if let Some(hdrext) = audio_hdrext_transport_cc {
-                  caps = caps.field(&format!("extmap-{}", hdrext), &RTP_HDREXT_TRANSPORT_CC);
                 }
               }
               else {
@@ -829,14 +817,6 @@ impl JingleSession {
                 let hdrext = RTPHeaderExtension::create_from_uri(&ext_uri)
                   .context("failed to create hdrext")?;
                 hdrext.set_id(ext_id);
-                // if ext_uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
-                // }
-                // else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
-                //   // hdrext.set_property("n-streams", 2u32);
-                // }
-                // else {
-                //   bail!("unknown rtp hdrext: {}", ext_uri);
-                // };
                 Ok::<_, anyhow::Error>(hdrext)
               };
               match f() {
@@ -941,14 +921,6 @@ impl JingleSession {
           let hdrext =
             RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
           hdrext.set_id(ext_id);
-          // if ext_uri == RTP_HDREXT_SSRC_AUDIO_LEVEL {
-          // }
-          // else if ext_uri == RTP_HDREXT_TRANSPORT_CC {
-          //   // hdrext.set_property("n-streams", 2u32);
-          // }
-          // else {
-          //   bail!("unknown rtp hdrext: {}", ext_uri);
-          // }
           Ok::<_, anyhow::Error>(hdrext)
         };
         match f() {
@@ -995,12 +967,6 @@ impl JingleSession {
           let hdrext =
             RTPHeaderExtension::create_from_uri(&ext_uri).context("failed to create hdrext")?;
           hdrext.set_id(ext_id);
-          if ext_uri == RTP_HDREXT_TRANSPORT_CC {
-            // hdrext.set_property("n-streams", 2u32);
-          }
-          else {
-            bail!("unknown rtp hdrext: {}", ext_uri);
-          }
           Ok::<_, anyhow::Error>(hdrext)
         };
         match f() {
@@ -1029,13 +995,79 @@ impl JingleSession {
     debug!("linking rtpfunnel -> rtpbin");
     rtpfunnel.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
 
+    let rtp_recv_identity = gstreamer::ElementFactory::make("identity", None)?;
+    pipeline.add(&rtp_recv_identity)?;
+    let rtcp_recv_identity = gstreamer::ElementFactory::make("identity", None)?;
+    pipeline.add(&rtcp_recv_identity)?;
+    let rtp_send_identity = gstreamer::ElementFactory::make("identity", None)?;
+    pipeline.add(&rtp_send_identity)?;
+    let rtcp_send_identity = gstreamer::ElementFactory::make("identity", None)?;
+    pipeline.add(&rtcp_send_identity)?;
+
+    #[cfg(feature = "log-rtp")]
+    if conference.config.log_rtp {
+      let make_rtp_logger = |direction: &'static str| {
+        move |values: &[glib::Value]| -> Option<glib::Value> {
+          let f = || {
+            let buffer: gstreamer::Buffer = values[1].get()?;
+            let rtp_buffer = RTPBuffer::from_buffer_readable(&buffer)?;
+            debug!(
+              ssrc=rtp_buffer.ssrc(),
+              seq=rtp_buffer.seq(),
+              ts=rtp_buffer.timestamp(),
+              marker=rtp_buffer.is_marker(),
+              payload_size=rtp_buffer.payload_size(),
+              "RTP {}",
+              direction,
+            );
+            Ok::<_, anyhow::Error>(())
+          };
+          if let Err(e) = f() {
+            warn!("RTP {}: {:?}", direction, e);
+          }
+          None
+        }
+      };
+
+      let make_rtcp_logger = |direction: &'static str| {
+        move |values: &[glib::Value]| -> Option<glib::Value> {
+          let f = || {
+            let buffer: gstreamer::Buffer = values[1].get()?;
+            let mut buf = [0u8; 1500];
+            buffer.copy_to_slice(0, &mut buf[..buffer.size()]).map_err(|_| anyhow!("invalid RTCP packet size"))?;
+            let decoded = rtcp::packet::unmarshal(&mut &buf[..buffer.size()])?;
+            debug!(
+              "RTCP {} size={}\n{:?}",
+              direction,
+              buffer.size(),
+              decoded,
+            );
+            Ok::<_, anyhow::Error>(())
+          };
+          if let Err(e) = f() {
+            warn!("RTCP {}: {:?}", direction, e);
+          }
+          None
+        }
+      };
+
+      rtp_recv_identity.connect("handoff", false, make_rtp_logger("RECV"));
+      rtp_send_identity.connect("handoff", false, make_rtp_logger("SEND"));
+      rtcp_recv_identity.connect("handoff", false, make_rtcp_logger("RECV"));
+      rtcp_send_identity.connect("handoff", false, make_rtcp_logger("SEND"));
+    }
+
     debug!("link dtlssrtpdec -> rtpbin");
-    dtlssrtpdec.link_pads(Some("rtp_src"), &rtpbin, Some("recv_rtp_sink_0"))?;
-    dtlssrtpdec.link_pads(Some("rtcp_src"), &rtpbin, Some("recv_rtcp_sink_0"))?;
+    dtlssrtpdec.link_pads(Some("rtp_src"), &rtp_recv_identity, None)?;
+    rtp_recv_identity.link_pads(None, &rtpbin, Some("recv_rtp_sink_0"))?;
+    dtlssrtpdec.link_pads(Some("rtcp_src"), &rtcp_recv_identity, None)?;
+    rtcp_recv_identity.link_pads(None, &rtpbin, Some("recv_rtcp_sink_0"))?;
 
     debug!("linking rtpbin -> dtlssrtpenc");
-    rtpbin.link_pads(Some("send_rtp_src_0"), &dtlssrtpenc, Some("rtp_sink_0"))?;
-    rtpbin.link_pads(Some("send_rtcp_src_0"), &dtlssrtpenc, Some("rtcp_sink_0"))?;
+    rtpbin.link_pads(Some("send_rtp_src_0"), &rtp_send_identity, None)?;
+    rtp_send_identity.link_pads(None, &dtlssrtpenc, Some("rtp_sink_0"))?;
+    rtpbin.link_pads(Some("send_rtcp_src_0"), &rtcp_send_identity, None)?;
+    rtcp_send_identity.link_pads(None, &dtlssrtpenc, Some("rtcp_sink_0"))?;
 
     debug!("linking ice src -> dtlssrtpdec");
     nicesrc.link(&dtlssrtpdec)?;
@@ -1182,11 +1214,6 @@ impl JingleSession {
             hdrext,
             RTP_HDREXT_SSRC_AUDIO_LEVEL.to_owned(),
           ));
-        }
-        if let Some(hdrext) = audio_hdrext_transport_cc {
-          description
-            .hdrexts
-            .push(RtpHdrext::new(hdrext, RTP_HDREXT_TRANSPORT_CC.to_owned()));
         }
       }
       else if initiate_content.name.0 == "video" {

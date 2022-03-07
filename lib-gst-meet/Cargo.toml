@@ -50,7 +50,7 @@ tracing-subscriber = { version = "0.3", optional = true, default-features = fals
 ] }
 uuid = { version = "0.8", default-features = false, features = ["v4"] }
 webpki-roots = { version = "0.22", default-features = false, optional = true }
-xmpp-parsers = { git = "https://gitlab.com/xmpp-rs/xmpp-rs.git", default-features = false, features = ["disable-validation"] }
+xmpp-parsers = { version = "0.19", default-features = false, features = ["disable-validation"] }
 
 [features]
 # Ideally we would enable rustls/dangerous_configuration only when tls-insecure is enabled, but until weak-dep-features is stabilised, that

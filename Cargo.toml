@@ -7,7 +7,3 @@ members = [
   "nice-gst-meet-sys",
   "jitsi-xmpp-parsers",
 ]
-
-[patch.crates-io]
-jid = { git = "https://gitlab.com/xmpp-rs/xmpp-rs.git" }
-minidom = { git = "https://gitlab.com/xmpp-rs/xmpp-rs.git" }

@@ -9,7 +9,7 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 ## Dependencies
 
 * `glib`
-* `gstreamer` 1.19 or later. Most distributions do not package this version yet, so you may need to build from source
+* `gstreamer` 1.20
 * `gst-plugins-bad` (same version as `gstreamer`) and any other plugins that you want to use in your pipelines
 * `libnice`
 * `pkg-config`
@@ -24,7 +24,7 @@ To integrate gst-meet into your own application, add a Cargo dependency on `lib-
 
 ## Docker
 
-A `Dockerfile` is provided that uses AVStack-built Alpine APKs for gstreamer 1.19.x.
+A `Dockerfile` is provided that uses AVStack-built Alpine APKs for gstreamer 1.20.
 
 ## Nix
 
@@ -77,7 +77,7 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
                           demuxer.audio_0 ! queue ! vorbisdec ! audioconvert ! audioresample ! opusenc name=audio"
 ```
 
-Stream the default video & audio inputs to the conference, encoding as VP8 and Opus, composite incoming video streams and play back incoming audio (a very basic, but completely native, Jitsi Meet conference!):
+Stream the default video & audio inputs to the conference, encoding as VP8 and Opus, display incoming video streams at 360p, and play back incoming audio (a very basic, but completely native, Jitsi Meet conference!):
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
@@ -86,7 +86,7 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
          --send-pipeline="autovideosrc ! queue ! videoconvert ! vp8enc buffer-size=1000 deadline=1 name=video
                           autoaudiosrc ! queue ! audioconvert ! audioresample ! opusenc name=audio" \
          --recv-pipeline-participant-template="opusdec name=audio ! autoaudiosink
-                                               vp8dec name=video ! videoconvert ! autovideosink"
+                                               vp8dec name=video ! videoconvert ! videoscale ! video/x-raw,width=640,height=360 ! autovideosink"
 ```
 
 Record a .webm file for each other participant, containing VP8 video and Opus audio, without needing to do any transcoding:
@@ -97,7 +97,18 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
          --room-name=roomname \
          --recv-pipeline-participant-template="webmmux name=muxer ! filesink location={participant_id}.webm
                                                opusparse name=audio ! muxer.audio_0
-                                               capsfilter caps=video/x-vp8 name=video ! muxer.video_0"
+                                               identity name=video ! muxer.video_0"
+```
+
+The above .webm file unfortunately may not play in most players, because the resolution will change whenever JVB changes which simulcast layer it is forwarding. You could post-process the recording to scale the lower resolution frames up, or you could do the decoding, scaling, and re-encoding at recording time as follows:
+
+```
+gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
+         --xmpp-domain=your.jitsi.domain \
+         --room-name=roomname \
+         --recv-pipeline-participant-template="webmmux name=muxer ! filesink location={participant_id}.webm
+                                               opusparse name=audio ! muxer.audio_0
+                                               vp8dec name=video ! videoconvert ! videoscale ! video/x-raw,width=1280,height=720 ! vp8enc ! muxer.video_0"
 ```
 
 Play a YouTube video in the conference. By requesting Opus audio and VP9 video from YouTube, and setting the Jitsi Meet video codec to VP9, no transcoding is necessary. Note that not every YouTube video has VP9 and Opus available, so the pipeline may need adjusting for other videos.
@@ -116,16 +127,20 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
 
 ## Feature flags
 
-By default, the system native TLS library is used. This can be turned off by passing `--no-default-features` to Cargo, and one of the following features can be enabled:
+By default, the `rustls` TLS library is used with the system's native root certificates. This can be turned off by passing `--no-default-features` to Cargo, and one of the following features can be enabled:
 
 ```
-tls-native            (the default) link to the system native TLS library
-tls-native-vendored   automatically build a copy of OpenSSL and statically link to it
-tls-rustls            use rustls for TLS (note that rustls may not accept some server certificates)
+tls-rustls-native-roots  use rustls for TLS with the system's native root certificates (the default)
+tls-rustls-webpki-roots  use rustls for TLS and bundle webpki's root certificates
+tls-native               link to the system native TLS library
+tls-native-vendored      automatically build a copy of OpenSSL and statically link to it
 ```
 
-These options only affect the TLS library used for the WebSocket connections (to the XMPP server and to the JVB).
-Gstreamer uses its own choice of TLS library for its elements, including DTLS-SRTP (the media streams).
+Building with the `tls-insecure` feature adds a `--tls-insecure` command line flag which disables certificate verification. Use this with extreme caution.
+
+The `tls-*` flags only affect the TLS library used for the WebSocket connections (to the XMPP server and to the JVB). Gstreamer uses its own choice of TLS library for its elements. DTLS-SRTP (the media streams) is handled via GStreamer and uses automatically-generated ephemeral certificates which are authenticated over the XMPP signalling channel.
+
+Building with the `log-rtp` feture adds a `--log-rtp` command line flag which logs information about every RTP and RTCP packet at the `DEBUG` level.
 
 ## Debugging
 

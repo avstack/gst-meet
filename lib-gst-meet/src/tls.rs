@@ -6,14 +6,14 @@ use std::sync::Arc;
 
 #[cfg(not(feature = "tls-insecure"))]
 use anyhow::bail;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use tokio_tungstenite::Connector;
 
 #[cfg(feature = "tls-rustls-native-roots")]
 pub(crate) fn wss_connector(insecure: bool) -> Result<tokio_tungstenite::Connector> {
   let mut roots = rustls::RootCertStore::empty();
-  for cert in rustls_native_certs::load_native_certs()? {
-    roots.add(&rustls::Certificate(cert.0))?;
+  for cert in rustls_native_certs::load_native_certs().context("failed to load native root certs")? {
+    roots.add(&rustls::Certificate(cert.0)).context("failed to add native root certs")?;
   }
 
   let mut config = rustls::ClientConfig::builder()
@@ -80,7 +80,7 @@ pub(crate) fn wss_connector(insecure: bool) -> Result<tokio_tungstenite::Connect
       "Insecure TLS mode can only be enabled if the tls-insecure feature was enabled at compile time."
     )
   }
-  Ok(Connector::NativeTls(builder.build()?))
+  Ok(Connector::NativeTls(builder.build().context("failed to build native TLS connector")?))
 }
 
 #[cfg(all(

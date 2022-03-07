@@ -100,7 +100,7 @@ impl Connection {
     let (websocket, _response) = tokio_tungstenite::connect_async_tls_with_config(
       request,
       None,
-      Some(wss_connector(tls_insecure)?),
+      Some(wss_connector(tls_insecure).context("failed to build TLS connector")?),
     )
     .await
     .context("failed to connect XMPP WebSocket")?;

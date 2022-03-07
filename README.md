@@ -8,12 +8,14 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 
 ## Dependencies
 
-* `glib`
 * `gstreamer` 1.20
-* `gst-plugins-bad` (same version as `gstreamer`) and any other plugins that you want to use in your pipelines
+* `gst-plugins-good`, `gst-plugins-bad` (same version as `gstreamer`) and any other plugins that you want to use in your pipelines
+* `glib`
 * `libnice`
+
+### For building:
+
 * `pkg-config`
-* A TLS library (usually installed by default, but you may need to install `openssl-dev` or similar on minimal Linux distributions)
 * A Rust toolchain ([rustup](https://rustup.rs/) is the easiest way to install one)
 
 ## Installation

@@ -1,7 +1,7 @@
 [package]
 name = "lib-gst-meet"
 description = "Connect GStreamer pipelines to Jitsi Meet conferences"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2018"
 license = "MIT/Apache-2.0"
 readme = "../README.md"
@@ -26,7 +26,7 @@ jitsi-xmpp-parsers = { version = "0.1", path = "../jitsi-xmpp-parsers", default-
 libc = { version = "0.2", default-features = false }
 maplit = { version = "1", default-features = false }
 native-tls = { version = "0.2", default-features = false, optional = true }
-nice-gst-meet = { version = "0.1", path = "../nice-gst-meet", default-features = false, features = ["v0_1_18"] }
+nice-gst-meet = { version = "0.2", path = "../nice-gst-meet", default-features = false, features = ["v0_1_18"] }
 once_cell = { version = "1", default-features = false, features = ["std"] }
 pem = { version = "1", default-features = false }
 rand = { version = "0.8", default-features = false, features = ["std", "std_rng"] }

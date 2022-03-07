@@ -12,7 +12,7 @@ colibri = { version = "0.1", default-features = false }
 futures = { version = "0.3", default-features = false }
 glib = { version = "0.15", default-features = false, features = ["log"] }
 gstreamer = { version = "0.18", default-features = false, features = ["v1_20"] }
-lib-gst-meet = { version = "0.4", path = "../lib-gst-meet", default-features = false, features = ["tracing-subscriber"] }
+lib-gst-meet = { version = "0.5", path = "../lib-gst-meet", default-features = false, features = ["tracing-subscriber"] }
 structopt = { version = "0.3", default-features = false }
 tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "signal", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false }

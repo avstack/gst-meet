@@ -1,7 +1,7 @@
 [package]
 name = "nice-gst-meet-sys"
 description = "FFI bindings to libnice for gst-meet"
-version = "0.1.0"
+version = "0.2.0"
 links = "nice"
 edition = "2018"
 build = "build.rs"

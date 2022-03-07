@@ -1,6 +1,6 @@
 # gst-meet: Integrate Jitsi Meet conferences with GStreamer pipelines
 
-Note: gst-meet is in an **alpha** state and is under active development. The command-line options and the lib-gst-meet API are subject to change, and some important features (simulcast, RTX, TCC) are not yet fully functional.
+Note: gst-meet is in an **alpha** state and is under active development. The command-line options and the lib-gst-meet API are subject to change.
 
 gst-meet provides a library and tool for integrating Jitsi Meet conferences with GStreamer pipelines. You can pipe audio and video into a conference as a participant, and pipe out other participants' audio and video streams.
 
@@ -42,7 +42,7 @@ You can pass two different pipeline fragments to gst-meet.
 
 `--send-pipeline` is for sending audio and video. If it contains an element named `audio`, this audio will be streamed to the conference. The audio codec must be 48kHz Opus. If it contains an element named `video`, this video will be streamed to the conference. The video codec must match the codec passed to `--video-codec`, which is VP8 by default.
 
-`--recv-pipeline-participant-template` is for receiving audio and video from other participants. This pipeline will be created once for each other participant in the conference. If it contains an element named `audio`, the participant's audio (48kHz Opus) will be sent to that element. If it contains an element named `video`, the participant's video (encoded with the codec selected by `--video-codec`) will be sent to that element. The strings `{jid}`, `{jid_user}`, `{participant_id}` and `{nick}` are replaced in the template with the participant's full JID, user part, MUC JID resource part (a.k.a. participant/occupant ID) and nickname respectively.
+`--recv-pipeline-participant-template` is for receiving audio and video from other participants. This pipeline will be created once for each other participant in the conference. If it contains an element named `audio`, the participant's audio (48kHz Opus) will be sent to that element. If it contains an element named `video`, the participant's video will be sent to that element. The strings `{jid}`, `{jid_user}`, `{participant_id}` and `{nick}` are replaced in the template with the participant's full JID, user part, MUC JID resource part (a.k.a. participant/occupant ID) and nickname respectively.
 
 ## Examples
 
@@ -54,7 +54,6 @@ Stream an Opus audio file to the conference. This is very efficient; the Opus da
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
          --send-pipeline="filesrc location=sample.opus ! queue ! oggdemux name=audio"
 ```
@@ -63,7 +62,6 @@ Stream a FLAC audio file to the conference, transcoding it to Opus:
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
          --send-pipeline="filesrc location=shake-it-off.flac ! queue ! flacdec ! audioconvert ! audioresample ! opusenc name=audio"
 ```
@@ -72,7 +70,6 @@ Stream a .webm file containing VP8 video and Vorbis audio to the conference. Thi
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
          --send-pipeline="filesrc location=big-buck-bunny_trailer.webm ! queue ! matroskademux name=demuxer
                           demuxer.video_0 ! queue name=video
@@ -83,7 +80,6 @@ Stream the default video & audio inputs to the conference, encoding as VP8 and O
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
          --send-pipeline="autovideosrc ! queue ! videoconvert ! vp8enc buffer-size=1000 deadline=1 name=video
                           autoaudiosrc ! queue ! audioconvert ! audioresample ! opusenc name=audio" \
@@ -95,7 +91,6 @@ Record a .webm file for each other participant, containing VP8 video and Opus au
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
          --recv-pipeline-participant-template="webmmux name=muxer ! filesink location={participant_id}.webm
                                                opusparse name=audio ! muxer.audio_0
@@ -106,7 +101,6 @@ The above .webm file unfortunately may not play in most players, because the res
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
          --recv-pipeline-participant-template="webmmux name=muxer ! filesink location={participant_id}.webm
                                                opusparse name=audio ! muxer.audio_0
@@ -118,7 +112,6 @@ Play a YouTube video in the conference. By requesting Opus audio and VP9 video f
 ```
 YOUTUBE_URL="https://www.youtube.com/watch?v=vjV_2Ri2rfE"
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --xmpp-domain=your.jitsi.domain \
          --room-name=roomname \
          --video-codec=vp9 \
          --send-pipeline="curlhttpsrc location=\"$(youtube-dl -g $YOUTUBE_URL -f 'bestaudio[acodec=opus]')\" ! queue ! matroskademux name=audiodemux

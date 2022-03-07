@@ -9,6 +9,7 @@ use gstreamer::{
   prelude::{ElementExt, GstBinExt},
   GhostPad,
 };
+use http::Uri;
 use lib_gst_meet::{
   init_tracing, Authentication, Connection, JitsiConference, JitsiConferenceConfig, MediaType,
 };
@@ -24,15 +25,28 @@ use tracing::{error, info, trace, warn};
 struct Opt {
   #[structopt(long)]
   web_socket_url: String,
-  #[structopt(long)]
-  xmpp_domain: String,
+  #[structopt(
+    long,
+    help = "If not specified, assumed to be the host part of <web-socket-url>",
+  )]
+  xmpp_domain: Option<String>,
   #[structopt(long)]
   room_name: String,
-  #[structopt(long)]
+  #[structopt(
+    long,
+    help = "If not specified, assumed to be conference.<xmpp-domain>",
+  )]
   muc_domain: Option<String>,
-  #[structopt(long)]
+  #[structopt(
+    long,
+    help = "If not specified, assumed to be focus@auth.<xmpp-domain>/focus",
+  )]
   focus_jid: Option<String>,
-  #[structopt(long, default_value = "vp8")]
+  #[structopt(
+    long,
+    default_value = "vp8",
+    help = "The video codec to negotiate support for. One of: vp8, vp9, h264",
+  )]
   video_codec: String,
   #[structopt(long, default_value = "gst-meet")]
   nick: String,
@@ -42,13 +56,25 @@ struct Opt {
   send_pipeline: Option<String>,
   #[structopt(long)]
   recv_pipeline_participant_template: Option<String>,
-  #[structopt(long)]
+  #[structopt(
+    long,
+    help = "Comma-separated endpoint IDs to select (prioritise receiving of)",
+  )]
   select_endpoints: Option<String>,
-  #[structopt(long)]
+  #[structopt(
+    long,
+    help = "The maximum number of video streams we would like to receive",
+  )]
   last_n: Option<u16>,
-  #[structopt(long)]
+  #[structopt(
+    long,
+    help = "The maximum height to receive video at."
+  )]
   recv_video_height: Option<u16>,
-  #[structopt(long)]
+  #[structopt(
+    long,
+    help = "The video type to signal that we are sending. One of: camera, desktop"
+  )]
   video_type: Option<String>,
   #[structopt(long)]
   start_bitrate: Option<u32>,
@@ -128,10 +154,18 @@ async fn main_inner() -> Result<()> {
     .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
     .transpose()
     .context("failed to parse send pipeline")?;
+  
+  let web_socket_url: Uri = opt.web_socket_url.parse()?;
+
+  let xmpp_domain = opt
+    .xmpp_domain
+    .as_deref()
+    .or_else(|| web_socket_url.host())
+    .context("invalid WebSocket URL")?;
 
   let (connection, background) = Connection::new(
     &opt.web_socket_url,
-    &opt.xmpp_domain,
+    xmpp_domain,
     Authentication::Anonymous,
     #[cfg(feature = "tls-insecure")]
     opt.tls_insecure,
@@ -151,13 +185,13 @@ async fn main_inner() -> Result<()> {
     opt
       .muc_domain
       .clone()
-      .unwrap_or_else(|| { format!("conference.{}", opt.xmpp_domain) }),
+      .unwrap_or_else(|| { format!("conference.{}", xmpp_domain) }),
   );
 
   let focus_jid = opt
     .focus_jid
     .clone()
-    .unwrap_or_else(|| format!("focus@auth.{}/focus", opt.xmpp_domain,));
+    .unwrap_or_else(|| format!("focus@auth.{}/focus", xmpp_domain));
 
   let Opt {
     nick,

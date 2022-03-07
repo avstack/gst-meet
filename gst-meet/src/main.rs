@@ -50,6 +50,10 @@ struct Opt {
   recv_video_height: Option<u16>,
   #[structopt(long)]
   video_type: Option<String>,
+  #[structopt(long)]
+  start_bitrate: Option<u32>,
+  #[structopt(long)]
+  stereo: Option<bool>,
   #[structopt(short, long, parse(from_occurrences))]
   verbose: u8,
   #[cfg(feature = "tls-insecure")]
@@ -160,6 +164,8 @@ async fn main_inner() -> Result<()> {
     region,
     video_codec,
     recv_pipeline_participant_template,
+    start_bitrate,
+    stereo,
     #[cfg(feature = "log-rtp")]
     log_rtp,
     ..
@@ -172,8 +178,8 @@ async fn main_inner() -> Result<()> {
     region,
     video_codec,
     extra_muc_features: vec![],
-    start_bitrate: 800,
-    stereo: false,
+    start_bitrate: start_bitrate.unwrap_or(800),
+    stereo: stereo.unwrap_or_default(),
     #[cfg(feature = "log-rtp")]
     log_rtp,
   };

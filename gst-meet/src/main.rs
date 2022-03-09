@@ -49,6 +49,15 @@ struct Opt {
 
   #[structopt(
     long,
+    help = "If not specified, anonymous auth is used."
+  )]
+  xmpp_username: Option<String>,
+
+  #[structopt(long)]
+  xmpp_password: Option<String>,
+
+  #[structopt(
+    long,
     default_value = "vp9",
     help = "The video codec to negotiate support for. One of: vp9, vp8, h264"
   )]
@@ -223,7 +232,13 @@ async fn main_inner() -> Result<()> {
   let (connection, background) = Connection::new(
     &opt.web_socket_url,
     xmpp_domain,
-    Authentication::Anonymous,
+    match opt.xmpp_username {
+      Some(username) => Authentication::Plain {
+        username,
+        password: opt.xmpp_password.context("if xmpp-username is provided, xmpp-password must also be provided")?,
+      },
+      None => Authentication::Anonymous,
+    },
     #[cfg(feature = "tls-insecure")]
     opt.tls_insecure,
     #[cfg(not(feature = "tls-insecure"))]

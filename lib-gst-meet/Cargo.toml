@@ -2,7 +2,7 @@
 name = "lib-gst-meet"
 description = "Connect GStreamer pipelines to Jitsi Meet conferences"
 version = "0.5.0"
-edition = "2018"
+edition = "2021"
 license = "MIT/Apache-2.0"
 readme = "../README.md"
 repository = "https://github.com/avstack/gst-meet"

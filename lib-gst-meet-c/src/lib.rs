@@ -160,9 +160,11 @@ pub unsafe extern "C" fn gstmeet_connection_join_conference(
     // TODO
     start_bitrate: 800,
     stereo: false,
-    
+    buffer_size: 200,
     #[cfg(feature = "log-rtp")]
     log_rtp: false,
+    #[cfg(feature = "log-rtp")]
+    log_rtcp: false,
   };
   (*context)
     .runtime

@@ -548,6 +548,8 @@ impl JingleSession {
     let rtpbin = gstreamer::ElementFactory::make("rtpbin", Some("rtpbin"))?;
     rtpbin.set_property_from_str("rtp-profile", "savpf");
     rtpbin.set_property("autoremove", true);
+    rtpbin.set_property("do-lost", true);
+    rtpbin.set_property("do-sync-event", true);
     pipeline.add(&rtpbin)?;
 
     let nicesrc = gstreamer::ElementFactory::make("nicesrc", None)?;
@@ -604,7 +606,8 @@ impl JingleSession {
                 caps = caps
                   .field("media", "video")
                   .field("clock-rate", 90000)
-                  .field("encoding-name", codec.encoding_name());
+                  .field("encoding-name", codec.encoding_name())
+                  .field("rtcp-fb-nack-pli", true);
                 if let Some(hdrext) = video_hdrext_transport_cc {
                   caps = caps.field(&format!("extmap-{}", hdrext), RTP_HDREXT_TRANSPORT_CC);
                 }
@@ -640,6 +643,7 @@ impl JingleSession {
 
     let handle = Handle::current();
     let jingle_session = conference.jingle_session.clone();
+    let buffer_size = conference.config.buffer_size;
     rtpbin.connect("new-jitterbuffer", false, move |values| {
       let handle = handle.clone();
       let jingle_session = jingle_session.clone();
@@ -669,6 +673,8 @@ impl JingleSession {
         if source.media_type == MediaType::Video && source.participant_id.is_some() {
           debug!("enabling RTX for ssrc {}", ssrc);
           rtpjitterbuffer.set_property("do-retransmission", true);
+          rtpjitterbuffer.set_property("drop-on-latency", true);
+          rtpjitterbuffer.set_property("latency", buffer_size);
         }
         Ok::<_, anyhow::Error>(())
       };
@@ -1023,60 +1029,67 @@ impl JingleSession {
     pipeline.add(&rtcp_send_identity)?;
 
     #[cfg(feature = "log-rtp")]
-    if conference.config.log_rtp {
-      debug!("setting up RTP/RTCP packet logging");
+    {
+      if conference.config.log_rtp {
+        debug!("setting up RTP packet logging");
 
-      let make_rtp_logger = |direction: &'static str| {
-        move |values: &[glib::Value]| -> Option<glib::Value> {
-          let f = || {
-            let buffer: gstreamer::Buffer = values[1].get()?;
-            let rtp_buffer = RTPBuffer::from_buffer_readable(&buffer)?;
-            debug!(
-              ssrc=rtp_buffer.ssrc(),
-              pt=rtp_buffer.payload_type(),
-              seq=rtp_buffer.seq(),
-              ts=rtp_buffer.timestamp(),
-              marker=rtp_buffer.is_marker(),
-              extension=rtp_buffer.is_extension(),
-              payload_size=rtp_buffer.payload_size(),
-              "RTP {}",
-              direction,
-            );
-            Ok::<_, anyhow::Error>(())
-          };
-          if let Err(e) = f() {
-            warn!("RTP {}: {:?}", direction, e);
+        let make_rtp_logger = |direction: &'static str| {
+          move |values: &[glib::Value]| -> Option<glib::Value> {
+            let f = || {
+              let buffer: gstreamer::Buffer = values[1].get()?;
+              let rtp_buffer = RTPBuffer::from_buffer_readable(&buffer)?;
+              debug!(
+                ssrc=rtp_buffer.ssrc(),
+                pt=rtp_buffer.payload_type(),
+                seq=rtp_buffer.seq(),
+                ts=rtp_buffer.timestamp(),
+                marker=rtp_buffer.is_marker(),
+                extension=rtp_buffer.is_extension(),
+                payload_size=rtp_buffer.payload_size(),
+                "RTP {}",
+                direction,
+              );
+              Ok::<_, anyhow::Error>(())
+            };
+            if let Err(e) = f() {
+              warn!("RTP {}: {:?}", direction, e);
+            }
+            None
           }
-          None
-        }
-      };
+        };
 
-      let make_rtcp_logger = |direction: &'static str| {
-        move |values: &[glib::Value]| -> Option<glib::Value> {
-          let f = || {
-            let buffer: gstreamer::Buffer = values[1].get()?;
-            let mut buf = [0u8; 1500];
-            buffer.copy_to_slice(0, &mut buf[..buffer.size()]).map_err(|_| anyhow!("invalid RTCP packet size"))?;
-            let decoded = rtcp::packet::unmarshal(&mut &buf[..buffer.size()])?;
-            debug!(
-              "RTCP {} size={}\n{:#?}",
-              direction,
-              buffer.size(),
-              decoded,
-            );
-            Ok::<_, anyhow::Error>(())
-          };
-          if let Err(e) = f() {
-            warn!("RTCP {}: {:?}", direction, e);
+        rtp_recv_identity.connect("handoff", false, make_rtp_logger("RECV"));
+        rtp_send_identity.connect("handoff", false, make_rtp_logger("SEND"));
+      }
+
+      if conference.config.log_rtcp {
+        debug!("setting up RTCP packet logging");
+
+        let make_rtcp_logger = |direction: &'static str| {
+          move |values: &[glib::Value]| -> Option<glib::Value> {
+            let f = || {
+              let buffer: gstreamer::Buffer = values[1].get()?;
+              let mut buf = [0u8; 1500];
+              buffer.copy_to_slice(0, &mut buf[..buffer.size()]).map_err(|_| anyhow!("invalid RTCP packet size"))?;
+              let decoded = rtcp::packet::unmarshal(&mut &buf[..buffer.size()])?;
+              debug!(
+                "RTCP {} size={}\n{:#?}",
+                direction,
+                buffer.size(),
+                decoded,
+              );
+              Ok::<_, anyhow::Error>(())
+            };
+            if let Err(e) = f() {
+              warn!("RTCP {}: {:?}", direction, e);
+            }
+            None
           }
-          None
-        }
-      };
+        };
 
-      rtp_recv_identity.connect("handoff", false, make_rtp_logger("RECV"));
-      rtp_send_identity.connect("handoff", false, make_rtp_logger("SEND"));
-      rtcp_recv_identity.connect("handoff", false, make_rtcp_logger("RECV"));
-      rtcp_send_identity.connect("handoff", false, make_rtcp_logger("SEND"));
+        rtcp_recv_identity.connect("handoff", false, make_rtcp_logger("RECV"));
+        rtcp_send_identity.connect("handoff", false, make_rtcp_logger("SEND"));
+      }
     }
     
     debug!("link dtlssrtpdec -> rtpbin");

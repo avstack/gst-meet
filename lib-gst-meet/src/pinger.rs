@@ -4,7 +4,7 @@ use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use tokio::{sync::mpsc, task::JoinHandle, time};
 use tracing::warn;
-use xmpp_parsers::{iq::Iq, Element, FullJid, Jid, ping::Ping};
+use xmpp_parsers::{iq::Iq, ping::Ping, Element, FullJid, Jid};
 
 use crate::{stanza_filter::StanzaFilter, util::generate_id};
 
@@ -29,11 +29,7 @@ impl Pinger {
         }
       }
     });
-    Pinger {
-      jid,
-      tx,
-      ping_task,
-    }
+    Pinger { jid, tx, ping_task }
   }
 }
 

@@ -3,10 +3,13 @@ use std::{collections::HashMap, fmt, net::SocketAddr};
 use anyhow::{anyhow, bail, Context, Result};
 use futures::stream::StreamExt;
 use glib::{Cast, ObjectExt, ToValue};
-use gstreamer::{Bin, Element, GhostPad, prelude::{ElementExt, ElementExtManual, GObjectExtManualGst, GstBinExt, GstObjectExt, PadExt}};
-use gstreamer_rtp::{prelude::RTPHeaderExtensionExt, RTPHeaderExtension};
+use gstreamer::{
+  prelude::{ElementExt, ElementExtManual, GObjectExtManualGst, GstBinExt, GstObjectExt, PadExt},
+  Bin, Element, GhostPad,
+};
 #[cfg(feature = "log-rtp")]
 use gstreamer_rtp::RTPBuffer;
+use gstreamer_rtp::{prelude::RTPHeaderExtensionExt, RTPHeaderExtension};
 use itertools::Itertools;
 use jitsi_xmpp_parsers::{
   jingle::{Action, Content, Description, Jingle, Transport},
@@ -594,8 +597,7 @@ impl JingleSession {
         let f = || {
           debug!("rtpbin request-pt-map {:?}", values);
           let pt = values[2].get::<u32>()? as u8;
-          let mut caps = gstreamer::Caps::builder("application/x-rtp")
-            .field("payload", pt as i32);
+          let mut caps = gstreamer::Caps::builder("application/x-rtp").field("payload", pt as i32);
           for codec in codecs.iter() {
             if codec.is(pt) {
               if codec.is_audio() {
@@ -861,7 +863,7 @@ impl JingleSession {
             pipeline
               .add(&depayloader)
               .context("failed to add depayloader to pipeline")?;
-              depayloader.sync_state_with_parent()?;
+            depayloader.sync_state_with_parent()?;
             debug!("created depayloader");
             rtpbin
               .link_pads(Some(&pad_name), &depayloader, None)
@@ -872,9 +874,13 @@ impl JingleSession {
             debug!("rtpbin pads:\n{}", dump_pads(&rtpbin));
 
             let queue = gstreamer::ElementFactory::make("queue", None)?;
-            pipeline.add(&queue).context("failed to add queue to pipeline")?;
+            pipeline
+              .add(&queue)
+              .context("failed to add queue to pipeline")?;
             queue.sync_state_with_parent()?;
-            depayloader.link(&queue).context("failed to link depayloader to queue")?;
+            depayloader
+              .link(&queue)
+              .context("failed to link depayloader to queue")?;
 
             let decoder = match source.media_type {
               MediaType::Audio => {
@@ -898,7 +904,10 @@ impl JingleSession {
                 if let Some(codec) = codec {
                   let decoder = gstreamer::ElementFactory::make(codec.decoder_name(), None)?;
                   decoder.set_property("automatic-request-sync-points", true);
-                  decoder.set_property_from_str("automatic-request-sync-point-flags", "GST_VIDEO_DECODER_REQUEST_SYNC_POINT_CORRUPT_OUTPUT");
+                  decoder.set_property_from_str(
+                    "automatic-request-sync-point-flags",
+                    "GST_VIDEO_DECODER_REQUEST_SYNC_POINT_CORRUPT_OUTPUT",
+                  );
                   decoder
                 }
                 else {
@@ -907,9 +916,13 @@ impl JingleSession {
               },
             };
 
-            pipeline.add(&decoder).context("failed to add decoder to pipeline")?;
+            pipeline
+              .add(&decoder)
+              .context("failed to add decoder to pipeline")?;
             decoder.sync_state_with_parent()?;
-            queue.link(&decoder).context("failed to link queue to decoder")?;
+            queue
+              .link(&decoder)
+              .context("failed to link queue to decoder")?;
 
             let src_pad = match source.media_type {
               MediaType::Audio => decoder
@@ -917,41 +930,81 @@ impl JingleSession {
                 .context("decoder has no src pad")?,
               MediaType::Video => {
                 let videoscale = gstreamer::ElementFactory::make("videoscale", None)?;
-                pipeline.add(&videoscale).context("failed to add videoscale to pipeline")?;
+                pipeline
+                  .add(&videoscale)
+                  .context("failed to add videoscale to pipeline")?;
                 videoscale.sync_state_with_parent()?;
-                decoder.link(&videoscale).context("failed to link decoder to videoscale")?;
+                decoder
+                  .link(&videoscale)
+                  .context("failed to link decoder to videoscale")?;
 
                 let capsfilter = gstreamer::ElementFactory::make("capsfilter", None)?;
-                capsfilter.set_property_from_str("caps", &format!("video/x-raw, width={}, height={}", conference.config.recv_video_scale_width, conference.config.recv_video_scale_height));
-                pipeline.add(&capsfilter).context("failed to add capsfilter to pipeline")?;
+                capsfilter.set_property_from_str(
+                  "caps",
+                  &format!(
+                    "video/x-raw, width={}, height={}",
+                    conference.config.recv_video_scale_width,
+                    conference.config.recv_video_scale_height
+                  ),
+                );
+                pipeline
+                  .add(&capsfilter)
+                  .context("failed to add capsfilter to pipeline")?;
                 capsfilter.sync_state_with_parent()?;
-                videoscale.link(&capsfilter).context("failed to link videoscale to capsfilter")?;
+                videoscale
+                  .link(&capsfilter)
+                  .context("failed to link videoscale to capsfilter")?;
 
                 let videoconvert = gstreamer::ElementFactory::make("videoconvert", None)?;
-                pipeline.add(&videoconvert).context("failed to add videoconvert to pipeline")?;
+                pipeline
+                  .add(&videoconvert)
+                  .context("failed to add videoconvert to pipeline")?;
                 videoconvert.sync_state_with_parent()?;
-                capsfilter.link(&videoconvert).context("failed to link capsfilter to videoconvert")?;
+                capsfilter
+                  .link(&videoconvert)
+                  .context("failed to link capsfilter to videoconvert")?;
 
-                videoconvert.static_pad("src").context("videoconvert has no src pad")?
+                videoconvert
+                  .static_pad("src")
+                  .context("videoconvert has no src pad")?
               },
             };
 
             if let Some(participant_id) = source.participant_id {
               handle.block_on(conference.ensure_participant(&participant_id))?;
               let maybe_sink_element = match source.media_type {
-                MediaType::Audio => handle.block_on(conference.remote_participant_audio_sink_element()),
-                MediaType::Video => handle.block_on(conference.remote_participant_video_sink_element()),
+                MediaType::Audio => {
+                  handle.block_on(conference.remote_participant_audio_sink_element())
+                },
+                MediaType::Video => {
+                  handle.block_on(conference.remote_participant_video_sink_element())
+                },
               };
               if let Some(sink_element) = maybe_sink_element {
                 let sink_pad = sink_element
                   .request_pad_simple("sink_%u")
                   .context("no suitable sink pad provided by sink element in recv pipeline")?;
-                let ghost_pad = GhostPad::with_target(Some(&format!("participant_{}_{:?}", participant_id, source.media_type)), &sink_pad)?;
-                let bin: Bin = sink_element.parent().context("sink element has no parent")?.downcast().map_err(|_| anyhow!("sink element's parent is not a bin"))?;
+                let ghost_pad = GhostPad::with_target(
+                  Some(&format!(
+                    "participant_{}_{:?}",
+                    participant_id, source.media_type
+                  )),
+                  &sink_pad,
+                )?;
+                let bin: Bin = sink_element
+                  .parent()
+                  .context("sink element has no parent")?
+                  .downcast()
+                  .map_err(|_| anyhow!("sink element's parent is not a bin"))?;
                 bin.add_pad(&ghost_pad)?;
-                
-                src_pad.link(&ghost_pad).context("failed to link decode chain to participant bin from recv pipeline")?;
-                info!("linked {}/{:?} to new pad in recv pipeline", participant_id, source.media_type);
+
+                src_pad
+                  .link(&ghost_pad)
+                  .context("failed to link decode chain to participant bin from recv pipeline")?;
+                info!(
+                  "linked {}/{:?} to new pad in recv pipeline",
+                  participant_id, source.media_type
+                );
               }
               else if let Some(participant_bin) =
                 pipeline.by_name(&format!("participant_{}", participant_id))
@@ -961,8 +1014,13 @@ impl JingleSession {
                   MediaType::Video => "video",
                 };
                 if let Some(sink_pad) = participant_bin.static_pad(sink_pad_name) {
-                  src_pad.link(&sink_pad).context("failed to link decode chain to participant bin from recv participant pipeline")?;
-                  info!("linked {}/{:?} to recv participant pipeline", participant_id, source.media_type);
+                  src_pad.link(&sink_pad).context(
+                    "failed to link decode chain to participant bin from recv participant pipeline",
+                  )?;
+                  info!(
+                    "linked {}/{:?} to recv participant pipeline",
+                    participant_id, source.media_type
+                  );
                 }
                 else {
                   warn!(
@@ -984,7 +1042,9 @@ impl JingleSession {
               let fakesink = gstreamer::ElementFactory::make("fakesink", None)?;
               pipeline.add(&fakesink)?;
               fakesink.sync_state_with_parent()?;
-              let sink_pad = fakesink.static_pad("sink").context("fakesink has no sink pad")?;
+              let sink_pad = fakesink
+                .static_pad("sink")
+                .context("fakesink has no sink pad")?;
               src_pad.link(&sink_pad)?;
             }
 
@@ -1125,13 +1185,13 @@ impl JingleSession {
               let buffer: gstreamer::Buffer = values[1].get()?;
               let rtp_buffer = RTPBuffer::from_buffer_readable(&buffer)?;
               debug!(
-                ssrc=rtp_buffer.ssrc(),
-                pt=rtp_buffer.payload_type(),
-                seq=rtp_buffer.seq(),
-                ts=rtp_buffer.timestamp(),
-                marker=rtp_buffer.is_marker(),
-                extension=rtp_buffer.is_extension(),
-                payload_size=rtp_buffer.payload_size(),
+                ssrc = rtp_buffer.ssrc(),
+                pt = rtp_buffer.payload_type(),
+                seq = rtp_buffer.seq(),
+                ts = rtp_buffer.timestamp(),
+                marker = rtp_buffer.is_marker(),
+                extension = rtp_buffer.is_extension(),
+                payload_size = rtp_buffer.payload_size(),
                 "RTP {}",
                 direction,
               );
@@ -1156,14 +1216,11 @@ impl JingleSession {
             let f = || {
               let buffer: gstreamer::Buffer = values[1].get()?;
               let mut buf = [0u8; 1500];
-              buffer.copy_to_slice(0, &mut buf[..buffer.size()]).map_err(|_| anyhow!("invalid RTCP packet size"))?;
+              buffer
+                .copy_to_slice(0, &mut buf[..buffer.size()])
+                .map_err(|_| anyhow!("invalid RTCP packet size"))?;
               let decoded = rtcp::packet::unmarshal(&mut &buf[..buffer.size()])?;
-              debug!(
-                "RTCP {} size={}\n{:#?}",
-                direction,
-                buffer.size(),
-                decoded,
-              );
+              debug!("RTCP {} size={}\n{:#?}", direction, buffer.size(), decoded,);
               Ok::<_, anyhow::Error>(())
             };
             if let Err(e) = f() {
@@ -1177,7 +1234,7 @@ impl JingleSession {
         rtcp_send_identity.connect("handoff", false, make_rtcp_logger("SEND"));
       }
     }
-    
+
     debug!("link dtlssrtpdec -> rtpbin");
     dtlssrtpdec.link_pads(Some("rtp_src"), &rtp_recv_identity, None)?;
     rtp_recv_identity.link_pads(None, &rtpbin, Some("recv_rtp_sink_0"))?;
@@ -1472,12 +1529,21 @@ fn dump_pads(element: &Element) -> String {
   element
     .pads()
     .into_iter()
-    .map(|pad| format!(
-      "  {}, peer={}.{}, caps=\"{}\"",
-      pad.name(),
-      pad.peer().and_then(|peer| peer.parent_element()).map(|element| element.name().to_string()).unwrap_or_default(),
-      pad.peer().map(|peer| peer.name().to_string()).unwrap_or_default(),
-      pad.caps().map(|caps| caps.to_string()).unwrap_or_default(),
-    ))
+    .map(|pad| {
+      format!(
+        "  {}, peer={}.{}, caps=\"{}\"",
+        pad.name(),
+        pad
+          .peer()
+          .and_then(|peer| peer.parent_element())
+          .map(|element| element.name().to_string())
+          .unwrap_or_default(),
+        pad
+          .peer()
+          .map(|peer| peer.name().to_string())
+          .unwrap_or_default(),
+        pad.caps().map(|caps| caps.to_string()).unwrap_or_default(),
+      )
+    })
     .join("\n")
 }

@@ -20,7 +20,7 @@ use pem::Pem;
 use rand::random;
 use rcgen::{Certificate, CertificateParams, PKCS_ECDSA_P256_SHA256};
 use ring::digest::{digest, SHA256};
-use tokio::{net::lookup_host, runtime::Handle, sync::oneshot};
+use tokio::{net::lookup_host, runtime::Handle, sync::oneshot, task::JoinHandle};
 use tracing::{debug, error, warn};
 use uuid::Uuid;
 use xmpp_parsers::{
@@ -137,11 +137,12 @@ pub(crate) struct JingleSession {
   pipeline: gstreamer::Pipeline,
   audio_sink_element: gstreamer::Element,
   video_sink_element: gstreamer::Element,
-  remote_ssrc_map: HashMap<u32, Source>,
+  pub(crate) remote_ssrc_map: HashMap<u32, Source>,
   _ice_agent: nice::Agent,
   pub(crate) accept_iq_id: Option<String>,
   pub(crate) colibri_url: Option<String>,
   pub(crate) colibri_channel: Option<ColibriChannel>,
+  pub(crate) stats_handler_task: Option<JoinHandle<()>>,
   pipeline_state_null_rx: oneshot::Receiver<()>,
 }
 
@@ -1320,6 +1321,7 @@ impl JingleSession {
       accept_iq_id: Some(accept_iq_id),
       colibri_url: ice_transport.web_socket.clone().map(|ws| ws.url),
       colibri_channel: None,
+      stats_handler_task: None,
       pipeline_state_null_rx,
     })
   }

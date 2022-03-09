@@ -73,6 +73,11 @@ struct Opt {
   recv_video_height: Option<u16>,
   #[structopt(
     long,
+    help = "The maximum height we plan to send video at (used for stats only)."
+  )]
+  send_video_height: Option<u16>,
+  #[structopt(
+    long,
     help = "The video type to signal that we are sending. One of: camera, desktop"
   )]
   video_type: Option<String>,
@@ -198,6 +203,7 @@ async fn main_inner() -> Result<()> {
     region,
     video_codec,
     recv_pipeline_participant_template,
+    send_video_height,
     start_bitrate,
     stereo,
     #[cfg(feature = "log-rtp")]
@@ -223,6 +229,10 @@ async fn main_inner() -> Result<()> {
   let conference = JitsiConference::join(connection, main_loop.context(), config)
     .await
     .context("failed to join conference")?;
+  
+  if let Some(height) = send_video_height {
+    conference.set_send_resolution(height.into()).await;
+  }
 
   if opt.select_endpoints.is_some() || opt.last_n.is_some() || opt.recv_video_height.is_some() {
     conference

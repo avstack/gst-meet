@@ -1,15 +1,16 @@
-use std::{collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin, sync::Arc};
+use std::{collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
 use colibri::{ColibriMessage, JsonMessage};
 use futures::stream::StreamExt;
+use glib::ObjectExt;
 use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
 use jitsi_xmpp_parsers::jingle::{Action, Jingle};
 use maplit::hashmap;
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use tokio::sync::{mpsc, oneshot, Mutex};
+use tokio::{sync::{mpsc, oneshot, Mutex}, time};
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::{debug, error, info, trace, warn};
 use uuid::Uuid;
@@ -26,7 +27,7 @@ use xmpp_parsers::{
   ns,
   presence::{self, Presence},
   stanza_error::{DefinedCondition, ErrorType, StanzaError},
-  BareJid, Element, FullJid, Jid,
+  BareJid, FullJid, Jid,
 };
 
 use crate::{
@@ -37,6 +38,8 @@ use crate::{
   util::generate_id,
   xmpp::{self, connection::Connection},
 };
+
+const SEND_STATS_INTERVAL: Duration = Duration::from_secs(10);
 
 const DISCO_NODE: &str = "https://github.com/avstack/gst-meet";
 
@@ -85,7 +88,7 @@ pub struct JitsiConferenceConfig {
 pub struct JitsiConference {
   pub(crate) glib_main_context: glib::MainContext,
   pub(crate) jid: FullJid,
-  pub(crate) xmpp_tx: mpsc::Sender<Element>,
+  pub(crate) xmpp_tx: mpsc::Sender<xmpp_parsers::Element>,
   pub(crate) config: JitsiConferenceConfig,
   pub(crate) external_services: Vec<xmpp::extdisco::Service>,
   pub(crate) jingle_session: Arc<Mutex<Option<JingleSession>>>,
@@ -120,8 +123,9 @@ pub(crate) struct JitsiConferenceInner {
     Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
   on_colibri_message:
     Option<Arc<dyn (Fn(JitsiConference, ColibriMessage) -> BoxedResultFuture) + Send + Sync>>,
-  presence: Vec<Element>,
+  presence: Vec<xmpp_parsers::Element>,
   state: JitsiConferenceState,
+  send_resolution: Option<i32>,
   connected_tx: Option<oneshot::Sender<()>>,
 }
 
@@ -158,28 +162,28 @@ impl JitsiConference {
       Muc::new().into(),
       Caps::new(DISCO_NODE, COMPUTED_CAPS_HASH.clone()).into(),
       ECaps2::new(vec![ecaps2_hash]).into(),
-      Element::builder("stats-id", ns::DEFAULT_NS)
+      xmpp_parsers::Element::builder("stats-id", ns::DEFAULT_NS)
         .append("gst-meet")
         .build(),
-      Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
+      xmpp_parsers::Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
         .append(config.video_codec.as_str())
         .build(),
-      Element::builder("audiomuted", ns::DEFAULT_NS)
+      xmpp_parsers::Element::builder("audiomuted", ns::DEFAULT_NS)
         .append("false")
         .build(),
-      Element::builder("videomuted", ns::DEFAULT_NS)
+      xmpp_parsers::Element::builder("videomuted", ns::DEFAULT_NS)
         .append("false")
         .build(),
-      Element::builder("nick", "http://jabber.org/protocol/nick")
+      xmpp_parsers::Element::builder("nick", "http://jabber.org/protocol/nick")
         .append(config.nick.as_str())
         .build(),
     ];
     if let Some(region) = &config.region {
       presence.extend([
-        Element::builder("jitsi_participant_region", ns::DEFAULT_NS)
+        xmpp_parsers::Element::builder("jitsi_participant_region", ns::DEFAULT_NS)
           .append(region.as_str())
           .build(),
-        Element::builder("region", "http://jitsi.org/jitsi-meet")
+        xmpp_parsers::Element::builder("region", "http://jitsi.org/jitsi-meet")
           .attr("id", region)
           .build(),
       ]);
@@ -210,6 +214,7 @@ impl JitsiConference {
         on_participant: None,
         on_participant_left: None,
         on_colibri_message: None,
+        send_resolution: None,
         connected_tx: Some(tx),
       })),
       tls_insecure: xmpp_connection.tls_insecure,
@@ -245,16 +250,19 @@ impl JitsiConference {
     Ok(())
   }
 
-  fn jid_in_muc(&self) -> Result<FullJid> {
-    let resource = self
+  fn endpoint_id(&self) -> Result<&str> {
+    self
       .jid
       .node
       .as_ref()
       .ok_or_else(|| anyhow!("invalid jid"))?
       .split('-')
       .next()
-      .ok_or_else(|| anyhow!("invalid jid"))?;
-    Ok(self.config.muc.clone().with_resource(resource))
+      .ok_or_else(|| anyhow!("invalid jid"))
+  }
+
+  fn jid_in_muc(&self) -> Result<FullJid> {
+    Ok(self.config.muc.clone().with_resource(self.endpoint_id()?))
   }
 
   pub(crate) fn focus_jid_in_muc(&self) -> Result<FullJid> {
@@ -262,7 +270,7 @@ impl JitsiConference {
   }
 
   #[tracing::instrument(level = "debug", err)]
-  async fn send_presence(&self, payloads: &[Element]) -> Result<()> {
+  async fn send_presence(&self, payloads: &[xmpp_parsers::Element]) -> Result<()> {
     let mut presence = Presence::new(presence::Type::None).with_to(self.jid_in_muc()?);
     presence.payloads = payloads.to_owned();
     self.xmpp_tx.send(presence.into()).await?;
@@ -272,7 +280,7 @@ impl JitsiConference {
   #[tracing::instrument(level = "debug", err)]
   pub async fn set_muted(&self, media_type: MediaType, muted: bool) -> Result<()> {
     let mut locked_inner = self.inner.lock().await;
-    let element = Element::builder(
+    let element = xmpp_parsers::Element::builder(
       media_type.jitsi_muted_presence_element_name(),
       ns::DEFAULT_NS,
     )
@@ -339,6 +347,17 @@ impl JitsiConference {
     )
   }
 
+  /// Set the max resolution that we are currently sending.
+  /// 
+  /// Setting this is required for browser clients in the same conference to display
+  /// the stats that we broadcast.
+  /// 
+  /// Note that lib-gst-meet does not encode video (that is the responsibility of your
+  /// GStreamer pipeline), so this is purely informational.
+  pub async fn set_send_resolution(&self, height: i32) {
+    self.inner.lock().await.send_resolution = Some(height);
+  }
+
   pub async fn send_colibri_message(&self, message: ColibriMessage) -> Result<()> {
     self
       .jingle_session
@@ -362,7 +381,7 @@ impl JitsiConference {
       bodies: Default::default(),
       subjects: Default::default(),
       thread: None,
-      payloads: vec![Element::try_from(xmpp::jitsi::JsonMessage {
+      payloads: vec![xmpp_parsers::Element::try_from(xmpp::jitsi::JsonMessage {
         payload: serde_json::to_value(payload)?,
       })?],
     };
@@ -449,7 +468,7 @@ impl JitsiConference {
 #[async_trait]
 impl StanzaFilter for JitsiConference {
   #[tracing::instrument(level = "trace")]
-  fn filter(&self, element: &Element) -> bool {
+  fn filter(&self, element: &xmpp_parsers::Element) -> bool {
     element.attr("from") == Some(self.config.focus.to_string().as_str())
       && element.is("iq", ns::DEFAULT_NS)
       || element
@@ -461,7 +480,7 @@ impl StanzaFilter for JitsiConference {
   }
 
   #[tracing::instrument(level = "trace", err)]
-  async fn take(&self, element: Element) -> Result<()> {
+  async fn take(&self, element: xmpp_parsers::Element) -> Result<()> {
     use JitsiConferenceState::*;
     let state = self.inner.lock().await.state;
     match state {
@@ -599,45 +618,188 @@ impl StanzaFilter for JitsiConference {
                       ColibriChannel::new(&colibri_url, self.tls_insecure).await?;
                     let (tx, rx) = mpsc::channel(8);
                     colibri_channel.subscribe(tx).await;
-                    let colibri_channel_ = colibri_channel.clone();
-                    jingle_session.colibri_channel = Some(colibri_channel);
+                    jingle_session.colibri_channel = Some(colibri_channel.clone());
 
-                    let self_ = self.clone();
-                    tokio::spawn(async move {
-                      let mut stream = ReceiverStream::new(rx);
-                      while let Some(msg) = stream.next().await {
-                        // Some message types are handled internally rather than passed to the on_colibri_message handler.
+                    let my_endpoint_id = self.endpoint_id()?.to_owned();
 
-                        // End-to-end ping
-                        if let ColibriMessage::EndpointMessage { to, from, msg_payload } = &msg {
-                          if let Some(to) = to {
-                            let my_endpoint_id = self_.jid.to_string().split('-').next().unwrap().to_owned();
-                            if to == &my_endpoint_id {
+                    {
+                      let my_endpoint_id = my_endpoint_id.clone();
+                      let colibri_channel = colibri_channel.clone();
+                      let self_ = self.clone();
+                      jingle_session.stats_handler_task = Some(tokio::spawn(async move {
+                        let mut interval = time::interval(SEND_STATS_INTERVAL);
+                        loop {
+                          let maybe_remote_ssrc_map = self_.jingle_session.lock().await.as_ref().map(|sess| sess.remote_ssrc_map.clone());
+                          let maybe_source_stats: Option<Vec<gstreamer::Structure>> = self_
+                            .pipeline()
+                            .await
+                            .ok()
+                            .and_then(|pipeline| pipeline.by_name("rtpbin"))
+                            .and_then(|rtpbin| rtpbin.try_emit_by_name("get-session", &[&0u32]).ok())
+                            .and_then(|rtpsession: gstreamer::Element| rtpsession.try_property("stats").ok())
+                            .and_then(|stats: gstreamer::Structure| stats.get("source-stats").ok())
+                            .and_then(|stats: glib::ValueArray| stats.into_iter().map(|v| v.get()).collect::<Result<_, _>>().ok());
+                          
+                          if let (Some(remote_ssrc_map), Some(source_stats)) = (maybe_remote_ssrc_map, maybe_source_stats) {
+                            debug!("source stats: {:#?}", source_stats);
+
+                            let audio_recv_bitrate: u64 = source_stats
+                              .iter()
+                              .filter(|stat| {
+                                stat
+                                  .get("ssrc")
+                                  .ok()
+                                  .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
+                                  .map(|source| source.media_type == MediaType::Audio && source.participant_id.as_ref().map(|id| id != &my_endpoint_id).unwrap_or_default())
+                                  .unwrap_or_default()
+                              })
+                              .filter_map(|stat| stat.get::<u64>("bitrate").ok())
+                              .sum();
+
+                            let video_recv_bitrate: u64 = source_stats
+                              .iter()
+                              .filter(|stat| {
+                                stat
+                                  .get("ssrc")
+                                  .ok()
+                                  .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
+                                  .map(|source| source.media_type == MediaType::Video && source.participant_id.as_ref().map(|id| id != &my_endpoint_id).unwrap_or_default())
+                                  .unwrap_or_default()
+                              })
+                              .filter_map(|stat| stat.get::<u64>("bitrate").ok())
+                              .sum();
+
+                            let audio_send_bitrate: u64 = source_stats
+                              .iter()
+                              .find(|stat| {
+                                stat
+                                  .get("ssrc")
+                                  .ok()
+                                  .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
+                                  .map(|source| source.media_type == MediaType::Audio && source.participant_id.as_ref().map(|id| id == &my_endpoint_id).unwrap_or_default())
+                                  .unwrap_or_default()
+                              })
+                              .and_then(|stat| stat.get("bitrate").ok())
+                              .unwrap_or_default();
+                            let video_send_bitrate: u64 = source_stats
+                              .iter()
+                              .find(|stat| {
+                                stat
+                                  .get("ssrc")
+                                  .ok()
+                                  .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
+                                  .map(|source| source.media_type == MediaType::Video && source.participant_id.as_ref().map(|id| id == &my_endpoint_id).unwrap_or_default())
+                                  .unwrap_or_default()
+                              })
+                              .and_then(|stat| stat.get("bitrate").ok())
+                              .unwrap_or_default();
+
+                            let recv_packets: u64 = source_stats
+                              .iter()
+                              .filter(|stat| {
+                                stat
+                                  .get("ssrc")
+                                  .ok()
+                                  .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
+                                  .map(|source| source.participant_id.as_ref().map(|id| id != &my_endpoint_id).unwrap_or_default())
+                                  .unwrap_or_default()
+                              })
+                              .filter_map(|stat| stat.get::<u64>("packets-received").ok())
+                              .sum();
+                            let recv_lost: u64 = source_stats
+                              .iter()
+                              .filter(|stat| {
+                                stat
+                                  .get("ssrc")
+                                  .ok()
+                                  .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
+                                  .map(|source| source.participant_id.as_ref().map(|id| id != &my_endpoint_id).unwrap_or_default())
+                                  .unwrap_or_default()
+                              })
+                              .filter_map(|stat| stat.get::<i32>("packets-lost").ok())
+                              .sum::<i32>()
+                              // Loss can be negative because of duplicate packets. Clamp it to zero.
+                              .try_into()
+                              .unwrap_or_default();
+                            let recv_loss = recv_lost as f64 / (recv_packets as f64 + recv_lost as f64);
+
+                            let stats = ColibriMessage::EndpointStats {
+                              from: None,
+                              bitrate: colibri::Bitrates {
+                                audio: colibri::Bitrate {
+                                  upload: audio_send_bitrate / 1024,
+                                  download: audio_recv_bitrate / 1024,
+                                },
+                                video: colibri::Bitrate {
+                                  upload: video_send_bitrate / 1024,
+                                  download: video_recv_bitrate / 1024,
+                                },
+                                total: colibri::Bitrate {
+                                  upload: (audio_send_bitrate + video_send_bitrate) / 1024,
+                                  download: (audio_recv_bitrate + video_recv_bitrate) / 1024,
+                                },
+                              },
+                              packet_loss: colibri::PacketLoss {
+                                total: (recv_loss * 100.) as u64,
+                                download: (recv_loss * 100.) as u64,
+                                upload: 0,  // TODO
+                              },
+                              connection_quality: 100.0,
+                              jvb_rtt: Some(0),  // TODO
+                              server_region: self_.config.region.clone(),
+                              max_enabled_resolution: self_.inner.lock().await.send_resolution,
+                            };
+                            if let Err(e) = colibri_channel.send(stats).await {
+                              warn!("failed to send stats: {:?}", e);
+                            }
+                          }
+                          else {
+                            warn!("unable to get stats from pipeline");
+                          }
+                          interval.tick().await;
+                        } 
+                      }));
+                    }
+
+                    {
+                      let self_ = self.clone();
+                      tokio::spawn(async move {
+                        let mut stream = ReceiverStream::new(rx);
+                        while let Some(msg) = stream.next().await {
+                          // Some message types are handled internally rather than passed to the on_colibri_message handler.
+                          let handled = match &msg {
+                            ColibriMessage::EndpointMessage { to: Some(to), from, msg_payload } if to == &my_endpoint_id => {
                               match serde_json::from_value::<JsonMessage>(msg_payload.clone()) {
                                 Ok(JsonMessage::E2ePingRequest { id }) => {
-                                  if let Err(e) = colibri_channel_.send(ColibriMessage::EndpointMessage {
-                                    from: Some(my_endpoint_id),
+                                  if let Err(e) = colibri_channel.send(ColibriMessage::EndpointMessage {
+                                    from: None,
                                     to: from.clone(),
                                     msg_payload: serde_json::to_value(JsonMessage::E2ePingResponse { id }).unwrap(),
                                   }).await {
                                     warn!("failed to send e2e ping response: {:?}", e);
                                   }
-                                  continue;
+                                  true
                                 },
-                                _ => {},
+                                _ => false,
                               }
+                            },
+                            _ => false,
+                          };
+
+                          if handled {
+                            continue;
+                          }
+
+                          let locked_inner = self_.inner.lock().await;
+                          if let Some(f) = &locked_inner.on_colibri_message {
+                            if let Err(e) = f(self_.clone(), msg).await {
+                              warn!("on_colibri_message failed: {:?}", e);
                             }
                           }
                         }
-
-                        let locked_inner = self_.inner.lock().await;
-                        if let Some(f) = &locked_inner.on_colibri_message {
-                          if let Err(e) = f(self_.clone(), msg).await {
-                            warn!("on_colibri_message failed: {:?}", e);
-                          }
-                        }
-                      }
-                    });
+                        Ok::<_, anyhow::Error>(())
+                      });
+                    }
                   }
 
                   if let Some(connected_tx) = self.inner.lock().await.connected_tx.take() {

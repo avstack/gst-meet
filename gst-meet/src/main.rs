@@ -49,8 +49,8 @@ struct Opt {
 
   #[structopt(
     long,
-    default_value = "vp8",
-    help = "The video codec to negotiate support for. One of: vp8, vp9, h264",
+    default_value = "vp9",
+    help = "The video codec to negotiate support for. One of: vp9, vp8, h264",
   )]
   video_codec: String,
 
@@ -63,7 +63,16 @@ struct Opt {
   #[structopt(long)]
   send_pipeline: Option<String>,
 
-  #[structopt(long)]
+  #[structopt(
+    long,
+    help = "A GStreamer pipeline which will be instantiated at startup. If an element named 'audio' is found, every remote participant's audio will be linked to it (and any 'audio' element in the recv-pipeline-participant-template will be ignored). If an element named 'video' is found, every remote participant's video will be linked to it (and any 'video' element in the recv-pipeline-participant-template will be ignored)."
+  )]
+  recv_pipeline: Option<String>,
+
+  #[structopt(
+    long,
+    help = "A GStreamer pipeline which will be instantiated for each remote participant. If an element named 'audio' is found, the participant's audio will be linked to it. If an element named 'video' is found, the participant's video will be linked to it."
+  )]
   recv_pipeline_participant_template: Option<String>,
 
   #[structopt(
@@ -80,21 +89,30 @@ struct Opt {
 
   #[structopt(
     long,
-    help = "The maximum height to receive video at."
-  )]
-  recv_video_height: Option<u16>,
-
-  #[structopt(
-    long,
+    default_value = "720",
     help = "The maximum height we plan to send video at (used for stats only)."
   )]
-  send_video_height: Option<u16>,
+  send_video_height: u16,
 
   #[structopt(
     long,
     help = "The video type to signal that we are sending. One of: camera, desktop"
   )]
   video_type: Option<String>,
+
+  #[structopt(
+    long,
+    default_value = "1280",
+    help = "The width to scale received video to before passing it to the recv-pipeline.",
+  )]
+  recv_video_scale_width: u16,
+
+  #[structopt(
+    long,
+    default_value = "720",
+    help = "The height to scale received video to before passing it to the recv-pipeline. This will also be signalled as the maximum height that JVB should send video to us at.",
+  )]
+  recv_video_scale_height: u16,
 
   #[structopt(
     long,
@@ -184,7 +202,7 @@ async fn main_inner() -> Result<()> {
 
   init_gstreamer()?;
 
-  // Parse pipeline early so that we don't bother connecting to the conference if it's invalid.
+  // Parse pipelines early so that we don't bother connecting to the conference if it's invalid.
 
   let send_pipeline = opt
     .send_pipeline
@@ -192,6 +210,13 @@ async fn main_inner() -> Result<()> {
     .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
     .transpose()
     .context("failed to parse send pipeline")?;
+  
+  let recv_pipeline = opt
+    .recv_pipeline
+    .as_ref()
+    .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
+    .transpose()
+    .context("failed to parse recv pipeline")?;
   
   let web_socket_url: Uri = opt.web_socket_url.parse()?;
 
@@ -237,6 +262,8 @@ async fn main_inner() -> Result<()> {
     video_codec,
     recv_pipeline_participant_template,
     send_video_height,
+    recv_video_scale_height,
+    recv_video_scale_width,
     buffer_size,
     start_bitrate,
     stereo,
@@ -256,6 +283,8 @@ async fn main_inner() -> Result<()> {
     extra_muc_features: vec![],
     start_bitrate: start_bitrate.unwrap_or(800),
     stereo: stereo.unwrap_or_default(),
+    recv_video_scale_height,
+    recv_video_scale_width,
     buffer_size,
     #[cfg(feature = "log-rtp")]
     log_rtp,
@@ -269,26 +298,22 @@ async fn main_inner() -> Result<()> {
     .await
     .context("failed to join conference")?;
   
-  if let Some(height) = send_video_height {
-    conference.set_send_resolution(height.into()).await;
-  }
+  conference.set_send_resolution(send_video_height.into()).await;
 
-  if opt.select_endpoints.is_some() || opt.last_n.is_some() || opt.recv_video_height.is_some() {
-    conference
-      .send_colibri_message(ColibriMessage::ReceiverVideoConstraints {
-        last_n: Some(opt.last_n.map(i32::from).unwrap_or(-1)),
-        selected_endpoints: opt
-          .select_endpoints
-          .map(|endpoints| endpoints.split(',').map(ToOwned::to_owned).collect()),
-        on_stage_endpoints: None,
-        default_constraints: opt.recv_video_height.map(|height| Constraints {
-          max_height: Some(height.into()),
-          ideal_height: None,
-        }),
-        constraints: None,
-      })
-      .await?;
-  }
+  conference
+    .send_colibri_message(ColibriMessage::ReceiverVideoConstraints {
+      last_n: Some(opt.last_n.map(i32::from).unwrap_or(-1)),
+      selected_endpoints: opt
+        .select_endpoints
+        .map(|endpoints| endpoints.split(',').map(ToOwned::to_owned).collect()),
+      on_stage_endpoints: None,
+      default_constraints: Some(Constraints {
+        max_height: Some(opt.recv_video_scale_height.into()),
+        ideal_height: None,
+      }),
+      constraints: None,
+    })
+    .await?;
 
   if let Some(video_type) = opt.video_type {
     conference
@@ -328,6 +353,20 @@ async fn main_inner() -> Result<()> {
     conference.set_muted(MediaType::Video, true).await?;
   }
 
+  if let Some(bin) = recv_pipeline {
+    conference.add_bin(&bin).await?;
+
+    if let Some(audio_element) = bin.by_name("audio") {
+      info!("recv pipeline has an audio element, a sink pad will be requested from it for each participant");
+      conference.set_remote_participant_audio_sink_element(Some(audio_element)).await;
+    }
+
+    if let Some(video_element) = bin.by_name("video") {
+      info!("recv pipeline has a video element, a sink pad will be requested from it for each participant");
+      conference.set_remote_participant_video_sink_element(Some(video_element)).await;
+    }
+  }
+
   conference
     .on_participant(move |conference, participant| {
       let recv_pipeline_participant_template = recv_pipeline_participant_template.clone();
@@ -364,9 +403,6 @@ async fn main_inner() -> Result<()> {
             )?;
             bin.add_pad(&GhostPad::with_target(Some("audio"), &sink_pad)?)?;
           }
-          else {
-            info!("No audio sink element found in recv pipeline participant template");
-          }
 
           if let Some(video_sink_element) = bin.by_name("video") {
             let sink_pad = video_sink_element.static_pad("sink").context(
@@ -374,18 +410,12 @@ async fn main_inner() -> Result<()> {
             )?;
             bin.add_pad(&GhostPad::with_target(Some("video"), &sink_pad)?)?;
           }
-          else {
-            info!("No video sink element found in recv pipeline participant template");
-          }
 
           bin.set_property(
             "name",
             format!("participant_{}", participant.muc_jid.resource),
           );
           conference.add_bin(&bin).await?;
-        }
-        else {
-          info!("No template for handling new participant");
         }
 
         Ok(())

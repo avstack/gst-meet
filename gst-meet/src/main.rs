@@ -25,80 +25,113 @@ use tracing::{error, info, trace, warn};
 struct Opt {
   #[structopt(long)]
   web_socket_url: String,
+
   #[structopt(
     long,
     help = "If not specified, assumed to be the host part of <web-socket-url>",
   )]
   xmpp_domain: Option<String>,
+
   #[structopt(long)]
   room_name: String,
+
   #[structopt(
     long,
     help = "If not specified, assumed to be conference.<xmpp-domain>",
   )]
   muc_domain: Option<String>,
+
   #[structopt(
     long,
     help = "If not specified, assumed to be focus@auth.<xmpp-domain>/focus",
   )]
   focus_jid: Option<String>,
+
   #[structopt(
     long,
     default_value = "vp8",
     help = "The video codec to negotiate support for. One of: vp8, vp9, h264",
   )]
   video_codec: String,
+
   #[structopt(long, default_value = "gst-meet")]
   nick: String,
+
   #[structopt(long)]
   region: Option<String>,
+
   #[structopt(long)]
   send_pipeline: Option<String>,
+
   #[structopt(long)]
   recv_pipeline_participant_template: Option<String>,
+
   #[structopt(
     long,
     help = "Comma-separated endpoint IDs to select (prioritise receiving of)",
   )]
   select_endpoints: Option<String>,
+
   #[structopt(
     long,
     help = "The maximum number of video streams we would like to receive",
   )]
   last_n: Option<u16>,
+
   #[structopt(
     long,
     help = "The maximum height to receive video at."
   )]
   recv_video_height: Option<u16>,
+
   #[structopt(
     long,
     help = "The maximum height we plan to send video at (used for stats only)."
   )]
   send_video_height: Option<u16>,
+
   #[structopt(
     long,
     help = "The video type to signal that we are sending. One of: camera, desktop"
   )]
   video_type: Option<String>,
+
+  #[structopt(
+    long,
+    default_value = "200",
+    help = "The size of the jitter buffers in milliseconds. Larger values are more resilient to packet loss and jitter, smaller values give lower latency.",
+  )]
+  buffer_size: u32,
+
   #[structopt(long)]
   start_bitrate: Option<u32>,
+
   #[structopt(long)]
   stereo: Option<bool>,
+
   #[structopt(short, long, parse(from_occurrences))]
   verbose: u8,
+
   #[cfg(feature = "tls-insecure")]
   #[structopt(
     long,
     help = "Disable TLS certificate verification (use with extreme caution)"
   )]
   tls_insecure: bool,
+
   #[cfg(feature = "log-rtp")]
   #[structopt(
     long,
-    help = "Log all RTP/RTCP packets at DEBUG level"
+    help = "Log all RTP packets at DEBUG level (extremely verbose)"
   )]
   log_rtp: bool,
+
+  #[cfg(feature = "log-rtp")]
+  #[structopt(
+    long,
+    help = "Log all RTCP packets at DEBUG level"
+  )]
+  log_rtcp: bool,
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -204,10 +237,13 @@ async fn main_inner() -> Result<()> {
     video_codec,
     recv_pipeline_participant_template,
     send_video_height,
+    buffer_size,
     start_bitrate,
     stereo,
     #[cfg(feature = "log-rtp")]
     log_rtp,
+    #[cfg(feature = "log-rtp")]
+    log_rtcp,
     ..
   } = opt;
 
@@ -220,8 +256,11 @@ async fn main_inner() -> Result<()> {
     extra_muc_features: vec![],
     start_bitrate: start_bitrate.unwrap_or(800),
     stereo: stereo.unwrap_or_default(),
+    buffer_size,
     #[cfg(feature = "log-rtp")]
     log_rtp,
+    #[cfg(feature = "log-rtp")]
+    log_rtcp,
   };
 
   let main_loop = glib::MainLoop::new(None, false);

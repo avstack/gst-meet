@@ -2,8 +2,8 @@ use std::{collections::HashMap, fmt, net::SocketAddr};
 
 use anyhow::{anyhow, bail, Context, Result};
 use futures::stream::StreamExt;
-use glib::{ObjectExt, ToValue};
-use gstreamer::{Element, prelude::{ElementExt, ElementExtManual, GObjectExtManualGst, GstBinExt, GstObjectExt, PadExt}};
+use glib::{Cast, ObjectExt, ToValue};
+use gstreamer::{Bin, Element, GhostPad, prelude::{ElementExt, ElementExtManual, GObjectExtManualGst, GstBinExt, GstObjectExt, PadExt}};
 use gstreamer_rtp::{prelude::RTPHeaderExtensionExt, RTPHeaderExtension};
 #[cfg(feature = "log-rtp")]
 use gstreamer_rtp::RTPBuffer;
@@ -21,7 +21,7 @@ use rand::random;
 use rcgen::{Certificate, CertificateParams, PKCS_ECDSA_P256_SHA256};
 use ring::digest::{digest, SHA256};
 use tokio::{net::lookup_host, runtime::Handle, sync::oneshot, task::JoinHandle};
-use tracing::{debug, error, warn};
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
 use xmpp_parsers::{
   hashes::Algo,
@@ -107,7 +107,7 @@ impl Codec {
     }
   }
 
-  fn make_depay_name(&self) -> &'static str {
+  fn depayloader_name(&self) -> &'static str {
     match self.name {
       CodecName::Opus => "rtpopusdepay",
       CodecName::H264 => "rtph264depay",
@@ -116,7 +116,16 @@ impl Codec {
     }
   }
 
-  fn make_pay_name(&self) -> &'static str {
+  fn decoder_name(&self) -> &'static str {
+    match self.name {
+      CodecName::Opus => "opusdec",
+      CodecName::H264 => "avdec_h264",
+      CodecName::Vp8 => "vp8dec",
+      CodecName::Vp9 => "vp9dec",
+    }
+  }
+
+  fn payloader_name(&self) -> &'static str {
     match self.name {
       CodecName::Opus => "rtpopuspay",
       CodecName::H264 => "rtph264pay",
@@ -802,14 +811,14 @@ impl JingleSession {
 
             debug!("pad added for remote source: {:?}", source);
 
-            let source_element = match source.media_type {
+            let depayloader = match source.media_type {
               MediaType::Audio => {
                 let codec = codecs
                   .iter()
                   .filter(|codec| codec.is_audio())
                   .find(|codec| codec.is(pt));
                 if let Some(codec) = codec {
-                  gstreamer::ElementFactory::make(codec.make_depay_name(), None)?
+                  gstreamer::ElementFactory::make(codec.depayloader_name(), None)?
                 }
                 else {
                   bail!("received audio with unsupported PT {}", pt);
@@ -821,7 +830,7 @@ impl JingleSession {
                   .filter(|codec| codec.is_video())
                   .find(|codec| codec.is(pt));
                 if let Some(codec) = codec {
-                  gstreamer::ElementFactory::make(codec.make_depay_name(), None)?
+                  gstreamer::ElementFactory::make(codec.depayloader_name(), None)?
                 }
                 else {
                   bail!("received video with unsupported PT {}", pt);
@@ -829,8 +838,8 @@ impl JingleSession {
               },
             };
 
-            source_element.set_property("auto-header-extension", false);
-            source_element.connect("request-extension", false, move |values| {
+            depayloader.set_property("auto-header-extension", false);
+            depayloader.connect("request-extension", false, move |values| {
               let f = || {
                 let ext_id: u32 = values[1].get()?;
                 let ext_uri: String = values[2].get()?;
@@ -850,25 +859,101 @@ impl JingleSession {
             });
 
             pipeline
-              .add(&source_element)
+              .add(&depayloader)
               .context("failed to add depayloader to pipeline")?;
-            source_element.sync_state_with_parent()?;
+              depayloader.sync_state_with_parent()?;
             debug!("created depayloader");
             rtpbin
-              .link_pads(Some(&pad_name), &source_element, None)
+              .link_pads(Some(&pad_name), &depayloader, None)
               .context(format!("failed to link rtpbin.{} to depayloader", pad_name))?;
 
             debug!("linked rtpbin.{} to depayloader", pad_name);
 
             debug!("rtpbin pads:\n{}", dump_pads(&rtpbin));
 
-            let src_pad = source_element
-              .static_pad("src")
-              .context("depayloader has no src pad")?;
+            let queue = gstreamer::ElementFactory::make("queue", None)?;
+            pipeline.add(&queue).context("failed to add queue to pipeline")?;
+            queue.sync_state_with_parent()?;
+            depayloader.link(&queue).context("failed to link depayloader to queue")?;
+
+            let decoder = match source.media_type {
+              MediaType::Audio => {
+                let codec = codecs
+                  .iter()
+                  .filter(|codec| codec.is_audio())
+                  .find(|codec| codec.is(pt));
+                if let Some(codec) = codec {
+                  gstreamer::ElementFactory::make(codec.decoder_name(), None)?
+                  // TODO: fec
+                }
+                else {
+                  bail!("received audio with unsupported PT {}", pt);
+                }
+              },
+              MediaType::Video => {
+                let codec = codecs
+                  .iter()
+                  .filter(|codec| codec.is_video())
+                  .find(|codec| codec.is(pt));
+                if let Some(codec) = codec {
+                  let decoder = gstreamer::ElementFactory::make(codec.decoder_name(), None)?;
+                  decoder.set_property("automatic-request-sync-points", true);
+                  decoder.set_property_from_str("automatic-request-sync-point-flags", "GST_VIDEO_DECODER_REQUEST_SYNC_POINT_CORRUPT_OUTPUT");
+                  decoder
+                }
+                else {
+                  bail!("received video with unsupported PT {}", pt);
+                }
+              },
+            };
+
+            pipeline.add(&decoder).context("failed to add decoder to pipeline")?;
+            decoder.sync_state_with_parent()?;
+            queue.link(&decoder).context("failed to link queue to decoder")?;
+
+            let src_pad = match source.media_type {
+              MediaType::Audio => decoder
+                .static_pad("src")
+                .context("decoder has no src pad")?,
+              MediaType::Video => {
+                let videoscale = gstreamer::ElementFactory::make("videoscale", None)?;
+                pipeline.add(&videoscale).context("failed to add videoscale to pipeline")?;
+                videoscale.sync_state_with_parent()?;
+                decoder.link(&videoscale).context("failed to link decoder to videoscale")?;
+
+                let capsfilter = gstreamer::ElementFactory::make("capsfilter", None)?;
+                capsfilter.set_property_from_str("caps", &format!("video/x-raw, width={}, height={}", conference.config.recv_video_scale_width, conference.config.recv_video_scale_height));
+                pipeline.add(&capsfilter).context("failed to add capsfilter to pipeline")?;
+                capsfilter.sync_state_with_parent()?;
+                videoscale.link(&capsfilter).context("failed to link videoscale to capsfilter")?;
+
+                let videoconvert = gstreamer::ElementFactory::make("videoconvert", None)?;
+                pipeline.add(&videoconvert).context("failed to add videoconvert to pipeline")?;
+                videoconvert.sync_state_with_parent()?;
+                capsfilter.link(&videoconvert).context("failed to link capsfilter to videoconvert")?;
+
+                videoconvert.static_pad("src").context("videoconvert has no src pad")?
+              },
+            };
 
             if let Some(participant_id) = source.participant_id {
               handle.block_on(conference.ensure_participant(&participant_id))?;
-              if let Some(participant_bin) =
+              let maybe_sink_element = match source.media_type {
+                MediaType::Audio => handle.block_on(conference.remote_participant_audio_sink_element()),
+                MediaType::Video => handle.block_on(conference.remote_participant_video_sink_element()),
+              };
+              if let Some(sink_element) = maybe_sink_element {
+                let sink_pad = sink_element
+                  .request_pad_simple("sink_%u")
+                  .context("no suitable sink pad provided by sink element in recv pipeline")?;
+                let ghost_pad = GhostPad::with_target(Some(&format!("participant_{}_{:?}", participant_id, source.media_type)), &sink_pad)?;
+                let bin: Bin = sink_element.parent().context("sink element has no parent")?.downcast().map_err(|_| anyhow!("sink element's parent is not a bin"))?;
+                bin.add_pad(&ghost_pad)?;
+                
+                src_pad.link(&ghost_pad).context("failed to link decode chain to participant bin from recv pipeline")?;
+                info!("linked {}/{:?} to new pad in recv pipeline", participant_id, source.media_type);
+              }
+              else if let Some(participant_bin) =
                 pipeline.by_name(&format!("participant_{}", participant_id))
               {
                 let sink_pad_name = match source.media_type {
@@ -876,18 +961,18 @@ impl JingleSession {
                   MediaType::Video => "video",
                 };
                 if let Some(sink_pad) = participant_bin.static_pad(sink_pad_name) {
-                  debug!("linking depayloader to participant bin");
-                  src_pad.link(&sink_pad)?;
+                  src_pad.link(&sink_pad).context("failed to link decode chain to participant bin from recv participant pipeline")?;
+                  info!("linked {}/{:?} to recv participant pipeline", participant_id, source.media_type);
                 }
                 else {
                   warn!(
-                    "no {} sink pad in {} participant bin",
+                    "no {} sink pad on {} participant bin in recv participant pipeline",
                     sink_pad_name, participant_id
                   );
                 }
               }
               else {
-                debug!("no participant bin for {}", participant_id);
+                warn!("no pipeline handled new participant: {}", participant_id);
               }
             }
             else {
@@ -895,11 +980,12 @@ impl JingleSession {
             }
 
             if !src_pad.is_linked() {
-              debug!("nothing linked to depayloader, adding fakesink");
+              debug!("nothing linked to decoder, adding fakesink");
               let fakesink = gstreamer::ElementFactory::make("fakesink", None)?;
               pipeline.add(&fakesink)?;
               fakesink.sync_state_with_parent()?;
-              source_element.link(&fakesink)?;
+              let sink_pad = fakesink.static_pad("sink").context("fakesink has no sink pad")?;
+              src_pad.link(&sink_pad)?;
             }
 
             gstreamer::debug_bin_to_dot_file(
@@ -923,7 +1009,7 @@ impl JingleSession {
 
     let opus = codecs.iter().find(|codec| codec.name == CodecName::Opus);
     let audio_sink_element = if let Some(opus) = opus {
-      let audio_sink_element = gstreamer::ElementFactory::make(opus.make_pay_name(), None)?;
+      let audio_sink_element = gstreamer::ElementFactory::make(opus.payloader_name(), None)?;
       audio_sink_element.set_property("pt", opus.pt as u32);
       audio_sink_element
     }
@@ -964,7 +1050,7 @@ impl JingleSession {
     let codec_name = conference.config.video_codec.as_str();
     let codec = codecs.iter().find(|codec| codec.is_codec(codec_name));
     let video_sink_element = if let Some(codec) = codec {
-      let element = gstreamer::ElementFactory::make(codec.make_pay_name(), None)?;
+      let element = gstreamer::ElementFactory::make(codec.payloader_name(), None)?;
       element.set_property("pt", codec.pt as u32);
       if codec.name == CodecName::H264 {
         element.set_property_from_str("aggregate-mode", "zero-latency");

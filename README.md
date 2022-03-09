@@ -40,9 +40,13 @@ Install the dependencies described above, along with their `-dev` packages if yo
 
 You can pass two different pipeline fragments to gst-meet.
 
-`--send-pipeline` is for sending audio and video. If it contains an element named `audio`, this audio will be streamed to the conference. The audio codec must be 48kHz Opus. If it contains an element named `video`, this video will be streamed to the conference. The video codec must match the codec passed to `--video-codec`, which is VP8 by default.
+`--send-pipeline` is for sending audio and video. If it contains an element named `audio`, this audio will be streamed to the conference. The audio codec must be 48kHz Opus. If it contains an element named `video`, this video will be streamed to the conference. The video codec must match the codec passed to `--video-codec`, which is VP9 by default.
 
-`--recv-pipeline-participant-template` is for receiving audio and video from other participants. This pipeline will be created once for each other participant in the conference. If it contains an element named `audio`, the participant's audio (48kHz Opus) will be sent to that element. If it contains an element named `video`, the participant's video will be sent to that element. The strings `{jid}`, `{jid_user}`, `{participant_id}` and `{nick}` are replaced in the template with the participant's full JID, user part, MUC JID resource part (a.k.a. participant/occupant ID) and nickname respectively.
+`--recv-pipeline` is for receiving audio and video, if you want a single pipeline to handle all participants. If it contains an element named `audio`, a sink pad is requested on that element for each new participant, and decoded audio is sent to that pad. Similarly, if it contains an element named `video`, a sink pad is requred on that element for each new participant, and decoded & scaled video is sent to that pad.
+
+`--recv-pipeline-participant-template` is for receiving audio and video, if you want a separate pipeline for each participant. This pipeline will be created once for each other participant in the conference. If it contains an element named `audio`, the participant's decoded audio will be sent to that element. If it contains an element named `video`, the participant's decoded & scaled video will be sent to that element. The strings `{jid}`, `{jid_user}`, `{participant_id}` and `{nick}` are replaced in the template with the participant's full JID, user part, MUC JID resource part (a.k.a. participant/occupant ID) and nickname respectively.
+
+You can use `--recv-pipeline` and `--recv-pipeline-participant-template` together, for example to handle all the audio with a single `audiomixer` element but handle each video stream separately. If an `audio` or `video` element is found in both `--recv-pipeline` and `--recv-pipeline-participant-template`, then the one in `--recv-pipeline` is used.
 
 ## Examples
 
@@ -66,7 +70,7 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
          --send-pipeline="filesrc location=shake-it-off.flac ! queue ! flacdec ! audioconvert ! audioresample ! opusenc name=audio"
 ```
 
-Stream a .webm file containing VP8 video and Vorbis audio to the conference. This pipeline passes the VP8 stream through efficiently without transcoding, and transcodes the audio from Vorbis to Opus:
+Stream a .webm file containing VP9 video and Vorbis audio to the conference. This pipeline passes the VP9 stream through efficiently without transcoding, and transcodes the audio from Vorbis to Opus:
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
@@ -76,35 +80,28 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
                           demuxer.audio_0 ! queue ! vorbisdec ! audioconvert ! audioresample ! opusenc name=audio"
 ```
 
-Stream the default video & audio inputs to the conference, encoding as VP8 and Opus, display incoming video streams at 360p, and play back incoming audio (a very basic, but completely native, Jitsi Meet conference!):
+Stream the default video & audio inputs to the conference, encoding as VP9 and Opus, display up to two remote participants' video streams composited side-by-side at 360p each, and play back all incoming audio mixed together (a very basic, but completely native, Jitsi Meet conference!):
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
          --room-name=roomname \
-         --send-pipeline="autovideosrc ! queue ! videoconvert ! vp8enc buffer-size=1000 deadline=1 name=video
+         --recv-video-scale-width=640 \
+         --recv-video-scale-height=360 \
+         --send-pipeline="autovideosrc ! queue ! videoscale ! video/x-raw,width=640,height=360 ! videoconvert ! vp9enc buffer-size=1000 deadline=1 name=video
                           autoaudiosrc ! queue ! audioconvert ! audioresample ! opusenc name=audio" \
-         --recv-pipeline-participant-template="opusdec name=audio ! autoaudiosink
-                                               vp8dec name=video ! videoconvert ! videoscale ! video/x-raw,width=640,height=360 ! autovideosink"
+         --recv-pipeline="audiomixer name=audio ! autoaudiosink
+                          compositor name=video sink_1::xpos=640 ! autovideosink"
 ```
 
-Record a .webm file for each other participant, containing VP8 video and Opus audio, without needing to do any transcoding:
-
-```
-gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --room-name=roomname \
-         --recv-pipeline-participant-template="webmmux name=muxer ! filesink location={participant_id}.webm
-                                               opusparse name=audio ! muxer.audio_0
-                                               identity name=video ! muxer.video_0"
-```
-
-The above .webm file unfortunately may not play in most players, because the resolution will change whenever JVB changes which simulcast layer it is forwarding. You could post-process the recording to scale the lower resolution frames up, or you could do the decoding, scaling, and re-encoding at recording time as follows:
+Record a .webm file for each other participant, containing VP9 video and Opus audio:
 
 ```
 gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
          --room-name=roomname \
-         --recv-pipeline-participant-template="webmmux name=muxer ! filesink location={participant_id}.webm
-                                               opusparse name=audio ! muxer.audio_0
-                                               vp8dec name=video ! videoconvert ! videoscale ! video/x-raw,width=1280,height=720 ! vp8enc ! muxer.video_0"
+         --video-codec=vp9 \
+         --recv-pipeline-participant-template="webmmux name=muxer ! queue ! filesink location={participant_id}.webm
+                                               opusenc name=audio ! muxer.audio_0
+                                               vp9enc name=video ! muxer.video_0"
 ```
 
 Play a YouTube video in the conference. By requesting Opus audio and VP9 video from YouTube, and setting the Jitsi Meet video codec to VP9, no transcoding is necessary. Note that not every YouTube video has VP9 and Opus available, so the pipeline may need adjusting for other videos.

@@ -78,9 +78,15 @@ pub struct JitsiConferenceConfig {
   pub region: Option<String>,
   pub video_codec: String,
   pub extra_muc_features: Vec<String>,
+  
   pub start_bitrate: u32,
   pub stereo: bool,
+
+  pub recv_video_scale_width: u16,
+  pub recv_video_scale_height: u16,
+
   pub buffer_size: u32,
+
   #[cfg(feature = "log-rtp")]
   pub log_rtp: bool,
   #[cfg(feature = "log-rtp")]
@@ -120,6 +126,8 @@ type BoxedResultFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
 
 pub(crate) struct JitsiConferenceInner {
   participants: HashMap<String, Participant>,
+  audio_sink: Option<gstreamer::Element>,
+  video_sink: Option<gstreamer::Element>,
   on_participant:
     Option<Arc<dyn (Fn(JitsiConference, Participant) -> BoxedResultFuture) + Send + Sync>>,
   on_participant_left:
@@ -214,6 +222,8 @@ impl JitsiConference {
         state: JitsiConferenceState::Discovering,
         presence,
         participants: HashMap::new(),
+        audio_sink: None,
+        video_sink: None,
         on_participant: None,
         on_participant_left: None,
         on_colibri_message: None,
@@ -324,6 +334,22 @@ impl JitsiConference {
       }
     });
     Ok(())
+  }
+
+  pub async fn remote_participant_audio_sink_element(&self) -> Option<gstreamer::Element> {
+    self.inner.lock().await.audio_sink.as_ref().cloned()
+  }
+
+  pub async fn set_remote_participant_audio_sink_element(&self, sink: Option<gstreamer::Element>) {
+    self.inner.lock().await.audio_sink = sink;
+  }
+
+  pub async fn remote_participant_video_sink_element(&self) -> Option<gstreamer::Element> {
+    self.inner.lock().await.video_sink.as_ref().cloned()
+  }
+
+  pub async fn set_remote_participant_video_sink_element(&self, sink: Option<gstreamer::Element>) {
+    self.inner.lock().await.video_sink = sink;
   }
 
   pub async fn audio_sink_element(&self) -> Result<gstreamer::Element> {

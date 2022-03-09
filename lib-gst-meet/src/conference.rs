@@ -1,4 +1,6 @@
-use std::{collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin, sync::Arc, time::Duration};
+use std::{
+  collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin, sync::Arc, time::Duration,
+};
 
 use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
@@ -10,7 +12,10 @@ use jitsi_xmpp_parsers::jingle::{Action, Jingle};
 use maplit::hashmap;
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use tokio::{sync::{mpsc, oneshot, Mutex}, time};
+use tokio::{
+  sync::{mpsc, oneshot, Mutex},
+  time,
+};
 use tokio_stream::wrappers::ReceiverStream;
 use tracing::{debug, error, info, trace, warn};
 use uuid::Uuid;
@@ -78,7 +83,7 @@ pub struct JitsiConferenceConfig {
   pub region: Option<String>,
   pub video_codec: String,
   pub extra_muc_features: Vec<String>,
-  
+
   pub start_bitrate: u32,
   pub stereo: bool,
 
@@ -377,10 +382,10 @@ impl JitsiConference {
   }
 
   /// Set the max resolution that we are currently sending.
-  /// 
+  ///
   /// Setting this is required for browser clients in the same conference to display
   /// the stats that we broadcast.
-  /// 
+  ///
   /// Note that lib-gst-meet does not encode video (that is the responsibility of your
   /// GStreamer pipeline), so this is purely informational.
   pub async fn set_send_resolution(&self, height: i32) {
@@ -658,18 +663,35 @@ impl StanzaFilter for JitsiConference {
                       jingle_session.stats_handler_task = Some(tokio::spawn(async move {
                         let mut interval = time::interval(SEND_STATS_INTERVAL);
                         loop {
-                          let maybe_remote_ssrc_map = self_.jingle_session.lock().await.as_ref().map(|sess| sess.remote_ssrc_map.clone());
+                          let maybe_remote_ssrc_map = self_
+                            .jingle_session
+                            .lock()
+                            .await
+                            .as_ref()
+                            .map(|sess| sess.remote_ssrc_map.clone());
                           let maybe_source_stats: Option<Vec<gstreamer::Structure>> = self_
                             .pipeline()
                             .await
                             .ok()
                             .and_then(|pipeline| pipeline.by_name("rtpbin"))
-                            .and_then(|rtpbin| rtpbin.try_emit_by_name("get-session", &[&0u32]).ok())
-                            .and_then(|rtpsession: gstreamer::Element| rtpsession.try_property("stats").ok())
+                            .and_then(|rtpbin| {
+                              rtpbin.try_emit_by_name("get-session", &[&0u32]).ok()
+                            })
+                            .and_then(|rtpsession: gstreamer::Element| {
+                              rtpsession.try_property("stats").ok()
+                            })
                             .and_then(|stats: gstreamer::Structure| stats.get("source-stats").ok())
-                            .and_then(|stats: glib::ValueArray| stats.into_iter().map(|v| v.get()).collect::<Result<_, _>>().ok());
-                          
-                          if let (Some(remote_ssrc_map), Some(source_stats)) = (maybe_remote_ssrc_map, maybe_source_stats) {
+                            .and_then(|stats: glib::ValueArray| {
+                              stats
+                                .into_iter()
+                                .map(|v| v.get())
+                                .collect::<Result<_, _>>()
+                                .ok()
+                            });
+
+                          if let (Some(remote_ssrc_map), Some(source_stats)) =
+                            (maybe_remote_ssrc_map, maybe_source_stats)
+                          {
                             debug!("source stats: {:#?}", source_stats);
 
                             let audio_recv_bitrate: u64 = source_stats
@@ -679,7 +701,14 @@ impl StanzaFilter for JitsiConference {
                                   .get("ssrc")
                                   .ok()
                                   .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
-                                  .map(|source| source.media_type == MediaType::Audio && source.participant_id.as_ref().map(|id| id != &my_endpoint_id).unwrap_or_default())
+                                  .map(|source| {
+                                    source.media_type == MediaType::Audio
+                                      && source
+                                        .participant_id
+                                        .as_ref()
+                                        .map(|id| id != &my_endpoint_id)
+                                        .unwrap_or_default()
+                                  })
                                   .unwrap_or_default()
                               })
                               .filter_map(|stat| stat.get::<u64>("bitrate").ok())
@@ -692,7 +721,14 @@ impl StanzaFilter for JitsiConference {
                                   .get("ssrc")
                                   .ok()
                                   .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
-                                  .map(|source| source.media_type == MediaType::Video && source.participant_id.as_ref().map(|id| id != &my_endpoint_id).unwrap_or_default())
+                                  .map(|source| {
+                                    source.media_type == MediaType::Video
+                                      && source
+                                        .participant_id
+                                        .as_ref()
+                                        .map(|id| id != &my_endpoint_id)
+                                        .unwrap_or_default()
+                                  })
                                   .unwrap_or_default()
                               })
                               .filter_map(|stat| stat.get::<u64>("bitrate").ok())
@@ -705,7 +741,14 @@ impl StanzaFilter for JitsiConference {
                                   .get("ssrc")
                                   .ok()
                                   .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
-                                  .map(|source| source.media_type == MediaType::Audio && source.participant_id.as_ref().map(|id| id == &my_endpoint_id).unwrap_or_default())
+                                  .map(|source| {
+                                    source.media_type == MediaType::Audio
+                                      && source
+                                        .participant_id
+                                        .as_ref()
+                                        .map(|id| id == &my_endpoint_id)
+                                        .unwrap_or_default()
+                                  })
                                   .unwrap_or_default()
                               })
                               .and_then(|stat| stat.get("bitrate").ok())
@@ -717,7 +760,14 @@ impl StanzaFilter for JitsiConference {
                                   .get("ssrc")
                                   .ok()
                                   .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
-                                  .map(|source| source.media_type == MediaType::Video && source.participant_id.as_ref().map(|id| id == &my_endpoint_id).unwrap_or_default())
+                                  .map(|source| {
+                                    source.media_type == MediaType::Video
+                                      && source
+                                        .participant_id
+                                        .as_ref()
+                                        .map(|id| id == &my_endpoint_id)
+                                        .unwrap_or_default()
+                                  })
                                   .unwrap_or_default()
                               })
                               .and_then(|stat| stat.get("bitrate").ok())
@@ -730,7 +780,13 @@ impl StanzaFilter for JitsiConference {
                                   .get("ssrc")
                                   .ok()
                                   .and_then(|ssrc: u32| remote_ssrc_map.get(&ssrc))
-                                  .map(|source| source.participant_id.as_ref().map(|id| id != &my_endpoint_id).unwrap_or_default())
+                                  .map(|source| {
+                                    source
+                                      .participant_id
+                                      .as_ref()
+                                      .map(|id| id != &my_endpoint_id)
+                                      .unwrap_or_default()
+                                  })
                                   .unwrap_or_default()
                               })
                               .filter_map(|stat| stat.get::<u64>("packets-received").ok())
@@ -750,7 +806,8 @@ impl StanzaFilter for JitsiConference {
                               // Loss can be negative because of duplicate packets. Clamp it to zero.
                               .try_into()
                               .unwrap_or_default();
-                            let recv_loss = recv_lost as f64 / (recv_packets as f64 + recv_lost as f64);
+                            let recv_loss =
+                              recv_lost as f64 / (recv_packets as f64 + recv_lost as f64);
 
                             let stats = ColibriMessage::EndpointStats {
                               from: None,
@@ -771,10 +828,10 @@ impl StanzaFilter for JitsiConference {
                               packet_loss: colibri::PacketLoss {
                                 total: (recv_loss * 100.) as u64,
                                 download: (recv_loss * 100.) as u64,
-                                upload: 0,  // TODO
+                                upload: 0, // TODO
                               },
                               connection_quality: 100.0,
-                              jvb_rtt: Some(0),  // TODO
+                              jvb_rtt: Some(0), // TODO
                               server_region: self_.config.region.clone(),
                               max_enabled_resolution: self_.inner.lock().await.send_resolution,
                             };
@@ -786,7 +843,7 @@ impl StanzaFilter for JitsiConference {
                             warn!("unable to get stats from pipeline");
                           }
                           interval.tick().await;
-                        } 
+                        }
                       }));
                     }
 
@@ -797,14 +854,24 @@ impl StanzaFilter for JitsiConference {
                         while let Some(msg) = stream.next().await {
                           // Some message types are handled internally rather than passed to the on_colibri_message handler.
                           let handled = match &msg {
-                            ColibriMessage::EndpointMessage { to: Some(to), from, msg_payload } if to == &my_endpoint_id => {
+                            ColibriMessage::EndpointMessage {
+                              to: Some(to),
+                              from,
+                              msg_payload,
+                            } if to == &my_endpoint_id => {
                               match serde_json::from_value::<JsonMessage>(msg_payload.clone()) {
                                 Ok(JsonMessage::E2ePingRequest { id }) => {
-                                  if let Err(e) = colibri_channel.send(ColibriMessage::EndpointMessage {
-                                    from: None,
-                                    to: from.clone(),
-                                    msg_payload: serde_json::to_value(JsonMessage::E2ePingResponse { id }).unwrap(),
-                                  }).await {
+                                  if let Err(e) = colibri_channel
+                                    .send(ColibriMessage::EndpointMessage {
+                                      from: None,
+                                      to: from.clone(),
+                                      msg_payload: serde_json::to_value(
+                                        JsonMessage::E2ePingResponse { id },
+                                      )
+                                      .unwrap(),
+                                    })
+                                    .await
+                                  {
                                     warn!("failed to send e2e ping response: {:?}", e);
                                   }
                                   true

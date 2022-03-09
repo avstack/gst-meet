@@ -28,7 +28,7 @@ struct Opt {
 
   #[structopt(
     long,
-    help = "If not specified, assumed to be the host part of <web-socket-url>",
+    help = "If not specified, assumed to be the host part of <web-socket-url>"
   )]
   xmpp_domain: Option<String>,
 
@@ -37,20 +37,20 @@ struct Opt {
 
   #[structopt(
     long,
-    help = "If not specified, assumed to be conference.<xmpp-domain>",
+    help = "If not specified, assumed to be conference.<xmpp-domain>"
   )]
   muc_domain: Option<String>,
 
   #[structopt(
     long,
-    help = "If not specified, assumed to be focus@auth.<xmpp-domain>/focus",
+    help = "If not specified, assumed to be focus@auth.<xmpp-domain>/focus"
   )]
   focus_jid: Option<String>,
 
   #[structopt(
     long,
     default_value = "vp9",
-    help = "The video codec to negotiate support for. One of: vp9, vp8, h264",
+    help = "The video codec to negotiate support for. One of: vp9, vp8, h264"
   )]
   video_codec: String,
 
@@ -77,13 +77,13 @@ struct Opt {
 
   #[structopt(
     long,
-    help = "Comma-separated endpoint IDs to select (prioritise receiving of)",
+    help = "Comma-separated endpoint IDs to select (prioritise receiving of)"
   )]
   select_endpoints: Option<String>,
 
   #[structopt(
     long,
-    help = "The maximum number of video streams we would like to receive",
+    help = "The maximum number of video streams we would like to receive"
   )]
   last_n: Option<u16>,
 
@@ -103,21 +103,21 @@ struct Opt {
   #[structopt(
     long,
     default_value = "1280",
-    help = "The width to scale received video to before passing it to the recv-pipeline.",
+    help = "The width to scale received video to before passing it to the recv-pipeline."
   )]
   recv_video_scale_width: u16,
 
   #[structopt(
     long,
     default_value = "720",
-    help = "The height to scale received video to before passing it to the recv-pipeline. This will also be signalled as the maximum height that JVB should send video to us at.",
+    help = "The height to scale received video to before passing it to the recv-pipeline. This will also be signalled as the maximum height that JVB should send video to us at."
   )]
   recv_video_scale_height: u16,
 
   #[structopt(
     long,
     default_value = "200",
-    help = "The size of the jitter buffers in milliseconds. Larger values are more resilient to packet loss and jitter, smaller values give lower latency.",
+    help = "The size of the jitter buffers in milliseconds. Larger values are more resilient to packet loss and jitter, smaller values give lower latency."
   )]
   buffer_size: u32,
 
@@ -138,17 +138,11 @@ struct Opt {
   tls_insecure: bool,
 
   #[cfg(feature = "log-rtp")]
-  #[structopt(
-    long,
-    help = "Log all RTP packets at DEBUG level (extremely verbose)"
-  )]
+  #[structopt(long, help = "Log all RTP packets at DEBUG level (extremely verbose)")]
   log_rtp: bool,
 
   #[cfg(feature = "log-rtp")]
-  #[structopt(
-    long,
-    help = "Log all RTCP packets at DEBUG level"
-  )]
+  #[structopt(long, help = "Log all RTCP packets at DEBUG level")]
   log_rtcp: bool,
 }
 
@@ -210,14 +204,14 @@ async fn main_inner() -> Result<()> {
     .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
     .transpose()
     .context("failed to parse send pipeline")?;
-  
+
   let recv_pipeline = opt
     .recv_pipeline
     .as_ref()
     .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
     .transpose()
     .context("failed to parse recv pipeline")?;
-  
+
   let web_socket_url: Uri = opt.web_socket_url.parse()?;
 
   let xmpp_domain = opt
@@ -297,8 +291,10 @@ async fn main_inner() -> Result<()> {
   let conference = JitsiConference::join(connection, main_loop.context(), config)
     .await
     .context("failed to join conference")?;
-  
-  conference.set_send_resolution(send_video_height.into()).await;
+
+  conference
+    .set_send_resolution(send_video_height.into())
+    .await;
 
   conference
     .send_colibri_message(ColibriMessage::ReceiverVideoConstraints {
@@ -357,13 +353,21 @@ async fn main_inner() -> Result<()> {
     conference.add_bin(&bin).await?;
 
     if let Some(audio_element) = bin.by_name("audio") {
-      info!("recv pipeline has an audio element, a sink pad will be requested from it for each participant");
-      conference.set_remote_participant_audio_sink_element(Some(audio_element)).await;
+      info!(
+        "recv pipeline has an audio element, a sink pad will be requested from it for each participant"
+      );
+      conference
+        .set_remote_participant_audio_sink_element(Some(audio_element))
+        .await;
     }
 
     if let Some(video_element) = bin.by_name("video") {
-      info!("recv pipeline has a video element, a sink pad will be requested from it for each participant");
-      conference.set_remote_participant_video_sink_element(Some(video_element)).await;
+      info!(
+        "recv pipeline has a video element, a sink pad will be requested from it for each participant"
+      );
+      conference
+        .set_remote_participant_video_sink_element(Some(video_element))
+        .await;
     }
   }
 

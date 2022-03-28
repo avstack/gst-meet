@@ -22,6 +22,8 @@ impl Pinger {
     let ping_tx = tx.clone();
     let ping_task = tokio::spawn(async move {
       let mut interval = time::interval(PING_INTERVAL);
+      // The first tick completes immediately.
+      interval.tick().await;
       loop {
         interval.tick().await;
         if let Err(e) = ping_tx.send(Iq::from_get(generate_id(), Ping).into()).await {

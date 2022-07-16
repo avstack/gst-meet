@@ -508,7 +508,7 @@ impl StanzaFilter for JitsiConference {
       || element
         .attr("from")
         .and_then(|from| from.parse::<BareJid>().ok())
-        .map(|jid| jid == self.config.muc)
+        .map(|jid| jid.to_lowercase() == self.config.muc.to_lowercase())
         .unwrap_or_default()
         && (element.is("presence", ns::DEFAULT_NS) || element.is("iq", ns::DEFAULT_NS))
   }

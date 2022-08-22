@@ -11,7 +11,7 @@ authors = ["Jasper Hugo <jasper@avstack.io>"]
 
 [dependencies]
 jid = { version = "0.9", default-features = false, features = ["minidom"] }
-minidom = { version = "0.14", default-features = false }
+minidom = { version = "0.15", default-features = false }
 xmpp-parsers = { version = "0.19", default-features = false, features = ["disable-validation"] }
 
 [package.metadata.docs.rs]

@@ -1,5 +1,6 @@
+use minidom::{Element, NSChoice::Any};
 use xmpp_parsers::{
-  jingle_ssma::{Parameter, Semantics},
+  jingle_ssma::Semantics,
   ns::JINGLE_SSMA,
 };
 
@@ -14,7 +15,10 @@ generate_element!(
   ],
   children: [
     /// List of attributes for this source.
-    parameters: Vec<Parameter> = ("parameter", JINGLE_SSMA) => Parameter,
+    // The namespace should be JINGLE_SSMA, but we have to use Any because Jicofo produces
+    // parameters with the wrong namespace.
+    // https://github.com/jitsi/jitsi-xmpp-extensions/issues/81
+    parameters: Vec<Parameter> = ("parameter", Any) => Parameter,
 
     /// --- Non-standard attributes used by Jitsi Meet: ---
 
@@ -31,6 +35,37 @@ impl Source {
       parameters: Vec::new(),
       info: None,
     }
+  }
+}
+
+/// Parameter associated with a ssrc.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Parameter {
+  pub name: String,
+  pub value: Option<String>,
+}
+
+impl TryFrom<Element> for Parameter {
+  type Error = xmpp_parsers::Error;
+
+  fn try_from(root: Element) -> Result<Parameter, xmpp_parsers::Error> {
+    // The namespace should be JINGLE_SSMA, but we have to use Any because Jicofo produces
+    // parameters with the wrong namespace.
+    // https://github.com/jitsi/jitsi-xmpp-extensions/issues/81
+    check_self!(root, "parameter", Any, "Parameter");
+    Ok(Parameter {
+      name: get_attr!(root, "name", Required),
+      value: get_attr!(root, "value", Option),
+    })
+  }
+}
+
+impl From<Parameter> for Element {
+  fn from(parameter: Parameter) -> Element {
+    Element::builder("parameter", JINGLE_SSMA)
+      .attr("name", parameter.name)
+      .attr("value", parameter.value)
+      .build()
   }
 }
 

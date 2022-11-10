@@ -65,9 +65,11 @@ pub struct Connection {
   pub(crate) tls_insecure: bool,
 }
 
+#[derive(Debug, Clone)]
 pub enum Authentication {
   Anonymous,
   Plain { username: String, password: String },
+  Jwt { token: String },
 }
 
 impl Connection {
@@ -75,9 +77,17 @@ impl Connection {
     websocket_url: &str,
     xmpp_domain: &str,
     authentication: Authentication,
+    room_name: &str,
     tls_insecure: bool,
   ) -> Result<(Self, impl Future<Output = ()>)> {
-    let websocket_url: Uri = websocket_url.parse().context("invalid WebSocket URL")?;
+    let websocket_url: Uri = match authentication.clone() {
+        Authentication::Plain { .. } => websocket_url.parse().context("invalid WebSocket URL")?,
+        Authentication::Jwt { token } => format!(
+          "{}?room={}&token={}",
+          websocket_url.clone(), room_name.clone(), token.clone()
+        ).parse().context("invalid WebSocket URL")?,
+        Authentication::Anonymous => websocket_url.parse().context("invalid WebSocket URL")?,
+    };
     let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
 
     info!("Connecting XMPP WebSocket to {}", websocket_url);
@@ -233,6 +243,10 @@ impl Connection {
                 data,
               }
             },
+            Authentication::Jwt { .. } => Auth {
+              mechanism: Mechanism::Anonymous,
+              data: vec![],
+            },
           };
           tx.send(auth.into()).await?;
           locked_inner.state = Authenticating;
@@ -249,6 +263,7 @@ impl Connection {
           match &locked_inner.authentication {
             Authentication::Anonymous => info!("Logged in anonymously"),
             Authentication::Plain { .. } => info!("Logged in with PLAIN"),
+            Authentication::Jwt { .. } => info!("Logged in with JWT"),
           }
           locked_inner.state = ReceivingFeaturesPostAuthentication;
         },

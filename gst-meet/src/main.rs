@@ -58,6 +58,12 @@ struct Opt {
 
   #[structopt(
     long,
+    help = "The JWT token for Jitsi JWT authentication"
+  )]
+  xmpp_jwt: Option<String>,
+
+  #[structopt(
+    long,
     default_value = "vp9",
     help = "The video codec to negotiate support for. One of: vp9, vp8, h264"
   )]
@@ -237,8 +243,12 @@ async fn main_inner() -> Result<()> {
         username,
         password: opt.xmpp_password.context("if xmpp-username is provided, xmpp-password must also be provided")?,
       },
-      None => Authentication::Anonymous,
+      None => match opt.xmpp_jwt {
+          Some(token) => Authentication::Jwt { token },
+          None => Authentication::Anonymous,
+      },
     },
+    &opt.room_name,
     #[cfg(feature = "tls-insecure")]
     opt.tls_insecure,
     #[cfg(not(feature = "tls-insecure"))]

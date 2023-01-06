@@ -23,6 +23,8 @@ mkShell {
   buildInputs = [
     cargo
     pkg-config
+    git
+    cacert
     openssl
     glib
     glib-networking

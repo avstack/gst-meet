@@ -16,7 +16,7 @@ use jitsi_xmpp_parsers::{
   jingle_dtls_srtp::Fingerprint,
   jingle_ice_udp::Transport as IceUdpTransport,
   jingle_rtp::Description as RtpDescription,
-  jingle_ssma::{self, Parameter},
+  jingle_ssma::{self, Parameter, Semantics},
 };
 use nice_gst_meet as nice;
 use pem::Pem;
@@ -36,7 +36,6 @@ use xmpp_parsers::{
   jingle_rtcp_fb::RtcpFb,
   jingle_rtp::{self, PayloadType, RtcpMux},
   jingle_rtp_hdrext::RtpHdrext,
-  jingle_ssma::Semantics,
   Jid,
 };
 

@@ -37,6 +37,7 @@ rustls = { version = "0.20", default-features = false, features = ["logging", "t
 rustls-native-certs = { version = "0.6", default-features = false, optional = true }
 serde = { version = "1", default-features = false, features = ["derive"] }
 serde_json = { version = "1", default-features = false, features = ["std"] }
+syntect = { version = "5", optional = true }
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
 tokio-tungstenite = { version = "0.17", default-features = false, features = ["connect"] }
@@ -57,6 +58,7 @@ xmpp-parsers = { version = "0.19", default-features = false, features = ["disabl
 # would cause rustls to always be pulled in.
 default = ["tls-rustls-native-roots"]
 log-rtp = ["rtcp"]
+syntax-highlighting = ["syntect"]
 tls-insecure = []
 tls-native = ["tokio-tungstenite/native-tls", "native-tls"]
 tls-native-vendored = ["tokio-tungstenite/native-tls-vendored", "native-tls/vendored"]

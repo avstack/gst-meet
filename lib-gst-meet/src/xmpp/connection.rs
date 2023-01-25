@@ -174,6 +174,17 @@ impl Connection {
       let mut bytes = Vec::new();
       element.write_to(&mut bytes)?;
       let xml = String::from_utf8(bytes)?;
+      #[cfg(feature = "syntax-highlighting")]
+      {
+        let ps = syntect::parsing::SyntaxSet::load_defaults_newlines();
+        let ts = syntect::highlighting::ThemeSet::load_defaults();
+        let syntax = ps.find_syntax_by_extension("xml").unwrap();
+        let mut h = syntect::easy::HighlightLines::new(syntax, &ts.themes["Solarized (dark)"]);
+        let ranges: Vec<_> = h.highlight_line(&xml, &ps).unwrap();
+        let escaped = syntect::util::as_24_bit_terminal_escaped(&ranges[..], false);
+        debug!("XMPP    \x1b[32;1m>>> {}\x1b[0m", escaped);
+      }
+      #[cfg(not(feature = "syntax-highlighting"))]
       debug!("XMPP    >>> {}", xml);
       sink.send(Message::Text(xml)).await?;
     }
@@ -195,6 +206,17 @@ impl Connection {
         .ok_or_else(|| anyhow!("unexpected EOF"))?;
       let element: Element = match message {
         Message::Text(xml) => {
+          #[cfg(feature = "syntax-highlighting")]
+          {
+            let ps = syntect::parsing::SyntaxSet::load_defaults_newlines();
+            let ts = syntect::highlighting::ThemeSet::load_defaults();
+            let syntax = ps.find_syntax_by_extension("xml").unwrap();
+            let mut h = syntect::easy::HighlightLines::new(syntax, &ts.themes["Solarized (dark)"]);
+            let ranges: Vec<_> = h.highlight_line(&xml, &ps).unwrap();
+            let escaped = syntect::util::as_24_bit_terminal_escaped(&ranges[..], false);
+            debug!("XMPP    \x1b[31;1m<<< {}\x1b[0m", escaped);
+          }
+          #[cfg(not(feature = "syntax-highlighting"))]
           debug!("XMPP    <<< {}", xml);
           xml.parse()?
         },

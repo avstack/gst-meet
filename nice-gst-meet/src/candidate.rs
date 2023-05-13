@@ -42,15 +42,6 @@ impl ::std::fmt::Debug for Candidate {
 
 unsafe impl Send for Candidate {}
 
-impl<'a> ToGlibPtr<'a, *mut ffi::NiceCandidate> for Candidate {
-  type Storage = &'a Self;
-
-  #[inline]
-  fn to_glib_none(&'a self) -> Stash<'a, *mut ffi::NiceCandidate, Self> {
-    Stash(&*self.inner as *const _ as *mut _, self)
-  }
-}
-
 impl Candidate {
   #[doc(alias = "nice_candidate_new")]
   pub fn new(type_: CandidateType) -> Candidate {

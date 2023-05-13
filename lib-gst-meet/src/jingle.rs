@@ -527,14 +527,8 @@ impl JingleSession {
     let fingerprint = digest(&SHA256, &dtls_cert_der).as_ref().to_vec();
     let fingerprint_str =
       itertools::join(fingerprint.iter().map(|byte| format!("{:X}", byte)), ":");
-    let dtls_cert_pem = pem::encode(&Pem {
-      tag: "CERTIFICATE".to_string(),
-      contents: dtls_cert_der,
-    });
-    let dtls_private_key_pem = pem::encode(&Pem {
-      tag: "PRIVATE KEY".to_string(),
-      contents: dtls_cert.serialize_private_key_der(),
-    });
+    let dtls_cert_pem = pem::encode(&Pem::new("CERTIFICATE", dtls_cert_der));
+    let dtls_private_key_pem = pem::encode(&Pem::new("PRIVATE KEY", dtls_cert.serialize_private_key_der()));
     debug!("Local DTLS certificate:\n{}", dtls_cert_pem);
     debug!("Local DTLS fingerprint: {}", fingerprint_str);
 
@@ -557,38 +551,44 @@ impl JingleSession {
 
     let pipeline = gstreamer::Pipeline::new(None);
 
-    let rtpbin = gstreamer::ElementFactory::make("rtpbin", Some("rtpbin"))?;
-    rtpbin.set_property_from_str("rtp-profile", "savpf");
-    rtpbin.set_property("autoremove", true);
-    rtpbin.set_property("do-lost", true);
-    rtpbin.set_property("do-sync-event", true);
+    let rtpbin = gstreamer::ElementFactory::make("rtpbin")
+      .name("rtpbin")
+      .property_from_str("rtp-profile", "savpf")
+      .property("autoremove", true)
+      .property("do-lost", true)
+      .property("do-sync-event", true)
+      .build()?;
     pipeline.add(&rtpbin)?;
 
-    let nicesrc = gstreamer::ElementFactory::make("nicesrc", None)?;
-    nicesrc.set_property("stream", ice_stream_id);
-    nicesrc.set_property("component", ice_component_id);
-    nicesrc.set_property("agent", &ice_agent);
+    let nicesrc = gstreamer::ElementFactory::make("nicesrc")
+      .property("stream", ice_stream_id)
+      .property("component", ice_component_id)
+      .property("agent", &ice_agent)
+      .build()?;
     pipeline.add(&nicesrc)?;
 
-    let nicesink = gstreamer::ElementFactory::make("nicesink", None)?;
-    nicesink.set_property("stream", ice_stream_id);
-    nicesink.set_property("component", ice_component_id);
-    nicesink.set_property("agent", &ice_agent);
+    let nicesink = gstreamer::ElementFactory::make("nicesink")
+      .property("stream", ice_stream_id)
+      .property("component", ice_component_id)
+      .property("agent", &ice_agent)
+      .build()?;
     pipeline.add(&nicesink)?;
 
     let dtls_srtp_connection_id = "gst-meet";
 
-    let dtlssrtpenc = gstreamer::ElementFactory::make("dtlssrtpenc", None)?;
-    dtlssrtpenc.set_property("connection-id", dtls_srtp_connection_id);
-    dtlssrtpenc.set_property("is-client", true);
+    let dtlssrtpenc = gstreamer::ElementFactory::make("dtlssrtpenc")
+      .property("connection-id", dtls_srtp_connection_id)
+      .property("is-client", true)
+      .build()?;
     pipeline.add(&dtlssrtpenc)?;
 
-    let dtlssrtpdec = gstreamer::ElementFactory::make("dtlssrtpdec", None)?;
-    dtlssrtpdec.set_property("connection-id", dtls_srtp_connection_id);
-    dtlssrtpdec.set_property(
-      "pem",
-      format!("{}\n{}", dtls_cert_pem, dtls_private_key_pem),
-    );
+    let dtlssrtpdec = gstreamer::ElementFactory::make("dtlssrtpdec")
+      .property("connection-id", dtls_srtp_connection_id)
+      .property(
+        "pem",
+        format!("{}\n{}", dtls_cert_pem, dtls_private_key_pem),
+      )
+      .build()?;
     pipeline.add(&dtlssrtpdec)?;
 
     {
@@ -717,9 +717,10 @@ impl JingleSession {
           }
           ssrc_map = ssrc_map.field(&video_ssrc.to_string(), &(video_rtx_ssrc as u32));
           let bin = gstreamer::Bin::new(None);
-          let rtx_sender = gstreamer::ElementFactory::make("rtprtxsend", None)?;
-          rtx_sender.set_property("payload-type-map", pt_map.build());
-          rtx_sender.set_property("ssrc-map", ssrc_map.build());
+          let rtx_sender = gstreamer::ElementFactory::make("rtprtxsend")
+            .property("payload-type-map", pt_map.build())
+            .property("ssrc-map", ssrc_map.build())
+            .build()?;
           bin.add(&rtx_sender)?;
           bin.add_pad(&gstreamer::GhostPad::with_target(
             Some(&format!("src_{}", session)),
@@ -754,8 +755,9 @@ impl JingleSession {
           pt_map = pt_map.field(pt, rtx_pt);
         }
         let bin = gstreamer::Bin::new(None);
-        let rtx_receiver = gstreamer::ElementFactory::make("rtprtxreceive", None)?;
-        rtx_receiver.set_property("payload-type-map", pt_map.build());
+        let rtx_receiver = gstreamer::ElementFactory::make("rtprtxreceive")
+          .property("payload-type-map", pt_map.build())
+          .build()?;
         bin.add(&rtx_receiver)?;
         bin.add_pad(&gstreamer::GhostPad::with_target(
           Some(&format!("src_{}", session)),
@@ -820,7 +822,7 @@ impl JingleSession {
                   .filter(|codec| codec.is_audio())
                   .find(|codec| codec.is(pt));
                 if let Some(codec) = codec {
-                  gstreamer::ElementFactory::make(codec.depayloader_name(), None)?
+                  gstreamer::ElementFactory::make(codec.depayloader_name()).build()?
                 }
                 else {
                   bail!("received audio with unsupported PT {}", pt);
@@ -832,7 +834,7 @@ impl JingleSession {
                   .filter(|codec| codec.is_video())
                   .find(|codec| codec.is(pt));
                 if let Some(codec) = codec {
-                  gstreamer::ElementFactory::make(codec.depayloader_name(), None)?
+                  gstreamer::ElementFactory::make(codec.depayloader_name()).build()?
                 }
                 else {
                   bail!("received video with unsupported PT {}", pt);
@@ -873,7 +875,7 @@ impl JingleSession {
 
             debug!("rtpbin pads:\n{}", dump_pads(&rtpbin));
 
-            let queue = gstreamer::ElementFactory::make("queue", None)?;
+            let queue = gstreamer::ElementFactory::make("queue").build()?;
             pipeline
               .add(&queue)
               .context("failed to add queue to pipeline")?;
@@ -889,7 +891,7 @@ impl JingleSession {
                   .filter(|codec| codec.is_audio())
                   .find(|codec| codec.is(pt));
                 if let Some(codec) = codec {
-                  gstreamer::ElementFactory::make(codec.decoder_name(), None)?
+                  gstreamer::ElementFactory::make(codec.decoder_name()).build()?
                   // TODO: fec
                 }
                 else {
@@ -902,7 +904,7 @@ impl JingleSession {
                   .filter(|codec| codec.is_video())
                   .find(|codec| codec.is(pt));
                 if let Some(codec) = codec {
-                  let decoder = gstreamer::ElementFactory::make(codec.decoder_name(), None)?;
+                  let decoder = gstreamer::ElementFactory::make(codec.decoder_name()).build()?;
                   decoder.set_property("automatic-request-sync-points", true);
                   decoder.set_property_from_str(
                     "automatic-request-sync-point-flags",
@@ -929,7 +931,7 @@ impl JingleSession {
                 .static_pad("src")
                 .context("decoder has no src pad")?,
               MediaType::Video => {
-                let videoscale = gstreamer::ElementFactory::make("videoscale", None)?;
+                let videoscale = gstreamer::ElementFactory::make("videoscale").build()?;
                 pipeline
                   .add(&videoscale)
                   .context("failed to add videoscale to pipeline")?;
@@ -938,7 +940,7 @@ impl JingleSession {
                   .link(&videoscale)
                   .context("failed to link decoder to videoscale")?;
 
-                let capsfilter = gstreamer::ElementFactory::make("capsfilter", None)?;
+                let capsfilter = gstreamer::ElementFactory::make("capsfilter").build()?;
                 capsfilter.set_property_from_str(
                   "caps",
                   &format!(
@@ -955,7 +957,7 @@ impl JingleSession {
                   .link(&capsfilter)
                   .context("failed to link videoscale to capsfilter")?;
 
-                let videoconvert = gstreamer::ElementFactory::make("videoconvert", None)?;
+                let videoconvert = gstreamer::ElementFactory::make("videoconvert").build()?;
                 pipeline
                   .add(&videoconvert)
                   .context("failed to add videoconvert to pipeline")?;
@@ -1039,7 +1041,7 @@ impl JingleSession {
 
             if !src_pad.is_linked() {
               debug!("nothing linked to decoder, adding fakesink");
-              let fakesink = gstreamer::ElementFactory::make("fakesink", None)?;
+              let fakesink = gstreamer::ElementFactory::make("fakesink").build()?;
               pipeline.add(&fakesink)?;
               fakesink.sync_state_with_parent()?;
               let sink_pad = fakesink
@@ -1069,7 +1071,7 @@ impl JingleSession {
 
     let opus = codecs.iter().find(|codec| codec.name == CodecName::Opus);
     let audio_sink_element = if let Some(opus) = opus {
-      let audio_sink_element = gstreamer::ElementFactory::make(opus.payloader_name(), None)?;
+      let audio_sink_element = gstreamer::ElementFactory::make(opus.payloader_name()).build()?;
       audio_sink_element.set_property("pt", opus.pt as u32);
       audio_sink_element
     }
@@ -1110,7 +1112,7 @@ impl JingleSession {
     let codec_name = conference.config.video_codec.as_str();
     let codec = codecs.iter().find(|codec| codec.is_codec(codec_name));
     let video_sink_element = if let Some(codec) = codec {
-      let element = gstreamer::ElementFactory::make(codec.payloader_name(), None)?;
+      let element = gstreamer::ElementFactory::make(codec.payloader_name()).build()?;
       element.set_property("pt", codec.pt as u32);
       if codec.name == CodecName::H264 {
         element.set_property_from_str("aggregate-mode", "zero-latency");
@@ -1153,7 +1155,7 @@ impl JingleSession {
     }
     pipeline.add(&video_sink_element)?;
 
-    let rtpfunnel = gstreamer::ElementFactory::make("rtpfunnel", None)?;
+    let rtpfunnel = gstreamer::ElementFactory::make("rtpfunnel").build()?;
     pipeline.add(&rtpfunnel)?;
 
     debug!("linking video payloader -> rtpfunnel");
@@ -1165,13 +1167,13 @@ impl JingleSession {
     debug!("linking rtpfunnel -> rtpbin");
     rtpfunnel.link_pads(None, &rtpbin, Some("send_rtp_sink_0"))?;
 
-    let rtp_recv_identity = gstreamer::ElementFactory::make("identity", None)?;
+    let rtp_recv_identity = gstreamer::ElementFactory::make("identity").build()?;
     pipeline.add(&rtp_recv_identity)?;
-    let rtcp_recv_identity = gstreamer::ElementFactory::make("identity", None)?;
+    let rtcp_recv_identity = gstreamer::ElementFactory::make("identity").build()?;
     pipeline.add(&rtcp_recv_identity)?;
-    let rtp_send_identity = gstreamer::ElementFactory::make("identity", None)?;
+    let rtp_send_identity = gstreamer::ElementFactory::make("identity").build()?;
     pipeline.add(&rtp_send_identity)?;
-    let rtcp_send_identity = gstreamer::ElementFactory::make("identity", None)?;
+    let rtcp_send_identity = gstreamer::ElementFactory::make("identity").build()?;
     pipeline.add(&rtcp_send_identity)?;
 
     #[cfg(feature = "log-rtp")]

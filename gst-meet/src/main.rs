@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 use anyhow::{bail, Context, Result};
 #[cfg(target_os = "macos")]
@@ -221,7 +221,28 @@ async fn main_inner() -> Result<()> {
     .transpose()
     .context("failed to parse recv pipeline")?;
 
-  let web_socket_url: Uri = opt.web_socket_url.parse()?;
+  let mut web_socket_url: Uri = opt.web_socket_url.parse()?;
+  let mut web_socket_url_parts = web_socket_url.into_parts();
+  web_socket_url_parts.path_and_query = web_socket_url_parts
+    .path_and_query
+    .map(|path_and_query| {
+      let mut qs: HashMap<String, String> = path_and_query
+        .query()
+        .map(serde_urlencoded::from_str)
+        .transpose()?
+        .unwrap_or_default();
+      if !qs.contains_key("room") {
+        qs.insert("room".to_owned(), opt.room_name.clone());
+      }
+      Ok::<_, anyhow::Error>(format!(
+        "{}?{}",
+        path_and_query.path(),
+        serde_urlencoded::to_string(&qs)?,
+      ).parse()?)
+    })
+    .transpose()?;
+  
+  web_socket_url = Uri::from_parts(web_socket_url_parts)?;
 
   let xmpp_domain = opt
     .xmpp_domain
@@ -230,7 +251,7 @@ async fn main_inner() -> Result<()> {
     .context("invalid WebSocket URL")?;
 
   let (connection, background) = Connection::new(
-    &opt.web_socket_url,
+    &web_socket_url.to_string(),
     xmpp_domain,
     match opt.xmpp_username {
       Some(username) => Authentication::Plain {

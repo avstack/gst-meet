@@ -674,11 +674,11 @@ impl StanzaFilter for JitsiConference {
                             .await
                             .ok()
                             .and_then(|pipeline| pipeline.by_name("rtpbin"))
-                            .and_then(|rtpbin| {
-                              rtpbin.try_emit_by_name("get-session", &[&0u32]).ok()
+                            .map(|rtpbin| {
+                              rtpbin.emit_by_name("get-session", &[&0u32])
                             })
-                            .and_then(|rtpsession: gstreamer::Element| {
-                              rtpsession.try_property("stats").ok()
+                            .map(|rtpsession: gstreamer::Element| {
+                              rtpsession.property("stats")
                             })
                             .and_then(|stats: gstreamer::Structure| stats.get("source-stats").ok())
                             .and_then(|stats: glib::ValueArray| {

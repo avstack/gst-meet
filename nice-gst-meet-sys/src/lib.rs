@@ -149,9 +149,9 @@ impl ::std::fmt::Debug for NiceAddress {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct NiceAgentClass {
-  pub parent_class: glib::object::GObjectClass,
+  pub parent_class: gobject_sys::GObjectClass,
 }
 
 impl ::std::fmt::Debug for NiceAgentClass {

@@ -20,6 +20,7 @@ use nice_sys as ffi;
 #[cfg_attr(feature = "dox", doc(cfg(feature = "v0_1_15")))]
 bitflags! {
     #[doc(alias = "NiceAgentOption")]
+    #[derive(Debug)]
     pub struct AgentOption: u32 {
         #[doc(alias = "NICE_AGENT_OPTION_REGULAR_NOMINATION")]
         const REGULAR_NOMINATION = ffi::NICE_AGENT_OPTION_REGULAR_NOMINATION as u32;

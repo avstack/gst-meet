@@ -6,7 +6,7 @@ use cocoa::appkit::NSApplication;
 use colibri::{ColibriMessage, Constraints, VideoType};
 use glib::ObjectExt;
 use gstreamer::{
-  prelude::{ElementExt, GstBinExt},
+  prelude::{ElementExt, ElementExtManual, GstBinExt},
   GhostPad,
 };
 use http::Uri;

@@ -8,7 +8,7 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 
 ## Dependencies
 
-* `gstreamer` 1.20
+* `gstreamer` 1.22
 * `gst-plugins-good`, `gst-plugins-bad` (same version as `gstreamer`) and any other plugins that you want to use in your pipelines
 * `glib`
 * `libnice`
@@ -18,27 +18,43 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 * `pkg-config`
 * A Rust toolchain ([rustup](https://rustup.rs/) is the easiest way to install one)
 
-## Installation
+## Building from source
 
-`cargo install --force gst-meet` (`--force` will upgrade `gst-meet` if you have already installed it.)
+Install the dependencies described above, along with their `-dev` packages if your distribution uses them.
 
-To integrate gst-meet into your own application, add a Cargo dependency on `lib-gst-meet`.
+Check out the repository and then use `cargo` to build:
+
+```
+cargo build --release
+```
+
+The `gst-meet` binary can be found in `target/release`.
+
+## Installation from crates.io
+
+> It is currently recommended to build **gst-meet** from this repository rather than using `cargo install` to install the version released on crates.io. We will make a new release to crates.io once a fixed version of `minidom` is released.
+
+```
+cargo install --force gst-meet
+```
+
+(`--force` will upgrade `gst-meet` if you have already installed it.)
 
 ## Docker
 
-A `Dockerfile` is provided that uses AVStack-built Alpine APKs for gstreamer 1.20.
+A `Dockerfile` is provided that produces an Alpine 3.18.0 image with `gst-meet` installed in `/usr/local/bin`.
 
 ## Nix
 
-For nix users, a `shell.nix` is provided. Within the repository, run `nix-shell --pure` to get a shell with access to all needed dependencies (and nothing else).
+For nix users, a `shell.nix` is provided. Within the repository, run `nix-shell --pure` to get a shell with access to all needed dependencies (and nothing else). Proceed with `cargo build --release`.
 
-## Development
+## Library
 
-Install the dependencies described above, along with their `-dev` packages if your distribution uses them. `cargo build` should then successfully build the libraries and `gst-meet` binary.
+To integrate gst-meet into your own application, add a Cargo dependency on `lib-gst-meet`.
 
-## Pipeline Structure
+## Usage
 
-You can pass two different pipeline fragments to gst-meet.
+You can pass GStreamer pipeline fragments to the `gst-meet` tool.
 
 `--send-pipeline` is for sending audio and video. If it contains an element named `audio`, this audio will be streamed to the conference. The audio codec must be 48kHz Opus. If it contains an element named `video`, this video will be streamed to the conference. The video codec must match the codec passed to `--video-codec`, which is VP9 by default.
 

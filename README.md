@@ -120,19 +120,6 @@ gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
                                                vp9enc name=video ! muxer.video_0"
 ```
 
-Play a YouTube video in the conference. By requesting Opus audio and VP9 video from YouTube, and setting the Jitsi Meet video codec to VP9, no transcoding is necessary. Note that not every YouTube video has VP9 and Opus available, so the pipeline may need adjusting for other videos.
-
-```
-YOUTUBE_URL="https://www.youtube.com/watch?v=vjV_2Ri2rfE"
-gst-meet --web-socket-url=wss://your.jitsi.domain/xmpp-websocket \
-         --room-name=roomname \
-         --video-codec=vp9 \
-         --send-pipeline="curlhttpsrc location=\"$(youtube-dl -g $YOUTUBE_URL -f 'bestaudio[acodec=opus]')\" ! queue ! matroskademux name=audiodemux
-                          curlhttpsrc location=\"$(youtube-dl -g $YOUTUBE_URL -f 'bestvideo[vcodec=vp9]')\" ! queue ! matroskademux name=videodemux
-                          audiodemux.audio_0 ! queue ! clocksync name=audio
-                          videodemux.video_0 ! queue ! clocksync name=video"
-```
-
 ## Feature flags
 
 By default, the `rustls` TLS library is used with the system's native root certificates. This can be turned off by passing `--no-default-features` to Cargo, and one of the following features can be enabled:

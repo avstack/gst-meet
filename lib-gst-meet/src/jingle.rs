@@ -315,18 +315,7 @@ impl JingleSession {
         ssrc.id,
         Source {
           ssrc: ssrc.id,
-          participant_id: if owner == "jvb" {
-            None
-          }
-          else {
-            Some(
-              owner
-                .split('/')
-                .nth(1)
-                .context("invalid ssrc-info owner")?
-                .to_owned(),
-            )
-          },
+          participant_id: participant_id_for_owner(owner)?,
           media_type: if description.media == "audio" {
             MediaType::Audio
           }
@@ -1500,18 +1489,7 @@ impl JingleSession {
             ssrc.id,
             Source {
               ssrc: ssrc.id,
-              participant_id: if owner == "jvb" {
-                None
-              }
-              else {
-                Some(
-                  owner
-                    .split('/')
-                    .nth(1)
-                    .context("invalid ssrc-info owner")?
-                    .to_owned(),
-                )
-              },
+              participant_id: participant_id_for_owner(owner)?,
               media_type: if description.media == "audio" {
                 MediaType::Audio
               }
@@ -1548,4 +1526,24 @@ fn dump_pads(element: &Element) -> String {
       )
     })
     .join("\n")
+}
+
+fn participant_id_for_owner(owner: String) -> Result<Option<String>> {
+  if owner == "jvb" {
+    Ok(None)
+  }
+  else {
+    Ok(Some(
+      if owner.contains('/') {
+        owner
+          .split('/')
+          .nth(1)
+          .context("invalid ssrc-info owner")?
+          .to_owned()
+      }
+      else {
+        owner
+      }
+    ))
+  }
 }

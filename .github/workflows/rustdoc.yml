@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Install dependencies
-      run: sudo apt -y install libglib2.0-dev libgstreamer1.0-dev libunwind-dev libnice-dev
+      run: sudo apt -y install libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libunwind-dev libnice-dev
     - name: Check out
       uses: actions/checkout@v1
     - name: Install Rust toolchain

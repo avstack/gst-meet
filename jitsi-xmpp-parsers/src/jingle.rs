@@ -67,6 +67,9 @@ generate_attribute!(
 
       /// Add a source to existing content.
       SourceAdd => "source-add",
+
+      /// Remove a source from existing content.
+      SourceRemove => "source-remove",
   }
 );
 

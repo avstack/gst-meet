@@ -18,7 +18,7 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 * `pkg-config`
 * A Rust toolchain ([rustup](https://rustup.rs/) is the easiest way to install one)
 
-## Building from source
+## Building the development version
 
 Install the dependencies described above, along with their `-dev` packages if your distribution uses them.
 
@@ -30,9 +30,7 @@ cargo build --release
 
 The `gst-meet` binary can be found in `target/release`.
 
-## Installation from crates.io
-
-> It is currently recommended to build **gst-meet** from this repository rather than using `cargo install` to install the version released on crates.io. We will make a new release to crates.io once a fixed version of `minidom` is released.
+## Installing the latest release from crates.io
 
 ```
 cargo install --force gst-meet
@@ -42,7 +40,7 @@ cargo install --force gst-meet
 
 ## Docker
 
-A `Dockerfile` is provided that produces an Alpine 3.18.0 image with `gst-meet` installed in `/usr/local/bin`.
+A `Dockerfile` is provided that produces an Alpine 3.18.2 image with `gst-meet` installed in `/usr/local/bin`.
 
 ## Nix
 

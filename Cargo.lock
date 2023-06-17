@@ -617,7 +617,7 @@ dependencies = [
 
 [[package]]
 name = "gst-meet"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "cocoa",
@@ -848,7 +848,7 @@ dependencies = [
 
 [[package]]
 name = "jitsi-xmpp-parsers"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "jid",
  "minidom",
@@ -881,7 +881,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "lib-gst-meet"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1070,7 +1070,7 @@ dependencies = [
 
 [[package]]
 name = "nice-gst-meet"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "bitflags 2.3.2",
  "glib",
@@ -1081,7 +1081,7 @@ dependencies = [
 
 [[package]]
 name = "nice-gst-meet-sys"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "gio",
  "glib",

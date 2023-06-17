@@ -18,8 +18,8 @@ bytes = { version = "1", default-features = false, features = ["std"] }
 colibri = { version = "0.1", default-features = false }
 futures = { version = "0.3", default-features = false }
 glib = { version = "0.17", default-features = false }
-gstreamer = { version = "0.20", default-features = false, features = ["v1_22"] }
-gstreamer-rtp = { version = "0.20", default-features = false, features = ["v1_22"] }
+gstreamer = { version = "0.20", default-features = false, features = ["v1_20"] }
+gstreamer-rtp = { version = "0.20", default-features = false, features = ["v1_20"] }
 hex = { version = "0.4", default-features = false, features = ["std"] }
 itertools = { version = "0.10", default-features = false, features = ["use_std"] }
 jitsi-xmpp-parsers = { version = "0.2", path = "../jitsi-xmpp-parsers", default-features = false }

@@ -8,7 +8,7 @@ Thanks to GStreamer's flexibility and wide range of plugins, this enables many n
 
 ## Dependencies
 
-* `gstreamer` 1.22
+* `gstreamer` >= 1.20 (latest version is recommended)
 * `gst-plugins-good`, `gst-plugins-bad` (same version as `gstreamer`) and any other plugins that you want to use in your pipelines
 * `glib`
 * `libnice`

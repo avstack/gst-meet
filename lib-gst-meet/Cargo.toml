@@ -26,7 +26,7 @@ jitsi-xmpp-parsers = { version = "0.2", path = "../jitsi-xmpp-parsers", default-
 libc = { version = "0.2", default-features = false }
 maplit = { version = "1", default-features = false }
 native-tls = { version = "0.2", default-features = false, optional = true }
-nice-gst-meet = { version = "0.3", path = "../nice-gst-meet", default-features = false, features = ["v0_1_20"] }
+nice-gst-meet = { version = "0.3", path = "../nice-gst-meet", default-features = false, features = ["v0_1_18"] }
 once_cell = { version = "1", default-features = false, features = ["std"] }
 pem = { version = "2", default-features = false }
 rand = { version = "0.8", default-features = false, features = ["std", "std_rng"] }

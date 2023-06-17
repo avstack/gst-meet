@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["JITSI_COLIBRI","JITSI_MEET"]};

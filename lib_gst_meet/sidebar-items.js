@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["MediaType",""]],"fn":[["init_tracing",""]],"mod":[["colibri",""]],"struct":[["JitsiConference",""],["JitsiConferenceConfig",""],["JitsiConnection",""],["Participant",""]]});
+window.SIDEBAR_ITEMS = {"enum":["Authentication","MediaType"],"fn":["init_tracing"],"mod":["colibri"],"struct":["Connection","Feature","JitsiConference","JitsiConferenceConfig","Participant"],"trait":["StanzaFilter"]};

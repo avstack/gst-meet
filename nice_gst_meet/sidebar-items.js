@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["CandidateTransport",""],["CandidateType",""],["Compatibility",""],["ComponentState",""],["RelayType",""]],"fn":[["debug_disable",""],["debug_enable",""]],"struct":[["Agent",""],["AgentOption",""],["Candidate",""]]});
+window.SIDEBAR_ITEMS = {"enum":["CandidateTransport","CandidateType","Compatibility","ComponentState","RelayType"],"fn":["debug_disable","debug_enable"],"struct":["Agent","AgentOption","Candidate"]};

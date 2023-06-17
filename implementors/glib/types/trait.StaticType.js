@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["nice_gst_meet"] = [{"text":"impl StaticType for <a class=\"struct\" href=\"nice_gst_meet/struct.Agent.html\" title=\"struct nice_gst_meet::Agent\">Agent</a>","synthetic":false,"types":["nice_gst_meet::agent::Agent"]},{"text":"impl StaticType for <a class=\"struct\" href=\"nice_gst_meet/struct.Candidate.html\" title=\"struct nice_gst_meet::Candidate\">Candidate</a>","synthetic":false,"types":["nice_gst_meet::candidate::Candidate"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"nice_gst_meet":[["impl StaticType for <a class=\"struct\" href=\"nice_gst_meet/struct.Candidate.html\" title=\"struct nice_gst_meet::Candidate\">Candidate</a>"],["impl StaticType for <a class=\"struct\" href=\"nice_gst_meet/struct.Agent.html\" title=\"struct nice_gst_meet::Agent\">Agent</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

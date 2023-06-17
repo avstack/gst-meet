@@ -1001,6 +1001,12 @@
 <a href="#1001" id="1001">1001</a>
 <a href="#1002" id="1002">1002</a>
 <a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
   collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin, sync::Arc, time::Duration,
 };
@@ -1926,11 +1932,17 @@
                 .find(|e| e.is(<span class="string">&quot;nick&quot;</span>, ns::NICK))
                 .map(|e| Nick::try_from(e.clone()))
                 .transpose()<span class="question-mark">?</span>;
-              <span class="kw">if let </span><span class="prelude-val">Some</span>(muc_user_payload) = presence
+              <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>muc_user_payload) = presence
                 .payloads
                 .into_iter()
                 .find(|e| e.is(<span class="string">&quot;x&quot;</span>, ns::MUC_USER))
               {
+                <span class="comment">// Hack until https://gitlab.com/xmpp-rs/xmpp-rs/-/issues/88 is resolved
+                // We&#39;re not interested in the actor element, and xmpp-parsers fails to parse it, so just remove it.
+                </span><span class="kw">for </span>item <span class="kw">in </span>muc_user_payload.children_mut().filter(|child| child.name() == <span class="string">&quot;item&quot;</span>) {
+                  <span class="kw">while </span>item.remove_child(<span class="string">&quot;actor&quot;</span>, ns::MUC_USER).is_some() {}
+                }
+
                 <span class="kw">let </span>muc_user = MucUser::try_from(muc_user_payload)<span class="question-mark">?</span>;
                 <span class="kw">for </span>item <span class="kw">in </span>muc_user.items {
                   <span class="kw">if let </span><span class="prelude-val">Some</span>(jid) = <span class="kw-2">&amp;</span>item.jid {

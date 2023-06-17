@@ -923,11 +923,17 @@ impl StanzaFilter for JitsiConference {
                 .find(|e| e.is("nick", ns::NICK))
                 .map(|e| Nick::try_from(e.clone()))
                 .transpose()?;
-              if let Some(muc_user_payload) = presence
+              if let Some(mut muc_user_payload) = presence
                 .payloads
                 .into_iter()
                 .find(|e| e.is("x", ns::MUC_USER))
               {
+                // Hack until https://gitlab.com/xmpp-rs/xmpp-rs/-/issues/88 is resolved
+                // We're not interested in the actor element, and xmpp-parsers fails to parse it, so just remove it.
+                for item in muc_user_payload.children_mut().filter(|child| child.name() == "item") {
+                  while item.remove_child("actor", ns::MUC_USER).is_some() {}
+                }
+
                 let muc_user = MucUser::try_from(muc_user_payload)?;
                 for item in muc_user.items {
                   if let Some(jid) = &item.jid {

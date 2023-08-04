@@ -1,0 +1,11 @@
+Cargo.lock
+Cargo.toml
+LICENSE
+dump.rdb
+filenamen.png
+log.log
+rclone.conf
+rclone.sh
+src
+ssrc.png
+target

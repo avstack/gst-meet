@@ -422,7 +422,14 @@ async fn main_inner() -> Result<()> {
       let recv_pipeline_participant_template = recv_pipeline_participant_template.clone();
       Box::pin(async move {
         info!("New participant: {:?}", participant);
-
+       if env::var("PROFILE").unwrap_or("none".to_string()) == "HD" {
+          conference
+          .send_colibri_message(ColibriMessage::SelectedEndpointsChangedEvent {
+            selected_endpoints: [participant.muc_jid.resource.clone()].to_vec()
+          })
+          .await?;
+        }
+        
         if let Some(template) = recv_pipeline_participant_template {
           let pipeline_description = template
             .replace(

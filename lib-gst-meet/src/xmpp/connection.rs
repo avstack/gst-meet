@@ -1,5 +1,11 @@
 use std::{convert::TryFrom, fmt, future::Future, sync::Arc};
+use serde::Deserialize;
+use serde_json::json;
+use std::env;
+use reqwest::Client;
 
+use rand::{thread_rng, RngCore};
+use random_string::generate;
 use anyhow::{anyhow, bail, Context, Result};
 use futures::{
   sink::{Sink, SinkExt},
@@ -89,7 +95,20 @@ impl Connection {
         Authentication::Anonymous => websocket_url.parse().context("invalid WebSocket URL")?,
     };
     let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
+    let gist_body = json!({
+      "apiKey": env::var("API_KEY").unwrap_or("none".to_string())
+    });
 
+    let request_url = env::var("GENERATE_TOKEN_URL").unwrap_or("none".to_string());
+    let response = Client::new()
+        .post(request_url)
+        .json(&gist_body)
+        .send().await?;
+
+    let gist: Gist = response.json().await?;
+    println!("Created {:?}", gist);
+    let websocket_url_with_token = format!("{}{}{}{}{}", websocket_url, "?token=", gist.token, "&room=", room_name);
+    
     info!("Connecting XMPP WebSocket to {}", websocket_url);
     let mut key = [0u8; 16];
     thread_rng().fill_bytes(&mut key);

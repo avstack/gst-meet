@@ -7,4 +7,5 @@ members = [
   "nice-gst-meet-sys",
   "jitsi-xmpp-parsers",
 ]
+exclude = ["rust-webserver"]
 

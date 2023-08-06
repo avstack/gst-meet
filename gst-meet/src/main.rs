@@ -1,4 +1,5 @@
 use std::{collections::HashMap, time::Duration};
+use std::env;
 
 use anyhow::{bail, Context, Result};
 #[cfg(target_os = "macos")]

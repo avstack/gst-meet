@@ -1,5 +1,5 @@
 [package]
-name = "rust-gstreamer-rclone"
+name = "rust-webserver"
 version = "0.1.0"
 authors = ["Brajendra Kumar <brajendra@sariska.io>"]
 edition = "2018"

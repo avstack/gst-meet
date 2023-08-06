@@ -346,7 +346,7 @@ pub async fn start_recording(
         set_var("PROFILE", "HD");
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?param={}", location, encoded);
-        gstreamer_pipeline = format!("./gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
+        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
         --xmpp-domain={}  --muc-domain={} \
         --recv-video-scale-width=1280 \
         --recv-video-scale-height=720 \
@@ -362,7 +362,7 @@ pub async fn start_recording(
         set_var("PROFILE", "HD");
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?vhost={}&param={}", location,"transcode".to_string(), encoded);
-        gstreamer_pipeline = format!("./gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
+        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
         --xmpp-domain={}  --muc-domain={} \
         --recv-video-scale-width=1280 \
         --recv-video-scale-height=720 \
@@ -377,7 +377,7 @@ pub async fn start_recording(
     } else if audio_only { // audio only streaming
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?param={}", location, encoded);
-        gstreamer_pipeline = format!("./gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
+        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
         --xmpp-domain={}  --muc-domain={} \
         --room-name={} \
         --recv-pipeline='audiomixer name=audio ! queue2 ! voaacenc bitrate=96000 ! audio/mpeg ! aacparse ! audio/mpeg, mpegversion=4 \
@@ -386,7 +386,7 @@ pub async fn start_recording(
     } else if video_only { // video only streaming
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?param={}", location, encoded);
-        gstreamer_pipeline = format!("./gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
+        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
         --xmpp-domain={}  --muc-domain={} \
         --recv-video-scale-width=640 \
         --recv-video-scale-height=360 \
@@ -401,7 +401,7 @@ pub async fn start_recording(
     } else { // adaptive quality streaming
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?param={}", location, encoded);
-        gstreamer_pipeline = format!("./gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
+        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
         --xmpp-domain={}  --muc-domain={} \
         --recv-video-scale-width=640 \
         --recv-video-scale-height=360 \

@@ -4,6 +4,10 @@ use serde_json::json;
 use std::env;
 use reqwest::Client;
 
+#[derive(Deserialize, Debug)]
+struct Gist {
+    token: String,
+}
 use rand::{thread_rng, RngCore};
 use random_string::generate;
 use anyhow::{anyhow, bail, Context, Result};
@@ -11,7 +15,6 @@ use futures::{
   sink::{Sink, SinkExt},
   stream::{Stream, StreamExt, TryStreamExt},
 };
-use rand::{thread_rng, RngCore};
 use tokio::sync::{mpsc, oneshot, Mutex};
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_tungstenite::tungstenite::{
@@ -86,19 +89,10 @@ impl Connection {
     room_name: &str,
     tls_insecure: bool,
   ) -> Result<(Self, impl Future<Output = ()>)> {
-    let websocket_url: Uri = match authentication.clone() {
-        Authentication::Plain { .. } => websocket_url.parse().context("invalid WebSocket URL")?,
-        Authentication::Jwt { token } => format!(
-          "{}?room={}&token={}",
-          websocket_url.clone(), room_name.clone(), token.clone()
-        ).parse().context("invalid WebSocket URL")?,
-        Authentication::Anonymous => websocket_url.parse().context("invalid WebSocket URL")?,
-    };
-    let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
+    let websocket_url: Uri = websocket_url.parse().context("invalid WebSocket URL")?;
     let gist_body = json!({
       "apiKey": env::var("API_KEY").unwrap_or("none".to_string())
     });
-
     let request_url = env::var("GENERATE_TOKEN_URL").unwrap_or("none".to_string());
     let response = Client::new()
         .post(request_url)
@@ -107,12 +101,14 @@ impl Connection {
 
     let gist: Gist = response.json().await?;
     println!("Created {:?}", gist);
-    let websocket_url_with_token = format!("{}{}{}{}{}", websocket_url, "?token=", gist.token, "&room=", room_name);
-    
-    info!("Connecting XMPP WebSocket to {}", websocket_url);
+
+    let websocket_url_with_token = format!("{}{}{}", websocket_url, "&token=", gist.token);
+    let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
+    info!("Connecting XMPP WebSocket to {}", websocket_url_with_token);
     let mut key = [0u8; 16];
     thread_rng().fill_bytes(&mut key);
-    let request = Request::get(&websocket_url)
+    
+    let request = Request::get(&websocket_url_with_token)
       .header("sec-websocket-protocol", "xmpp")
       .header("sec-websocket-key", base64::encode(&key))
       .header("sec-websocket-version", "13")
@@ -126,6 +122,7 @@ impl Connection {
       .header("upgrade", "websocket")
       .body(())
       .context("failed to build WebSocket request")?;
+
     let (websocket, _response) = tokio_tungstenite::connect_async_tls_with_config(
       request,
       None,
@@ -134,6 +131,7 @@ impl Connection {
     )
     .await
     .context("failed to connect XMPP WebSocket")?;
+
     let (sink, stream) = websocket.split();
     let (tx, rx) = mpsc::channel(64);
 
@@ -212,7 +210,7 @@ impl Connection {
         let mut h = syntect::easy::HighlightLines::new(syntax, &ts.themes["Solarized (dark)"]);
         let ranges: Vec<_> = h.highlight_line(&xml, &ps).unwrap();
         let escaped = syntect::util::as_24_bit_terminal_escaped(&ranges[..], false);
-        debug!("XMPP    \x1b[32;1m>>> {}\x1b[0m", escaped);
+        debug!("XMPP    \x1b[32;1m>>> {}\x1bexternal_services[0m", escaped);
       }
       #[cfg(not(feature = "syntax-highlighting"))]
       debug!("XMPP    >>> {}", xml);
@@ -310,7 +308,8 @@ impl Connection {
           locked_inner.state = ReceivingFeaturesPostAuthentication;
         },
         ReceivingFeaturesPostAuthentication => {
-          let iq = Iq::from_set(generate_id(), BindQuery::new(None));
+          let charset = "1234567890";
+          let iq = Iq::from_set(generate_id(), BindQuery::new(Some(format!("{}_{}", "pricing_new",  generate(6, charset).to_string()).to_uppercase())));
           tx.send(iq.into()).await?;
           locked_inner.state = Binding;
         },
@@ -333,7 +332,9 @@ impl Connection {
             let iq = Iq::from_get(generate_id(), DiscoInfoQuery { node: None })
               .with_from(Jid::Full(jid.clone()))
               .with_to(Jid::Bare(locked_inner.xmpp_domain.clone()));
+
             tx.send(iq.into()).await?;
+            info!("Binding iq: ");
             locked_inner.state = Discovering;
           },
           Err(e) => debug!(
@@ -355,11 +356,15 @@ impl Connection {
               locked_inner.jid.as_ref().context("missing jid")?.clone(),
             ))
             .with_to(Jid::Bare(locked_inner.xmpp_domain.clone()));
+   info!("Discovering iq: {:?}", iq.clone());
           tx.send(iq.into()).await?;
           locked_inner.state = DiscoveringExternalServices;
         },
         DiscoveringExternalServices => {
           let iq = Iq::try_from(element)?;
+                    
+          info!("DiscoveringExternalServicesg iq: {:?}", iq.clone());
+
           if let IqType::Result(Some(element)) = iq.payload {
             let services = xmpp::extdisco::ServicesResult::try_from(element)?;
             debug!("external services: {:?}", services.services);

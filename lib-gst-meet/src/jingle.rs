@@ -977,8 +977,8 @@ impl JingleSession {
                   .context("no suitable sink pad provided by sink element in recv pipeline")?;
                 let ghost_pad = GhostPad::with_target(
                   Some(&format!(
-                    "participant_{}_{:?}",
-                    participant_id, source.media_type
+                    "participant_{}_{:?}_{}",
+                    participant_id, source.media_type, source.ssrc
                   )),
                   &sink_pad,
                 )?;

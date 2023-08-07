@@ -2,6 +2,12 @@ use std::{
   collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin, sync::Arc, time::Duration,
 };
 
+use serde_json::json;
+use reqwest::blocking::Client;
+use reqwest::blocking::Response;
+use std::env;
+use std::thread;
+
 use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
 use colibri::{ColibriMessage, JsonMessage};
@@ -956,8 +962,40 @@ impl StanzaFilter for JitsiConference {
                         .remove(&from.resource.clone())
                         .is_some()
                     {
-                      debug!("participant left: {:?}", jid);
-                      if let Some(f) = &self
+                        println!("participant left: {:?}", jid);
+                        let reconnect_window_str = env::var("RECONNECT_WINDOW").unwrap_or("none".to_string());
+                        let reconnect_window = if reconnect_window_str == "none" {
+                           60000
+                        } else {
+                           reconnect_window_str.parse::<u64>().unwrap_or(0)
+                        };
+                        // Simulate the timeout using `tokio::time::sleep`
+                        thread::sleep(Duration::from_millis(
+                          Some(reconnect_window).unwrap_or(60000)
+                        ));
+                        let participants = &self.inner.lock().await.participants;
+                        let participants_count = participants.keys().len();
+                        println!("total participants jingle: {:?}", participants_count);
+
+                        if participants_count <= 1 {
+                          let client = Client::new();
+                          // Define the URL you want to send the POST request to
+                          let API_HOST  = env::var("API_HOST").unwrap_or("none".to_string());
+                          let url  = format!("https://{}/terraform/v1/hooks/srs/stopRecording", API_HOST);
+                          // Define the data you want to send in the POST request
+                          let data = json!({
+                              "room_name": env::var("ROOM_NAME").unwrap_or("none".to_string())
+                          });
+                          let response: Response = client.post(url)
+                             .json(&data)
+                              .header("Authorization", format!("Bearer {}", env::var("AUTH_TOKEN").unwrap_or("none".to_string())))
+                              .send()?;
+                          println!("Response status code: {}", response.status());
+                          println!("Response body:\n{}", response.text()?);
+                       }
+
+                       debug!("participant left: {:?}", jid);
+                       if let Some(f) = &self
                         .inner
                         .lock()
                         .await

@@ -412,6 +412,7 @@ impl JitsiConference {
       .await
   }
 
+
   pub async fn send_json_message<T: Serialize>(&self, payload: &T) -> Result<()> {
     let message = Message {
       from: Some(Jid::Full(self.jid.clone())),
@@ -962,43 +963,60 @@ impl StanzaFilter for JitsiConference {
                         .remove(&from.resource.clone())
                         .is_some()
                     {
-                        println!("participant left: {:?}", jid);
-                           let reconnect_window_str = env::var("RECONNECT_WINDOW").unwrap_or("none".to_string());
-    let reconnect_window = if reconnect_window_str == "none" {
-        60000
-    } else {
-        reconnect_window_str.parse::<u64>()?
-    };
-    // Simulate the timeout using `tokio::time::sleep`
-    tokio::time::sleep(Duration::from_millis(reconnect_window)).await;
+                         println!("participant left: {:?}", jid);
+                        // Simulate the timeout using `tokio::time::sleep` 
 
-    let participants = &self.inner.lock().await.participants;
-    let participants_count = participants.keys().len();
-    println!("total participants jingle: {:?}", participants_count);
+                        fn get_real_participants(participants: HashMap<String, Participant>) -> u32 {  
+                          let mut real_participant_count = 0;
+                          let recorder_domain = env::var("RECORDER_DOMAIN").unwrap_or("recorder.sariska.io".to_string());
 
-    if participants_count <= 1 {
-        let client = Client::new();
-        // Define the URL you want to send the POST request to
-        let API_HOST = env::var("API_HOST").unwrap_or("none".to_string());
-        let url = format!("https://{}/terraform/v1/hooks/srs/stopRecording", API_HOST);
-        // Define the data you want to send in the POST request
-        let data = json!({
-            "room_name": env::var("ROOM_NAME").unwrap_or("none".to_string())
-        });
+                          for (_key, participant) in participants {
+                            println!("Participant {:?}", participant);
+                            if let Some(FullJid { node, domain, resource }) = &participant.jid {
+                              println!("Domain: {}", domain);
+                              if recorder_domain.to_string() == domain.to_string() {
+                                println!("Contains '{}'", domain);
+                              } else {
+                                real_participant_count = real_participant_count + 1;
+                             }
+                           }
+                         }
+                         real_participant_count
+                      }
+                   let reconnect_window_str = env::var("RECONNECT_WINDOW").unwrap_or("none".to_string());
+                   let reconnect_window = if reconnect_window_str == "none" {
+                     60000                   
+                    } else {
+                       reconnect_window_str.parse::<u64>().unwrap_or(60000)
+                    };
 
-        let auth_token = env::var("AUTH_TOKEN").unwrap_or("none".to_string());
-
-        let response = client
-            .post(url)
-            .json(&data)
-            .header("Authorization", format!("Bearer {}", auth_token))
-            .send()?;
-
-        println!("Response status code: {}", response.status());
-        println!("Response body:\n{}", response.text()?);
-    }
-    println!("reached here");
-                       debug!("participant left: {:?}", jid);
+                    tokio::time::sleep(Duration::from_millis(reconnect_window)).await;
+                    let participants = &self
+                         .inner
+                          .lock()
+                          .await
+                          .participants;
+                     
+                     let participants_count = get_real_participants(participants.clone());
+                     if participants_count == 0 {
+                        let client = reqwest::Client::new(); // Use reqwest::Client for sending HTTP requests
+                        let api_host = env::var("API_HOST").unwrap_or("none".to_string());
+                        let url = format!("https://{}/terraform/v1/hooks/srs/stopRecording", api_host);
+                        let data = json!({
+                            "room_name": env::var("ROOM_NAME").unwrap_or("none".to_string())
+                        });
+                        let auth_token = env::var("AUTH_TOKEN").unwrap_or("none".to_string());
+                        let response = client
+                           .post(&url)
+                           .json(&data)
+                          .header("Authorization", format!("Bearer {}", auth_token))
+                          .send()
+                         .await?; // Use await since this is within an async context
+                       println!("Response status code: {}", response.status());
+                       println!("Response body:\n{}", response.text().await?);           
+                    }
+                    
+                   debug!("participant left: {:?}", jid);
                        if let Some(f) = &self
                         .inner
                         .lock()

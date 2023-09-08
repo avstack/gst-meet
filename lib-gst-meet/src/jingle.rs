@@ -1249,6 +1249,7 @@ impl JingleSession {
     let bus = pipeline.bus().context("failed to get pipeline bus")?;
 
     let (pipeline_state_null_tx, pipeline_state_null_rx) = oneshot::channel();
+    
     tokio::spawn(async move {
       let mut stream = bus.stream();
       while let Some(msg) = stream.next().await {

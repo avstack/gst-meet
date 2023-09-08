@@ -102,6 +102,7 @@ pub struct Params {
     reconnect_window: Option<u64>,
     layout:  Option<String>,
     multi_bitrate: Option<bool>,
+    is_low_latency: Option<bool>,
     username: Option<bool>,
     uuid: Option<String>,
     is_recording: Option<bool>,
@@ -311,7 +312,7 @@ pub async fn start_recording(
         _ => "adaptive",
     };
 
-    let is_low_latency = match &params.is_low_latency {
+    let is_low_latency = match params.is_low_latency {
         Some(v) => v,
         _ => false,
     };

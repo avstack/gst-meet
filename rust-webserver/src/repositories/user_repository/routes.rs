@@ -366,7 +366,6 @@ pub async fn start_recording(
            ! flvmux streamable=true name=mux \
            ! rtmpsink location={}'", API_HOST,XMPP_DOMAIN, XMPP_MUC_DOMAIN,  params.room_name, location);
     } else if is_low_latency {
-        set_var("PROFILE", "HD");
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?vhost={}&param={}", location,"ll_latency".to_string(), encoded);
         gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
@@ -382,7 +381,6 @@ pub async fn start_recording(
            ! flvmux streamable=true name=mux \
            ! rtmpsink location={}'", API_HOST,XMPP_DOMAIN, XMPP_MUC_DOMAIN, params.room_name, location);
     } else if is_low_latency && multi_bitrate {
-        set_var("PROFILE", "HD");
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?vhost={}&param={}", location,"ll_latency_multi_bitrate".to_string(), encoded);
         gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \

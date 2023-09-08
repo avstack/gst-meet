@@ -159,6 +159,8 @@ struct ResponseVideoStart {
     pod_name: String,
     hls_url:  String,
     hls_master_url:String,
+    low_latency_hls_url: String,
+    low_latency_hls_master_url:String,
     dash_url: String,
     rtmp_url: String,
     flv_url: String,
@@ -309,6 +311,11 @@ pub async fn start_recording(
         _ => "adaptive",
     };
 
+    let is_low_latency = match &params.is_low_latency {
+        Some(v) => v,
+        _ => false,
+    };
+
     let audio_only = match params.audio_only {
         Some(v) => v,
         _ => false,
@@ -358,7 +365,39 @@ pub async fn start_recording(
            ! queue2 \
            ! flvmux streamable=true name=mux \
            ! rtmpsink location={}'", API_HOST,XMPP_DOMAIN, XMPP_MUC_DOMAIN,  params.room_name, location);
-    }  else if multi_bitrate {
+    } else if is_low_latency {
+        set_var("PROFILE", "HD");
+        location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
+        location = format!("{}?vhost={}&param={}", location,"ll_latency".to_string(), encoded);
+        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
+        --xmpp-domain={}  --muc-domain={} \
+        --recv-video-scale-width=1280 \
+        --recv-video-scale-height=720 \
+        --room-name={} \
+        --recv-pipeline='audiomixer name=audio  ! queue2 ! voaacenc bitrate=96000 ! mux. compositor name=video sink_1::xpos=1280 sink_2::xpos=0 sink_2::ypos=720 sink_3::xpos=1280 sink_3::ypos=720 \
+           ! queue2 \
+           ! x264enc \
+           ! video/x-h264,profile=high \
+           ! queue2 \
+           ! flvmux streamable=true name=mux \
+           ! rtmpsink location={}'", API_HOST,XMPP_DOMAIN, XMPP_MUC_DOMAIN, params.room_name, location);
+    } else if is_low_latency && multi_bitrate {
+        set_var("PROFILE", "HD");
+        location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
+        location = format!("{}?vhost={}&param={}", location,"ll_latency_multi_bitrate".to_string(), encoded);
+        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
+        --xmpp-domain={}  --muc-domain={} \
+        --recv-video-scale-width=1280 \
+        --recv-video-scale-height=720 \
+        --room-name={} \
+        --recv-pipeline='audiomixer name=audio  ! queue2 ! voaacenc bitrate=96000 ! mux. compositor name=video sink_1::xpos=1280 sink_2::xpos=0 sink_2::ypos=720 sink_3::xpos=1280 sink_3::ypos=720 \
+           ! queue2 \
+           ! x264enc \
+           ! video/x-h264,profile=high \
+           ! queue2 \
+           ! flvmux streamable=true name=mux \
+           ! rtmpsink location={}'", API_HOST,XMPP_DOMAIN, XMPP_MUC_DOMAIN, params.room_name, location);
+    } else if multi_bitrate {
         set_var("PROFILE", "HD");
         location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
         location = format!("{}?vhost={}&param={}", location,"transcode".to_string(), encoded);
@@ -456,7 +495,9 @@ pub async fn start_recording(
 }
 
 fn create_response_start_video(app :String, stream: String, uuid: String) -> ResponseVideoStart {
-    let HLS_HOST = env::var("HLS_HOST").unwrap_or("none".to_string());
+    let HLS_HOST = env::var("HLS_HOST").unwrap_or("none".to_string());    
+    let LOW_LATENCY_HLS_HOST = env::var("LOW_LATENCY_HLS_HOST").unwrap_or("none".to_string());
+
     let VOD_HOST = env::var("VOD_HOST").unwrap_or("none".to_string());
     let EDGE_UDP_PLAY = env::var("EDGE_UDP_PLAY").unwrap_or("none".to_string());
     let EDGE_TCP_PLAY = env::var("EDGE_TCP_PLAY").unwrap_or("none".to_string());
@@ -468,7 +509,9 @@ fn create_response_start_video(app :String, stream: String, uuid: String) -> Res
         hls_url: format!("https://{}/play/hls/{}/{}.m3u8", HLS_HOST, app, stream),
         hds_url: format!("https://{}/play/hds/{}/{}.f4m", HLS_HOST,app, stream),
         dash_url: format!("https://{}/play/dash/{}/{}.mpd", HLS_HOST, app, stream),
-        hls_master_url: format!("https://{}/play/hls/{}/{}/master.m3u8", HLS_HOST,app, stream),
+        hls_master_url: format!("https://{}/{}/{}/master.m3u8", HLS_HOST,app, stream),
+        low_latency_hls_url: format!("https://{}/{}/{}/original.m3u8", LOW_LATENCY_HLS_HOST,app, stream),
+        low_latency_hls_master_url:format!("https://{}/{}/{}/playlist.m3u8", LOW_LATENCY_HLS_HOST,app, stream),
         vod_url: format!("https://{}/{}/index.m3u8", VOD_HOST, uuid),
         rtmp_url: format!("rtmp://{}:1935/{}/{}", EDGE_TCP_PLAY, app, stream),
         flv_url: format!("http://{}:8080/{}/{}.flv",EDGE_TCP_PLAY, app, stream),

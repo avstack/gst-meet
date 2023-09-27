@@ -108,7 +108,7 @@ pub struct Params {
     profile: Option<String>,
     reconnect_window: Option<u64>,
     layout:  Option<String>,
-    codec; Option<String>,
+    codec: Option<String>,
     multi_bitrate: Option<bool>,
     is_low_latency: Option<bool>,
     username: Option<bool>,
@@ -305,8 +305,8 @@ pub async fn start_recording(
     };
 
     let codec = match  &params.codec {
-        Ok(v) => v,
-        _ => "H264".to_owned()
+        Some(v) => v,
+        _ => "H264"
     };
 
     let layout = match &params.layout {

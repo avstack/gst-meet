@@ -74,8 +74,15 @@ pub struct AppState {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct User {
+    pub id: String
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Context {
-    pub group: String
+    pub group: String,
+    pub user: User  
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -438,10 +438,10 @@ async fn main_inner() -> Result<()> {
               participant
                 .jid
                 .as_ref()
-                .and_then(|jid| jid.node.as_deref())
+                .and_then(|jid| jid.node_str())
                 .unwrap_or_default(),
             )
-            .replace("{participant_id}", &participant.muc_jid.resource)
+            .replace("{participant_id}", &participant.muc_jid.resource_str())
             .replace("{nick}", &participant.nick.unwrap_or_default());
 
           let bin = gstreamer::parse_bin_from_description(&pipeline_description, false)
@@ -463,7 +463,7 @@ async fn main_inner() -> Result<()> {
 
           bin.set_property(
             "name",
-            format!("participant_{}", participant.muc_jid.resource),
+            format!("participant_{}", participant.muc_jid.resource_str()),
           );
           conference.add_bin(&bin).await?;
         }

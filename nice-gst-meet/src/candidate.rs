@@ -2,12 +2,15 @@
 // from ../../gir-files (@ 8e47c67)
 // DO NOT EDIT
 
-use std::{ffi::CStr, net::SocketAddr};
+use std::{
+  ffi::CStr,
+  net::{SocketAddr, SocketAddrV4, SocketAddrV6},
+};
 
 use glib::translate::*;
 use libc::c_char;
 use nice_sys as ffi;
-use nix::sys::socket::{AddressFamily, InetAddr};
+use nix::sys::socket::AddressFamily;
 
 #[cfg(any(feature = "v0_1_18", feature = "dox"))]
 #[cfg_attr(feature = "dox", doc(cfg(feature = "v0_1_18")))]
@@ -67,34 +70,33 @@ impl Candidate {
   pub fn addr(&self) -> SocketAddr {
     unsafe {
       match AddressFamily::from_i32(self.inner.addr.s.addr.sa_family as i32).unwrap() {
-        AddressFamily::Inet => InetAddr::V4(self.inner.addr.s.ip4).to_std(),
-        AddressFamily::Inet6 => InetAddr::V6(self.inner.addr.s.ip6).to_std(),
+        AddressFamily::Inet => {
+          let ip4 = self.inner.addr.s.ip4;
+          SocketAddr::V4(SocketAddrV4::new(ip4.sin_addr.s_addr.into(), ip4.sin_port))
+        },
+        AddressFamily::Inet6 => {
+          let ip6 = self.inner.addr.s.ip6;
+          SocketAddr::V6(SocketAddrV6::new(
+            ip6.sin6_addr.s6_addr.into(),
+            ip6.sin6_port,
+            ip6.sin6_flowinfo,
+            ip6.sin6_scope_id,
+          ))
+        },
         other => panic!("unsupported address family: {:?}", other),
       }
     }
   }
 
   pub fn set_addr(&mut self, addr: SocketAddr) {
-    match InetAddr::from_std(&addr) {
-      InetAddr::V4(ip4) => unsafe {
-        ffi::nice_address_set_ipv4(
-          &mut self.inner.addr as *mut _,
-          u32::from_be(ip4.sin_addr.s_addr),
-        );
-        ffi::nice_address_set_port(
-          &mut self.inner.addr as *mut _,
-          u16::from_be(ip4.sin_port) as u32,
-        );
+    match addr {
+      SocketAddr::V4(ip4) => unsafe {
+        ffi::nice_address_set_ipv4(&mut self.inner.addr, u32::from(*ip4.ip()));
+        ffi::nice_address_set_port(&mut self.inner.addr, ip4.port() as u32);
       },
-      InetAddr::V6(ip6) => unsafe {
-        ffi::nice_address_set_ipv6(
-          &mut self.inner.addr as *mut _,
-          &ip6.sin6_addr.s6_addr as *const _,
-        );
-        ffi::nice_address_set_port(
-          &mut self.inner.addr as *mut _,
-          u16::from_be(ip6.sin6_port) as u32,
-        );
+      SocketAddr::V6(ip6) => unsafe {
+        ffi::nice_address_set_ipv6(&mut self.inner.addr, &ip6.ip().octets() as *const _);
+        ffi::nice_address_set_port(&mut self.inner.addr, ip6.port() as u32);
       },
     }
   }

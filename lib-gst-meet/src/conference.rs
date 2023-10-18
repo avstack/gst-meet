@@ -8,6 +8,7 @@ use colibri::{ColibriMessage, JsonMessage};
 use futures::stream::StreamExt;
 use glib::ObjectExt;
 use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
+use jid::ResourcePart;
 use jitsi_xmpp_parsers::jingle::{Action, Jingle};
 use maplit::hashmap;
 use once_cell::sync::Lazy;
@@ -130,7 +131,7 @@ pub struct Participant {
 type BoxedResultFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
 
 pub(crate) struct JitsiConferenceInner {
-  participants: HashMap<String, Participant>,
+  participants: HashMap<ResourcePart, Participant>,
   audio_sink: Option<gstreamer::Element>,
   video_sink: Option<gstreamer::Element>,
   on_participant:
@@ -271,8 +272,7 @@ impl JitsiConference {
   fn endpoint_id(&self) -> Result<&str> {
     self
       .jid
-      .node
-      .as_ref()
+      .node_str()
       .ok_or_else(|| anyhow!("invalid jid"))?
       .split('-')
       .next()
@@ -280,11 +280,11 @@ impl JitsiConference {
   }
 
   fn jid_in_muc(&self) -> Result<FullJid> {
-    Ok(self.config.muc.clone().with_resource(self.endpoint_id()?))
+    Ok(self.config.muc.with_resource_str(self.endpoint_id()?)?)
   }
 
   pub(crate) fn focus_jid_in_muc(&self) -> Result<FullJid> {
-    Ok(self.config.muc.clone().with_resource("focus"))
+    Ok(self.config.muc.with_resource_str("focus")?)
   }
 
   #[tracing::instrument(level = "debug", err)]
@@ -423,11 +423,11 @@ impl JitsiConference {
     Ok(())
   }
 
-  pub(crate) async fn ensure_participant(&self, id: &str) -> Result<()> {
-    if !self.inner.lock().await.participants.contains_key(id) {
+  pub(crate) async fn ensure_participant(&self, id: ResourcePart) -> Result<()> {
+    if !self.inner.lock().await.participants.contains_key(&id) {
       let participant = Participant {
         jid: None,
-        muc_jid: self.config.muc.clone().with_resource(id),
+        muc_jid: self.config.muc.with_resource(&id),
         nick: None,
       };
       self
@@ -435,7 +435,7 @@ impl JitsiConference {
         .lock()
         .await
         .participants
-        .insert(id.to_owned(), participant.clone());
+        .insert(id, participant.clone());
       if let Some(f) = self.inner.lock().await.on_participant.as_ref().cloned() {
         if let Err(e) = f(self.clone(), participant.clone()).await {
           warn!("on_participant failed: {:?}", e);
@@ -444,7 +444,7 @@ impl JitsiConference {
           gstreamer::debug_bin_to_dot_file(
             &pipeline,
             gstreamer::DebugGraphDetails::ALL,
-            &format!("participant-added-{}", participant.muc_jid.resource),
+            &format!("participant-added-{}", participant.muc_jid.resource_str()),
           );
         }
       }
@@ -476,7 +476,7 @@ impl JitsiConference {
         gstreamer::debug_bin_to_dot_file(
           &pipeline,
           gstreamer::DebugGraphDetails::ALL,
-          &format!("participant-added-{}", participant.muc_jid.resource),
+          &format!("participant-added-{}", participant.muc_jid.resource_str()),
         );
       }
     }
@@ -600,7 +600,7 @@ impl StanzaFilter for JitsiConference {
               Ok(jingle) => {
                 if let Some(Jid::Full(from_jid)) = iq.from {
                   if jingle.action == Action::SessionInitiate {
-                    if from_jid.resource == "focus" {
+                    if from_jid.resource_str() == "focus" {
                       // Acknowledge the IQ
                       let result_iq = Iq::empty_result(Jid::Full(from_jid.clone()), iq.id.clone())
                         .with_from(Jid::Full(self.jid.clone()));
@@ -914,9 +914,9 @@ impl StanzaFilter for JitsiConference {
             .context("missing from in presence")?
             .clone()
           {
-            let bare_from: BareJid = from.clone().into();
-            if bare_from == self.config.muc && from.resource != "focus" {
-              trace!("received MUC presence from {}", from.resource);
+            let bare_from = from.to_bare();
+            if bare_from == self.config.muc && from.resource_str() != "focus" {
+              trace!("received MUC presence from {}", from.resource_str());
               let nick_payload = presence
                 .payloads
                 .iter()
@@ -953,7 +953,7 @@ impl StanzaFilter for JitsiConference {
                         .lock()
                         .await
                         .participants
-                        .remove(&from.resource.clone())
+                        .remove(&from.resource())
                         .is_some()
                     {
                       debug!("participant left: {:?}", jid);
@@ -976,7 +976,7 @@ impl StanzaFilter for JitsiConference {
                       .lock()
                       .await
                       .participants
-                      .insert(from.resource.clone(), participant.clone())
+                      .insert(from.resource(), participant.clone())
                       .is_none()
                     {
                       debug!("new participant: {:?}", jid);
@@ -991,7 +991,7 @@ impl StanzaFilter for JitsiConference {
                           gstreamer::debug_bin_to_dot_file(
                             &jingle_session.pipeline(),
                             gstreamer::DebugGraphDetails::ALL,
-                            &format!("participant-added-{}", participant.muc_jid.resource),
+                            &format!("participant-added-{}", participant.muc_jid.resource_str()),
                           );
                         }
                       }

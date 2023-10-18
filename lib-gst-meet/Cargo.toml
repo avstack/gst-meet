@@ -22,6 +22,7 @@ gstreamer = { version = "0.20", default-features = false, features = ["v1_20"] }
 gstreamer-rtp = { version = "0.20", default-features = false, features = ["v1_20"] }
 hex = { version = "0.4", default-features = false, features = ["std"] }
 itertools = { version = "0.10", default-features = false, features = ["use_std"] }
+jid = { version = "0.10", default-features = false }
 jitsi-xmpp-parsers = { version = "0.2", path = "../jitsi-xmpp-parsers", default-features = false }
 libc = { version = "0.2", default-features = false }
 maplit = { version = "1", default-features = false }
@@ -51,7 +52,7 @@ tracing-subscriber = { version = "0.3", optional = true, default-features = fals
 ] }
 uuid = { version = "1", default-features = false, features = ["v4"] }
 webpki-roots = { version = "0.23", default-features = false, optional = true }
-xmpp-parsers = { version = "0.19", default-features = false, features = ["disable-validation"] }
+xmpp-parsers = { version = "0.20", default-features = false, features = ["disable-validation"] }
 
 [features]
 # Ideally we would enable rustls/dangerous_configuration only when tls-insecure is enabled, but until weak-dep-features is stabilised, that

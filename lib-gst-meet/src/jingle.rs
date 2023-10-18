@@ -11,6 +11,7 @@ use gstreamer::{
 use gstreamer_rtp::RTPBuffer;
 use gstreamer_rtp::{prelude::RTPHeaderExtensionExt, RTPHeaderExtension};
 use itertools::Itertools;
+use jid::ResourcePart;
 use jitsi_xmpp_parsers::{
   jingle::{Action, Content, Description, Jingle, Transport},
   jingle_dtls_srtp::Fingerprint,
@@ -962,7 +963,8 @@ impl JingleSession {
             };
 
             if let Some(participant_id) = source.participant_id {
-              handle.block_on(conference.ensure_participant(&participant_id))?;
+              handle
+                .block_on(conference.ensure_participant(ResourcePart::new(&participant_id)?))?;
               let maybe_sink_element = match source.media_type {
                 MediaType::Audio => {
                   handle.block_on(conference.remote_participant_audio_sink_element())

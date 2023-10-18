@@ -11,7 +11,7 @@ bitflags = { version = "2", default-features = false, optional = true }
 glib = { version = "0.17", default-features = false }
 libc = { version = "0.2", default-features = false }
 nice-gst-meet-sys = { version = "0.3", path = "../nice-gst-meet-sys", default-features = false }
-nix = { version = "0.26", default-features = false, features = ["socket", "net"] }
+nix = { version = "0.27", default-features = false, features = ["socket", "net"] }
 
 [features]
 v0_1_4 = ["nice-gst-meet-sys/v0_1_4"]

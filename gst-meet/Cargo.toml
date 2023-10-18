@@ -10,8 +10,8 @@ authors = ["Jasper Hugo <jasper@avstack.io>"]
 anyhow = { version = "1", default-features = false, features = ["std"] }
 colibri = { version = "0.1", default-features = false }
 futures = { version = "0.3", default-features = false }
-glib = { version = "0.17", default-features = false, features = ["log"] }
-gstreamer = { version = "0.20", default-features = false }
+glib = { version = "0.18", default-features = false, features = ["log"] }
+gstreamer = { version = "0.21", default-features = false }
 http = { version = "0.2", default-features = false }
 lib-gst-meet = { version = "0.8", path = "../lib-gst-meet", default-features = false, features = ["tracing-subscriber"] }
 serde_urlencoded = { version = "0.7", default-features = false }

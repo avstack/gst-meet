@@ -538,7 +538,7 @@ impl JingleSession {
 
     debug!("building gstreamer pipeline");
 
-    let pipeline = gstreamer::Pipeline::new(None);
+    let pipeline = gstreamer::Pipeline::new();
 
     let rtpbin = gstreamer::ElementFactory::make("rtpbin")
       .name("rtpbin")
@@ -705,24 +705,30 @@ impl JingleSession {
             pt_map = pt_map.field(pt, rtx_pt);
           }
           ssrc_map = ssrc_map.field(&video_ssrc.to_string(), &(video_rtx_ssrc as u32));
-          let bin = gstreamer::Bin::new(None);
+          let bin = gstreamer::Bin::new();
           let rtx_sender = gstreamer::ElementFactory::make("rtprtxsend")
             .property("payload-type-map", pt_map.build())
             .property("ssrc-map", ssrc_map.build())
             .build()?;
           bin.add(&rtx_sender)?;
-          bin.add_pad(&gstreamer::GhostPad::with_target(
-            Some(&format!("src_{}", session)),
-            &rtx_sender
-              .static_pad("src")
-              .context("rtprtxsend has no src pad")?,
-          )?)?;
-          bin.add_pad(&gstreamer::GhostPad::with_target(
-            Some(&format!("sink_{}", session)),
-            &rtx_sender
-              .static_pad("sink")
-              .context("rtprtxsend has no sink pad")?,
-          )?)?;
+          bin.add_pad(
+            &gstreamer::GhostPad::builder_with_target(
+              &rtx_sender
+                .static_pad("src")
+                .context("rtprtxsend has no src pad")?,
+            )?
+            .name(&format!("src_{}", session))
+            .build(),
+          )?;
+          bin.add_pad(
+            &gstreamer::GhostPad::builder_with_target(
+              &rtx_sender
+                .static_pad("sink")
+                .context("rtprtxsend has no sink pad")?,
+            )?
+            .name(&format!("sink_{}", session))
+            .build(),
+          )?;
           Ok::<_, anyhow::Error>(Some(bin.to_value()))
         };
         match f() {
@@ -743,23 +749,29 @@ impl JingleSession {
         for (pt, rtx_pt) in pts.iter() {
           pt_map = pt_map.field(pt, rtx_pt);
         }
-        let bin = gstreamer::Bin::new(None);
+        let bin = gstreamer::Bin::new();
         let rtx_receiver = gstreamer::ElementFactory::make("rtprtxreceive")
           .property("payload-type-map", pt_map.build())
           .build()?;
         bin.add(&rtx_receiver)?;
-        bin.add_pad(&gstreamer::GhostPad::with_target(
-          Some(&format!("src_{}", session)),
-          &rtx_receiver
-            .static_pad("src")
-            .context("rtprtxreceive has no src pad")?,
-        )?)?;
-        bin.add_pad(&gstreamer::GhostPad::with_target(
-          Some(&format!("sink_{}", session)),
-          &rtx_receiver
-            .static_pad("sink")
-            .context("rtprtxreceive has no sink pad")?,
-        )?)?;
+        bin.add_pad(
+          &gstreamer::GhostPad::builder_with_target(
+            &rtx_receiver
+              .static_pad("src")
+              .context("rtprtxreceive has no src pad")?,
+          )?
+          .name(&format!("src_{}", session))
+          .build(),
+        )?;
+        bin.add_pad(
+          &gstreamer::GhostPad::builder_with_target(
+            &rtx_receiver
+              .static_pad("sink")
+              .context("rtprtxreceive has no sink pad")?,
+          )?
+          .name(&format!("sink_{}", session))
+          .build(),
+        )?;
         Ok::<_, anyhow::Error>(Some(bin.to_value()))
       };
       match f() {
@@ -975,13 +987,12 @@ impl JingleSession {
                 let sink_pad = sink_element
                   .request_pad_simple("sink_%u")
                   .context("no suitable sink pad provided by sink element in recv pipeline")?;
-                let ghost_pad = GhostPad::with_target(
-                  Some(&format!(
+                let ghost_pad = GhostPad::builder_with_target(&sink_pad)?
+                  .name(&format!(
                     "participant_{}_{:?}",
                     participant_id, source.media_type
-                  )),
-                  &sink_pad,
-                )?;
+                  ))
+                  .build();
                 let bin: Bin = sink_element
                   .parent()
                   .context("sink element has no parent")?

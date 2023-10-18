@@ -451,14 +451,22 @@ async fn main_inner() -> Result<()> {
             let sink_pad = audio_sink_element.static_pad("sink").context(
               "audio sink element in recv pipeline participant template has no sink pad",
             )?;
-            bin.add_pad(&GhostPad::with_target(Some("audio"), &sink_pad)?)?;
+            bin.add_pad(
+              &GhostPad::builder_with_target(&sink_pad)?
+                .name("audio")
+                .build(),
+            )?;
           }
 
           if let Some(video_sink_element) = bin.by_name("video") {
             let sink_pad = video_sink_element.static_pad("sink").context(
               "video sink element in recv pipeline participant template has no sink pad",
             )?;
-            bin.add_pad(&GhostPad::with_target(Some("video"), &sink_pad)?)?;
+            bin.add_pad(
+              &GhostPad::builder_with_target(&sink_pad)?
+                .name("video")
+                .build(),
+            )?;
           }
 
           bin.set_property(

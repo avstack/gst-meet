@@ -382,7 +382,6 @@ pub async fn start_recording(
         if codec == "H265" {
             location = format!("{}?vhost={}&param={}", location,"ll_latency_h265".to_string(), encoded);
         }
-        location = format!("{}?vhost={}&param={}", location,"ll_latency".to_string(), encoded);
         gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
         --xmpp-domain={}  --muc-domain={} \
         --recv-video-scale-width=1280 \

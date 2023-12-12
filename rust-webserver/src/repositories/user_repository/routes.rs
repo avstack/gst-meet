@@ -509,7 +509,7 @@ fn create_response_start_video(app :String, stream: String, uuid: String) -> Res
         pod_name: env::var("MY_POD_NAME").unwrap_or("none".to_string()),
         hls_url: format!("https://{}/play/hls/{}/{}.m3u8", HLS_HOST, app, stream),
         hls_master_url: format!("https://{}/{}/{}/master.m3u8", HLS_HOST,app, stream),
-        low_latency_hls_url: format!("https://{}/{}/{}/playlist.m3u8", LOW_LATENCY_HLS_HOST,app, stream),
+        low_latency_hls_url: format!("https://{}/{}/{}/original/playlist.m3u8", LOW_LATENCY_HLS_HOST,app, stream),
         low_latency_hls_master_url:format!("https://{}/{}/{}/playlist.m3u8", LOW_LATENCY_HLS_HOST,app, stream),
         vod_url: format!("https://{}/{}/index.m3u8", VOD_HOST, uuid),
         rtmp_url: format!("rtmp://{}:1935/{}/{}", EDGE_TCP_PLAY, app, stream),

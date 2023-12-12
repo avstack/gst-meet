@@ -171,12 +171,10 @@ struct ResponseVideoStart {
     hls_master_url:String,
     low_latency_hls_url: String,
     low_latency_hls_master_url:String,
-    dash_url: String,
     rtmp_url: String,
     flv_url: String,
     srt_url: String,
     vod_url: String,
-    hds_url: String,
 }
 
 #[derive(Serialize)]

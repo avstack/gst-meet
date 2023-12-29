@@ -172,7 +172,6 @@ struct ResponseVideoStart {
     low_latency_hls_url: String,
     rtmp_url: String,
     flv_url: String,
-    srt_url: String,
     vod_url: String,
 }
 
@@ -489,32 +488,39 @@ pub async fn start_recording(
         arg: format!("production::room_key::{}", params.room_name).to_string()
     };
     redis_actor.send(comm).await;
-    let obj = create_response_start_video(app.clone(), stream.clone(), new_uuid.clone());
+    let obj = create_response_start_video(app.clone(), stream.clone(), new_uuid.clone(), is_low_latency.clone());
     HttpResponse::Ok().json(obj)
 }
 
-fn create_response_start_video(app :String, stream: String, uuid: String) -> ResponseVideoStart {
-    let HLS_HOST = env::var("HLS_HOST").unwrap_or("none".to_string());    
+fn create_response_start_video(app: String, stream: String, uuid: String, is_low_latency: bool) -> ResponseVideoStart {
+    let HLS_HOST = env::var("HLS_HOST").unwrap_or("none".to_string());
     let LOW_LATENCY_HLS_HOST = env::var("LOW_LATENCY_HLS_HOST").unwrap_or("none".to_string());
     let VOD_HOST = env::var("VOD_HOST").unwrap_or("none".to_string());
     let EDGE_UDP_PLAY = env::var("EDGE_UDP_PLAY").unwrap_or("none".to_string());
     let EDGE_TCP_PLAY = env::var("EDGE_TCP_PLAY").unwrap_or("none".to_string());
 
-    let obj = ResponseVideoStart {
+    let mut obj = ResponseVideoStart {
         started: true,
         stream_name: app.clone(),
         pod_name: env::var("MY_POD_NAME").unwrap_or("none".to_string()),
         hls_url: format!("https://{}/play/hls/{}/{}.m3u8", HLS_HOST, app, stream),
-        hls_master_url: format!("https://{}/{}/{}/master.m3u8", HLS_HOST,app, stream),
-        low_latency_hls_url: format!("https://{}/{}/{}/original/playlist.m3u8", LOW_LATENCY_HLS_HOST,app, stream),
+        hls_master_url: format!("https://{}/{}/{}/master.m3u8", HLS_HOST, app, stream),
+        low_latency_hls_url: "".to_string(),
         vod_url: format!("https://{}/{}/index.m3u8", VOD_HOST, uuid),
-        rtmp_url: format!("rtmp://{}:1935/{}/{}", EDGE_TCP_PLAY, app, stream),
-        flv_url: format!("http://{}:8080/{}/{}.flv",EDGE_TCP_PLAY, app, stream),
-        srt_url: format!("srt://{}:10080?streamid=#!::r={}/{},m=request",EDGE_UDP_PLAY,  app, stream),
+        rtmp_url: if is_low_latency {
+            format!("rtmp://{}:1935/{}/{}?domain={}", EDGE_TCP_PLAY, app, stream, LOW_LATENCY_HLS_HOST)
+        } else {
+            format!("rtmp://{}:1935/{}/{}", EDGE_TCP_PLAY, app, stream)
+        },
+        flv_url: if is_low_latency {
+            format!("http://{}:8080/{}/{}.flv?domain={}", EDGE_TCP_PLAY, app, stream, LOW_LATENCY_HLS_HOST)
+        } else {
+            format!("http://{}:8080/{}/{}.flv", EDGE_TCP_PLAY, app, stream)
+        },
     };
+
     obj
 }
-
 pub async fn stop_recording( 
         _req: HttpRequest,
         params: web::Json<Params>,

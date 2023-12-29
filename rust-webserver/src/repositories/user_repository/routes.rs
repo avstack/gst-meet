@@ -496,7 +496,7 @@ pub async fn start_recording(
         arg: format!("production::room_key::{}", params.room_name).to_string()
     };
     redis_actor.send(comm).await;
-    let obj = create_response_start_video(app.clone(), stream.clone(), new_uuid.clone(), is_low_latency.clone(), codec.clone());
+    let obj = create_response_start_video(app.clone(), stream.clone(), new_uuid.clone(), is_low_latency.clone(), codec.clone().to_string());
     HttpResponse::Ok().json(obj)
 }
 
@@ -520,7 +520,7 @@ fn create_response_start_video(app: String, stream: String, uuid: String, is_low
         pod_name: env::var("MY_POD_NAME").unwrap_or("none".to_string()),
         hls_url: format!("https://{}/play/hls/{}/{}.m3u8", HLS_HOST, app, stream),
         hls_master_url: format!("https://{}/{}/{}/master.m3u8", HLS_HOST, app, stream),
-        low_latency_hls_url: format!("https://{}/{}/{}/original/playlist.m3u8", ll_latency_host, app, stream),
+        low_latency_hls_url: format!("https://{}/{}/{}/original/playlist.m3u8", LOW_LATENCY_HLS_HOST, app, stream),
         vod_url: format!("https://{}/{}/index.m3u8", VOD_HOST, uuid),
         rtmp_url: if is_low_latency {
             format!("rtmp://{}:1935/{}/{}?domain={}", EDGE_TCP_PLAY, app, stream, ll_latency_host)

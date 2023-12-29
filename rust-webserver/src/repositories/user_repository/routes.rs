@@ -378,16 +378,24 @@ pub async fn start_recording(
         if codec == "H265" {
             location = format!("{}?vhost={}&param={}", location,"ll_latency_h265".to_string(), encoded);
         }
-        gstreamer_pipeline = format!("/usr/local/bin/gst-meet --web-socket-url=wss://{}/api/v1/media/websocket \
-        --xmpp-domain={}  --muc-domain={} \
-        --recv-video-scale-width=1280 \
-        --recv-video-scale-height=720 \
-        --room-name={} \
-        --recv-pipeline='audiomixer name=audio  ! queue2 ! voaacenc bitrate=96000 ! mux. compositor name=video sink_1::xpos=1280 sink_2::xpos=0 sink_2::ypos=720 sink_3::xpos=1280 sink_3::ypos=720 \
-           ! x264enc \
-           ! video/x-h264,profile=high \
-           ! flvmux streamable=true name=mux \
-           ! rtmpsink location={}'", API_HOST,XMPP_DOMAIN, XMPP_MUC_DOMAIN, params.room_name, location);
+        gstreamer_pipeline = format!(
+            "/usr/local/bin/gst-meet \
+            --web-socket-url=wss://{}/api/v1/media/websocket \
+            --xmpp-domain={} \
+            --muc-domain={} \
+            --recv-video-scale-width=1280 \
+            --recv-video-scale-height=720 \
+            --room-name={} \
+            --recv-pipeline='audiomixer name=audio ! queue2 ! voaacenc bitrate=96000 ! mux. \
+            compositor name=video sink_1::xpos=1280 sink_2::xpos=0 sink_2::ypos=720 sink_3::xpos=1280 sink_3::ypos=720 \
+            ! x264enc speed-preset=ultrafast tune=zerolatency ! video/x-h264,profile=high ! \
+            flvmux streamable=true name=mux ! rtmpsink location={}'",
+            API_HOST,
+            XMPP_DOMAIN,
+            XMPP_MUC_DOMAIN,
+            params.room_name,
+            location
+        );        
     // } else if is_low_latency && multi_bitrate {
     //     location = format!("{}/{}/{}", RTMP_OUT_LOCATION, app, stream);
     //     location = format!("{}?vhost={}&param={}", location,"ll_latency_multi_bitrate_h264".to_string(), encoded);
@@ -488,16 +496,23 @@ pub async fn start_recording(
         arg: format!("production::room_key::{}", params.room_name).to_string()
     };
     redis_actor.send(comm).await;
-    let obj = create_response_start_video(app.clone(), stream.clone(), new_uuid.clone(), is_low_latency.clone());
+    let obj = create_response_start_video(app.clone(), stream.clone(), new_uuid.clone(), is_low_latency.clone(), codec.clone());
     HttpResponse::Ok().json(obj)
 }
 
-fn create_response_start_video(app: String, stream: String, uuid: String, is_low_latency: bool) -> ResponseVideoStart {
+fn create_response_start_video(app: String, stream: String, uuid: String, is_low_latency: bool, codec: String) -> ResponseVideoStart {
     let HLS_HOST = env::var("HLS_HOST").unwrap_or("none".to_string());
     let LOW_LATENCY_HLS_HOST = env::var("LOW_LATENCY_HLS_HOST").unwrap_or("none".to_string());
     let VOD_HOST = env::var("VOD_HOST").unwrap_or("none".to_string());
     let EDGE_UDP_PLAY = env::var("EDGE_UDP_PLAY").unwrap_or("none".to_string());
     let EDGE_TCP_PLAY = env::var("EDGE_TCP_PLAY").unwrap_or("none".to_string());
+
+    // Choose the low-latency HLS host based on the codec
+    let ll_latency_host = match codec.as_str() {
+        "H264" => "ll_latency_h264",
+        "H265" => "ll_latency_h265",
+        _ => LOW_LATENCY_HLS_HOST.as_str(),
+    };
 
     let mut obj = ResponseVideoStart {
         started: true,
@@ -505,15 +520,15 @@ fn create_response_start_video(app: String, stream: String, uuid: String, is_low
         pod_name: env::var("MY_POD_NAME").unwrap_or("none".to_string()),
         hls_url: format!("https://{}/play/hls/{}/{}.m3u8", HLS_HOST, app, stream),
         hls_master_url: format!("https://{}/{}/{}/master.m3u8", HLS_HOST, app, stream),
-        low_latency_hls_url: "".to_string(),
+        low_latency_hls_url: format!("https://{}/{}/{}/original/playlist.m3u8", ll_latency_host, app, stream),
         vod_url: format!("https://{}/{}/index.m3u8", VOD_HOST, uuid),
         rtmp_url: if is_low_latency {
-            format!("rtmp://{}:1935/{}/{}?domain={}", EDGE_TCP_PLAY, app, stream, LOW_LATENCY_HLS_HOST)
+            format!("rtmp://{}:1935/{}/{}?domain={}", EDGE_TCP_PLAY, app, stream, ll_latency_host)
         } else {
             format!("rtmp://{}:1935/{}/{}", EDGE_TCP_PLAY, app, stream)
         },
         flv_url: if is_low_latency {
-            format!("http://{}:8080/{}/{}.flv?domain={}", EDGE_TCP_PLAY, app, stream, LOW_LATENCY_HLS_HOST)
+            format!("http://{}:8080/{}/{}.flv?domain={}", EDGE_TCP_PLAY, app, stream, ll_latency_host)
         } else {
             format!("http://{}:8080/{}/{}.flv", EDGE_TCP_PLAY, app, stream)
         },
@@ -521,6 +536,7 @@ fn create_response_start_video(app: String, stream: String, uuid: String, is_low
 
     obj
 }
+
 pub async fn stop_recording( 
         _req: HttpRequest,
         params: web::Json<Params>,

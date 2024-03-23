@@ -537,12 +537,20 @@ fn create_response_start_video(app: String, stream: String, uuid: String, is_low
     let EDGE_UDP_PLAY = env::var("EDGE_UDP_PLAY").unwrap_or("none".to_string());
     let EDGE_TCP_PLAY = env::var("EDGE_TCP_PLAY").unwrap_or("none".to_string());
 
-    // Choose the low-latency HLS host based on the codec
-    let ll_latency_host = match codec.as_str() {
-        "H264" => "ll_latency_h264",
-        "H265" => "ll_latency_h265",
-        _ => LOW_LATENCY_HLS_HOST.as_str(),
-    };
+     let mut ll_latency_host = match codec.as_str() {
+    "H264" => "ll_latency_h264",
+    "H265" => "ll_latency_h265",
+    _ => LOW_LATENCY_HLS_HOST.as_str(),
+};
+
+if multi_bitrate && is_low_latency {
+    if codec == "H264" {
+        ll_latency_host = "ll_latency_multi_bitrate_h264";
+    } else if codec == "H265" {
+        ll_latency_host = "ll_latency_multi_bitrate_h265";
+    }
+}
+   
 
        let mut obj = json!({
         "started": true,
@@ -562,11 +570,11 @@ fn create_response_start_video(app: String, stream: String, uuid: String, is_low
     }
     
     if is_low_latency && multi_bitrate {
-        obj["low_latency_hls_master_url"] = json!(format!("https://{}/multi/{}/{}//master.m3u8", LOW_LATENCY_HLS_HOST, app, stream));
+        obj["low_latency_hls_master_url"] = json!(format!("https://{}/multi/{}/{}/master.m3u8", LOW_LATENCY_HLS_HOST, app, stream));
     } else if is_low_latency {
-        obj["low_latency_hls_url"] = json!(format!("https://{}/original/{}/{}//playlist.m3u8", LOW_LATENCY_HLS_HOST, app, stream));
+        obj["low_latency_hls_url"] = json!(format!("https://{}/original/{}/{}/playlist.m3u8", LOW_LATENCY_HLS_HOST, app, stream));
     } else if multi_bitrate {
-        obj["hls_master_url"] = json!(format!("https://{}/play/hls/{}/{}//master.m3u8", HLS_HOST, app, stream));
+        obj["hls_master_url"] = json!(format!("https://{}/play/hls/{}/{}/master.m3u8", HLS_HOST, app, stream));
     } else {
         obj["hls_url"] = json!(format!("https://{}/play/hls/{}/{}.m3u8", HLS_HOST, app, stream));
     } 

@@ -202,6 +202,7 @@ pub async fn start_recording(
         params: web::Json<Params>,
         app_state: web::Data<RwLock<AppState>>
     ) -> HttpResponse {
+
     let multi_bitrate = match params.multi_bitrate {
         Some(v) => v,
         _ => false,
@@ -327,6 +328,11 @@ pub async fn start_recording(
     };
 
     let audio_only = match params.audio_only {
+        Some(v) => v,
+        _ => false,
+    };
+
+    let is_vod = match params.is_vod {
         Some(v) => v,
         _ => false,
     };

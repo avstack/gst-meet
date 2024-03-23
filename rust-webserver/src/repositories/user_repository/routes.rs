@@ -568,16 +568,16 @@ fn create_response_start_video(app: String, stream: String, uuid: String, is_low
     
     if is_low_latency && multi_bitrate {
         obj.rtmp_url = Some(format!("rtmp://{}:1935/{}/{}?vhost={}", EDGE_TCP_PLAY, app, stream, ll_latency_host));
-        obj.flv_url = Some(format!("http://{}:8936/{}.flv?vhost={}", EDGE_TCP_PLAY, app, stream, ll_latency_host));
+        obj.flv_url = Some(format!("http://{}:8936/{}/{}.flv?vhost={}", EDGE_TCP_PLAY, app, stream, ll_latency_host));
     } else if is_low_latency {
         obj.rtmp_url = Some(format!("rtmp://{}:1935/{}/{}?vhost={}", EDGE_TCP_PLAY, app, stream, ll_latency_host));
-        obj.flv_url = Some(format!("http://{}:8936/{}.flv?vhost={}", EDGE_TCP_PLAY, app, stream, ll_latency_host));
+        obj.flv_url = Some(format!("http://{}:8936/{}/{}.flv?vhost={}", EDGE_TCP_PLAY, app, stream, ll_latency_host));
     } else if multi_bitrate {
         obj.rtmp_url = Some(format!("rtmp://{}:1935/{}/{}?vhost={}", EDGE_TCP_PLAY, app, stream, "transcode",));
-        obj.flv_url = Some(format!("http://{}:8936/{}.flv?vhost={}", EDGE_TCP_PLAY, app, stream, "transcode",));
+        obj.flv_url = Some(format!("http://{}:8936/{}/{}.flv?vhost={}", EDGE_TCP_PLAY, app, stream, "transcode",));
     } else {
         obj.rtmp_url = Some(format!("rtmp://{}:1935/{}/{}", EDGE_TCP_PLAY, app, stream));
-        obj.flv_url = Some(format!("http://{}:8936/{}.flv", EDGE_TCP_PLAY, app, stream));
+        obj.flv_url = Some(format!("http://{}:8936/{}/{}.flv", EDGE_TCP_PLAY, app, stream));
     }
 
     obj

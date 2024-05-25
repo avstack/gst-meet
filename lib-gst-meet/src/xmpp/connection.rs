@@ -80,13 +80,14 @@ impl Connection {
     room_name: &str,
     tls_insecure: bool,
   ) -> Result<(Self, impl Future<Output = ()>)> {
-    let websocket_url: Uri = match authentication.clone() {
-        Authentication::Plain { .. } => websocket_url.parse().context("invalid WebSocket URL")?,
-        Authentication::Jwt { token } => format!(
-          "{}?room={}&token={}",
-          websocket_url.clone(), room_name.clone(), token.clone()
-        ).parse().context("invalid WebSocket URL")?,
-        Authentication::Anonymous => websocket_url.parse().context("invalid WebSocket URL")?,
+    let websocket_url: Uri = match &authentication {
+      Authentication::Plain { .. } => websocket_url.parse().context("invalid WebSocket URL")?,
+      Authentication::Jwt { token } => {
+        format!("{}?room={}&token={}", websocket_url, room_name, token)
+          .parse()
+          .context("invalid WebSocket URL")?
+      },
+      Authentication::Anonymous => websocket_url.parse().context("invalid WebSocket URL")?,
     };
     let xmpp_domain: BareJid = xmpp_domain.parse().context("invalid XMPP domain")?;
 

@@ -72,7 +72,7 @@ pub unsafe extern "C" fn gstmeet_init_tracing(level: *const c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn gstmeet_deinit(context: *mut Context) {
-  Box::from_raw(context);
+  let _ = Box::from_raw(context);
 }
 
 #[no_mangle]
@@ -80,16 +80,19 @@ pub unsafe extern "C" fn gstmeet_connection_new(
   context: *mut Context,
   websocket_url: *const c_char,
   xmpp_domain: *const c_char,
+  room_name: *const c_char,
   tls_insecure: bool,
 ) -> *mut Connection {
   let websocket_url = CStr::from_ptr(websocket_url);
   let xmpp_domain = CStr::from_ptr(xmpp_domain);
+  let room_name = CStr::from_ptr(room_name);
   (*context)
     .runtime
     .block_on(Connection::new(
       &websocket_url.to_string_lossy(),
       &xmpp_domain.to_string_lossy(),
       Authentication::Anonymous,
+      &room_name.to_string_lossy(),
       tls_insecure,
     ))
     .map(|(connection, background)| {
@@ -101,7 +104,7 @@ pub unsafe extern "C" fn gstmeet_connection_new(
 
 #[no_mangle]
 pub unsafe extern "C" fn gstmeet_connection_free(connection: *mut Connection) {
-  Box::from_raw(connection);
+  let _ = Box::from_raw(connection);
 }
 
 #[no_mangle]

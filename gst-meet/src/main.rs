@@ -4,9 +4,9 @@ use anyhow::{bail, Context, Result};
 #[cfg(target_os = "macos")]
 use cocoa::appkit::NSApplication;
 use colibri::{ColibriMessage, Constraints, VideoType};
-use glib::ObjectExt;
+use glib::object::ObjectExt as _;
 use gstreamer::{
-  prelude::{ElementExt, ElementExtManual, GstBinExt},
+  prelude::{ElementExt as _, ElementExtManual as _, GstBinExt as _},
   GhostPad,
 };
 use http::Uri;
@@ -47,19 +47,13 @@ struct Opt {
   )]
   focus_jid: Option<String>,
 
-  #[structopt(
-    long,
-    help = "If not specified, anonymous auth is used."
-  )]
+  #[structopt(long, help = "If not specified, anonymous auth is used.")]
   xmpp_username: Option<String>,
 
   #[structopt(long)]
   xmpp_password: Option<String>,
 
-  #[structopt(
-    long,
-    help = "The JWT token for Jitsi JWT authentication"
-  )]
+  #[structopt(long, help = "The JWT token for Jitsi JWT authentication")]
   xmpp_jwt: Option<String>,
 
   #[structopt(
@@ -216,14 +210,14 @@ async fn main_inner() -> Result<()> {
   let send_pipeline = opt
     .send_pipeline
     .as_ref()
-    .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
+    .map(|pipeline| gstreamer::parse::bin_from_description(pipeline, false))
     .transpose()
     .context("failed to parse send pipeline")?;
 
   let recv_pipeline = opt
     .recv_pipeline
     .as_ref()
-    .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, false))
+    .map(|pipeline| gstreamer::parse::bin_from_description(pipeline, false))
     .transpose()
     .context("failed to parse recv pipeline")?;
 
@@ -240,14 +234,17 @@ async fn main_inner() -> Result<()> {
       if !qs.contains_key("room") {
         qs.insert("room".to_owned(), opt.room_name.clone());
       }
-      Ok::<_, anyhow::Error>(format!(
-        "{}?{}",
-        path_and_query.path(),
-        serde_urlencoded::to_string(&qs)?,
-      ).parse()?)
+      Ok::<_, anyhow::Error>(
+        format!(
+          "{}?{}",
+          path_and_query.path(),
+          serde_urlencoded::to_string(&qs)?,
+        )
+        .parse()?,
+      )
     })
     .transpose()?;
-  
+
   web_socket_url = Uri::from_parts(web_socket_url_parts)?;
 
   let xmpp_domain = opt
@@ -262,11 +259,13 @@ async fn main_inner() -> Result<()> {
     match opt.xmpp_username {
       Some(username) => Authentication::Plain {
         username,
-        password: opt.xmpp_password.context("if xmpp-username is provided, xmpp-password must also be provided")?,
+        password: opt
+          .xmpp_password
+          .context("if xmpp-username is provided, xmpp-password must also be provided")?,
       },
       None => match opt.xmpp_jwt {
-          Some(token) => Authentication::Jwt { token },
-          None => Authentication::Anonymous,
+        Some(token) => Authentication::Jwt { token },
+        None => Authentication::Anonymous,
       },
     },
     &opt.room_name,
@@ -438,32 +437,40 @@ async fn main_inner() -> Result<()> {
               participant
                 .jid
                 .as_ref()
-                .and_then(|jid| jid.node.as_deref())
+                .and_then(|jid| jid.node_str())
                 .unwrap_or_default(),
             )
-            .replace("{participant_id}", &participant.muc_jid.resource)
+            .replace("{participant_id}", &participant.muc_jid.resource_str())
             .replace("{nick}", &participant.nick.unwrap_or_default());
 
-          let bin = gstreamer::parse_bin_from_description(&pipeline_description, false)
+          let bin = gstreamer::parse::bin_from_description(&pipeline_description, false)
             .context("failed to parse recv pipeline participant template")?;
 
           if let Some(audio_sink_element) = bin.by_name("audio") {
             let sink_pad = audio_sink_element.static_pad("sink").context(
               "audio sink element in recv pipeline participant template has no sink pad",
             )?;
-            bin.add_pad(&GhostPad::with_target(Some("audio"), &sink_pad)?)?;
+            bin.add_pad(
+              &GhostPad::builder_with_target(&sink_pad)?
+                .name("audio")
+                .build(),
+            )?;
           }
 
           if let Some(video_sink_element) = bin.by_name("video") {
             let sink_pad = video_sink_element.static_pad("sink").context(
               "video sink element in recv pipeline participant template has no sink pad",
             )?;
-            bin.add_pad(&GhostPad::with_target(Some("video"), &sink_pad)?)?;
+            bin.add_pad(
+              &GhostPad::builder_with_target(&sink_pad)?
+                .name("video")
+                .build(),
+            )?;
           }
 
           bin.set_property(
             "name",
-            format!("participant_{}", participant.muc_jid.resource),
+            format!("participant_{}", participant.muc_jid.resource()),
           );
           conference.add_bin(&bin).await?;
         }

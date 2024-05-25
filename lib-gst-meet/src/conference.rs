@@ -6,8 +6,11 @@ use anyhow::{anyhow, bail, Context, Result};
 use async_trait::async_trait;
 use colibri::{ColibriMessage, JsonMessage};
 use futures::stream::StreamExt;
-use glib::ObjectExt;
-use gstreamer::prelude::{ElementExt, ElementExtManual, GstBinExt};
+use glib::object::ObjectExt as _;
+use gstreamer::prelude::{
+  ElementExt as _, ElementExtManual as _, GstBinExt as _, GstBinExtManual as _,
+};
+use jid::{BareJid, FullJid, Jid};
 use jitsi_xmpp_parsers::jingle::{Action, Jingle};
 use maplit::hashmap;
 use once_cell::sync::Lazy;
@@ -32,7 +35,6 @@ use xmpp_parsers::{
   ns,
   presence::{self, Presence},
   stanza_error::{DefinedCondition, ErrorType, StanzaError},
-  BareJid, FullJid, Jid,
 };
 
 use crate::{
@@ -130,7 +132,7 @@ pub struct Participant {
 type BoxedResultFuture = Pin<Box<dyn Future<Output = Result<()>> + Send>>;
 
 pub(crate) struct JitsiConferenceInner {
-  participants: HashMap<String, Participant>,
+  participants: HashMap<jid::ResourcePart, Participant>,
   audio_sink: Option<gstreamer::Element>,
   video_sink: Option<gstreamer::Element>,
   on_participant:
@@ -173,6 +175,13 @@ impl JitsiConference {
 
     let focus = config.focus.clone();
 
+    let jid = xmpp_connection
+      .jid()
+      .await
+      .context("not connected (no JID)")?;
+
+    let endpoint_id = endpoint_id_for_jid(&jid)?;
+
     let ecaps2_hash = ecaps2::hash_ecaps2(&ecaps2::compute_disco(&DISCO_INFO)?, Algo::Sha_256)?;
     let mut presence = vec![
       Muc::new().into(),
@@ -184,11 +193,21 @@ impl JitsiConference {
       xmpp_parsers::Element::builder("jitsi_participant_codecType", ns::DEFAULT_NS)
         .append(config.video_codec.as_str())
         .build(),
+      xmpp_parsers::Element::builder("jitsi_participant_codecList", ns::DEFAULT_NS)
+        .append(config.video_codec.as_str())
+        .build(),
+      // TODO: mute state should be based on whether there is a corresponding element in the send pipeline
       xmpp_parsers::Element::builder("audiomuted", ns::DEFAULT_NS)
         .append("false")
         .build(),
       xmpp_parsers::Element::builder("videomuted", ns::DEFAULT_NS)
         .append("false")
+        .build(),
+      xmpp_parsers::Element::builder("SourceInfo", ns::DEFAULT_NS)
+        .append(serde_json::to_string(&serde_json::json!({
+          format!("{endpoint_id}-a0"): {"muted": false},
+          format!("{endpoint_id}-v0"): {"muted": false},
+        }))?.as_str())
         .build(),
       xmpp_parsers::Element::builder("nick", "http://jabber.org/protocol/nick")
         .append(config.nick.as_str())
@@ -215,10 +234,7 @@ impl JitsiConference {
 
     let conference = Self {
       glib_main_context,
-      jid: xmpp_connection
-        .jid()
-        .await
-        .context("not connected (no JID)")?,
+      jid,
       xmpp_tx: xmpp_connection.tx.clone(),
       config,
       external_services: xmpp_connection.external_services().await,
@@ -268,23 +284,22 @@ impl JitsiConference {
     Ok(())
   }
 
-  fn endpoint_id(&self) -> Result<&str> {
-    self
-      .jid
-      .node
-      .as_ref()
-      .ok_or_else(|| anyhow!("invalid jid"))?
-      .split('-')
-      .next()
-      .ok_or_else(|| anyhow!("invalid jid"))
+  pub(crate) fn endpoint_id(&self) -> Result<&str> {
+    endpoint_id_for_jid(&self.jid)
   }
 
   fn jid_in_muc(&self) -> Result<FullJid> {
-    Ok(self.config.muc.clone().with_resource(self.endpoint_id()?))
+    Ok(
+      self
+        .config
+        .muc
+        .clone()
+        .with_resource_str(self.endpoint_id()?)?,
+    )
   }
 
   pub(crate) fn focus_jid_in_muc(&self) -> Result<FullJid> {
-    Ok(self.config.muc.clone().with_resource("focus"))
+    Ok(self.config.muc.clone().with_resource_str("focus")?)
   }
 
   #[tracing::instrument(level = "debug", err)]
@@ -424,27 +439,24 @@ impl JitsiConference {
   }
 
   pub(crate) async fn ensure_participant(&self, id: &str) -> Result<()> {
-    if !self.inner.lock().await.participants.contains_key(id) {
+    let mut locked_inner = self.inner.lock().await;
+    let id = jid::ResourcePart::new(id)?;
+    if !locked_inner.participants.contains_key(&id) {
       let participant = Participant {
         jid: None,
-        muc_jid: self.config.muc.clone().with_resource(id),
+        muc_jid: self.config.muc.clone().with_resource(&id),
         nick: None,
       };
-      self
-        .inner
-        .lock()
-        .await
-        .participants
-        .insert(id.to_owned(), participant.clone());
-      if let Some(f) = self.inner.lock().await.on_participant.as_ref().cloned() {
+      locked_inner.participants.insert(id, participant.clone());
+      if let Some(f) = locked_inner.on_participant.as_ref().cloned() {
+        drop(locked_inner);
         if let Err(e) = f(self.clone(), participant.clone()).await {
           warn!("on_participant failed: {:?}", e);
         }
         else if let Ok(pipeline) = self.pipeline().await {
-          gstreamer::debug_bin_to_dot_file(
-            &pipeline,
+          pipeline.debug_to_dot_file(
             gstreamer::DebugGraphDetails::ALL,
-            &format!("participant-added-{}", participant.muc_jid.resource),
+            &format!("participant-added-{}", participant.muc_jid.resource()),
           );
         }
       }
@@ -473,10 +485,9 @@ impl JitsiConference {
         warn!("on_participant failed: {:?}", e);
       }
       else if let Ok(pipeline) = self.pipeline().await {
-        gstreamer::debug_bin_to_dot_file(
-          &pipeline,
+        pipeline.debug_to_dot_file(
           gstreamer::DebugGraphDetails::ALL,
-          &format!("participant-added-{}", participant.muc_jid.resource),
+          &format!("participant-added-{}", participant.muc_jid.resource()),
         );
       }
     }
@@ -507,8 +518,8 @@ impl StanzaFilter for JitsiConference {
       && element.is("iq", ns::DEFAULT_NS)
       || element
         .attr("from")
-        .and_then(|from| from.parse::<BareJid>().ok())
-        .map(|jid| jid == self.config.muc)
+        .and_then(|from| from.parse::<FullJid>().ok())
+        .map(|jid| jid.to_bare() == self.config.muc)
         .unwrap_or_default()
         && (element.is("presence", ns::DEFAULT_NS) || element.is("iq", ns::DEFAULT_NS))
   }
@@ -519,36 +530,51 @@ impl StanzaFilter for JitsiConference {
     let state = self.inner.lock().await.state;
     match state {
       Discovering => {
-        let iq = Iq::try_from(element)?;
-        if let IqType::Result(Some(element)) = iq.payload {
-          let ready: bool = element
-            .attr("ready")
-            .ok_or_else(|| anyhow!("missing ready attribute on conference IQ"))?
-            .parse()?;
-          if !ready {
-            bail!("focus reports room not ready");
+        if let Ok(iq) = Iq::try_from(element) {
+          if let IqType::Result(Some(element)) = iq.payload {
+            let ready: bool = element
+              .attr("ready")
+              .context("missing ready attribute on conference IQ")?
+              .parse()?;
+            if !ready {
+              bail!("focus reports room not ready");
+            }
+          }
+          else {
+            bail!("focus IQ failed");
+          };
+
+          let mut locked_inner = self.inner.lock().await;
+          self.send_presence(&locked_inner.presence).await?;
+          locked_inner.state = JoiningMuc;
+        }
+        else {
+          debug!("ignored non-IQ stanza while waiting for conference IQ");
+        }
+      },
+      JoiningMuc => {
+        if let Ok(presence) = Presence::try_from(element) {
+          if let Some(payload) = presence
+            .payloads
+            .into_iter()
+            .find(|payload| payload.is("x", ns::MUC_USER))
+          {
+            let muc_user = MucUser::try_from(payload)?;
+            debug!("MucUser: {:?}", muc_user);
+            if muc_user.status.contains(&MucStatus::SelfPresence) {
+              debug!("Joined MUC: {}", self.config.muc);
+              self.inner.lock().await.state = Idle;
+            }
+            else {
+              debug!("MUC user payload is not a self-presence");
+            }
+          }
+          else {
+            debug!("no MUC user payload in presence stanza");
           }
         }
         else {
-          bail!("focus IQ failed");
-        };
-
-        let mut locked_inner = self.inner.lock().await;
-        self.send_presence(&locked_inner.presence).await?;
-        locked_inner.state = JoiningMuc;
-      },
-      JoiningMuc => {
-        let presence = Presence::try_from(element)?;
-        if let Some(payload) = presence
-          .payloads
-          .iter()
-          .find(|payload| payload.is("x", ns::MUC_USER))
-        {
-          let muc_user = MucUser::try_from(payload.clone())?;
-          if muc_user.status.contains(&MucStatus::SelfPresence) {
-            debug!("Joined MUC: {}", self.config.muc);
-            self.inner.lock().await.state = Idle;
-          }
+          debug!("ignored non-presence stanza while waiting to join MUC");
         }
       },
       Idle => {
@@ -600,7 +626,7 @@ impl StanzaFilter for JitsiConference {
               Ok(jingle) => {
                 if let Some(Jid::Full(from_jid)) = iq.from {
                   if jingle.action == Action::SessionInitiate {
-                    if from_jid.resource == "focus" {
+                    if from_jid.resource_str() == "focus" {
                       // Acknowledge the IQ
                       let result_iq = Iq::empty_result(Jid::Full(from_jid.clone()), iq.id.clone())
                         .with_from(Jid::Full(self.jid.clone()));
@@ -656,6 +682,14 @@ impl StanzaFilter for JitsiConference {
 
                     let my_endpoint_id = self.endpoint_id()?.to_owned();
 
+                    info!("Sending source video type message");
+                    if let Err(e) = colibri_channel.send(ColibriMessage::SourceVideoTypeMessage {
+                      source_name: format!("{my_endpoint_id}-v0"),
+                      video_type: colibri::VideoType::Camera,
+                    }).await {
+                      warn!("Failed to send source video type message: {e:?}");
+                    }
+
                     {
                       let my_endpoint_id = my_endpoint_id.clone();
                       let colibri_channel = colibri_channel.clone();
@@ -674,12 +708,8 @@ impl StanzaFilter for JitsiConference {
                             .await
                             .ok()
                             .and_then(|pipeline| pipeline.by_name("rtpbin"))
-                            .map(|rtpbin| {
-                              rtpbin.emit_by_name("get-session", &[&0u32])
-                            })
-                            .map(|rtpsession: gstreamer::Element| {
-                              rtpsession.property("stats")
-                            })
+                            .map(|rtpbin| rtpbin.emit_by_name("get-session", &[&0u32]))
+                            .map(|rtpsession: gstreamer::Element| rtpsession.property("stats"))
                             .and_then(|stats: gstreamer::Structure| stats.get("source-stats").ok())
                             .and_then(|stats: glib::ValueArray| {
                               stats
@@ -914,9 +944,9 @@ impl StanzaFilter for JitsiConference {
             .context("missing from in presence")?
             .clone()
           {
-            let bare_from: BareJid = from.clone().into();
-            if bare_from == self.config.muc && from.resource != "focus" {
-              trace!("received MUC presence from {}", from.resource);
+            let bare_from: BareJid = from.clone().to_bare();
+            if bare_from == self.config.muc && from.resource_str() != "focus" {
+              trace!("received MUC presence from {}", from.resource());
               let nick_payload = presence
                 .payloads
                 .iter()
@@ -930,7 +960,10 @@ impl StanzaFilter for JitsiConference {
               {
                 // Hack until https://gitlab.com/xmpp-rs/xmpp-rs/-/issues/88 is resolved
                 // We're not interested in the actor element, and xmpp-parsers fails to parse it, so just remove it.
-                for item in muc_user_payload.children_mut().filter(|child| child.name() == "item") {
+                for item in muc_user_payload
+                  .children_mut()
+                  .filter(|child| child.name() == "item")
+                {
                   while item.remove_child("actor", ns::MUC_USER).is_some() {}
                 }
 
@@ -953,7 +986,7 @@ impl StanzaFilter for JitsiConference {
                         .lock()
                         .await
                         .participants
-                        .remove(&from.resource.clone())
+                        .remove(&from.resource().clone())
                         .is_some()
                     {
                       debug!("participant left: {:?}", jid);
@@ -976,7 +1009,7 @@ impl StanzaFilter for JitsiConference {
                       .lock()
                       .await
                       .participants
-                      .insert(from.resource.clone(), participant.clone())
+                      .insert(from.resource().clone(), participant.clone())
                       .is_none()
                     {
                       debug!("new participant: {:?}", jid);
@@ -988,10 +1021,9 @@ impl StanzaFilter for JitsiConference {
                         else if let Some(jingle_session) =
                           self.jingle_session.lock().await.as_ref()
                         {
-                          gstreamer::debug_bin_to_dot_file(
-                            &jingle_session.pipeline(),
+                          jingle_session.pipeline().debug_to_dot_file(
                             gstreamer::DebugGraphDetails::ALL,
-                            &format!("participant-added-{}", participant.muc_jid.resource),
+                            &format!("participant-added-{}", participant.muc_jid.resource()),
                           );
                         }
                       }
@@ -1006,4 +1038,14 @@ impl StanzaFilter for JitsiConference {
     }
     Ok(())
   }
+}
+
+fn endpoint_id_for_jid(jid: &FullJid) -> Result<&str> {
+  jid
+    .node_str()
+    .as_ref()
+    .context("invalid jid")?
+    .split('-')
+    .next()
+    .context("invalid jid")
 }

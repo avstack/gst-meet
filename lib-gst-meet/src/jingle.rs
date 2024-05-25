@@ -1,15 +1,21 @@
 use std::{collections::HashMap, fmt, net::SocketAddr};
 
 use anyhow::{anyhow, bail, Context, Result};
-use futures::stream::StreamExt;
-use glib::{Cast, ObjectExt, ToValue};
+use futures::stream::StreamExt as _;
+use glib::{
+  object::ObjectExt as _,
+  prelude::{Cast as _, ToValue as _},
+};
 use gstreamer::{
-  prelude::{ElementExt, ElementExtManual, GObjectExtManualGst, GstBinExt, GstObjectExt, PadExt},
-  Bin, Element, GhostPad,
+  prelude::{
+    ElementExt as _, ElementExtManual as _, GObjectExtManualGst as _, GstBinExt as _,
+    GstBinExtManual as _, GstObjectExt as _, PadExt as _,
+  },
+  Bin, GhostPad,
 };
 #[cfg(feature = "log-rtp")]
 use gstreamer_rtp::RTPBuffer;
-use gstreamer_rtp::{prelude::RTPHeaderExtensionExt, RTPHeaderExtension};
+use gstreamer_rtp::{prelude::RTPHeaderExtensionExt as _, RTPHeaderExtension};
 use itertools::Itertools;
 use jitsi_xmpp_parsers::{
   jingle::{Action, Content, Description, Jingle, Transport},
@@ -19,10 +25,8 @@ use jitsi_xmpp_parsers::{
   jingle_ssma::{self, Parameter},
 };
 use nice_gst_meet as nice;
-use pem::Pem;
 use rand::random;
-use rcgen::{Certificate, CertificateParams, PKCS_ECDSA_P256_SHA256};
-use ring::digest::{digest, SHA256};
+use sha2::{Digest as _, Sha256};
 use tokio::{net::lookup_host, runtime::Handle, sync::oneshot, task::JoinHandle};
 use tracing::{debug, error, info, warn};
 use uuid::Uuid;
@@ -349,12 +353,14 @@ impl JingleSession {
       .find(|svc| svc.r#type == "stun");
 
     let stun_addr = if let Some(stun) = maybe_stun {
+      debug!("resolving address for STUN server: {}", stun.host);
       lookup_host(format!(
         "{}:{}",
         stun.host,
         stun.port.unwrap_or(DEFAULT_STUN_PORT)
       ))
-      .await?
+      .await
+      .context("failed to resolve STUN server hostname")?
       .next()
     }
     else {
@@ -462,7 +468,7 @@ impl JingleSession {
     let initiator = jingle
       .initiator
       .as_ref()
-      .ok_or_else(|| anyhow!("session-initiate with no initiator"))?
+      .context("session-initiate with no initiator")?
       .clone();
 
     debug!("Received Jingle session-initiate from {}", initiator);
@@ -509,15 +515,14 @@ impl JingleSession {
       );
     }
 
-    let mut dtls_cert_params = CertificateParams::new(vec!["gst-meet".to_owned()]);
-    dtls_cert_params.alg = &PKCS_ECDSA_P256_SHA256;
-    let dtls_cert = Certificate::from_params(dtls_cert_params)?;
-    let dtls_cert_der = dtls_cert.serialize_der()?;
-    let fingerprint = digest(&SHA256, &dtls_cert_der).as_ref().to_vec();
+    let dtls_key_pair = rcgen::KeyPair::generate()?;
+    let mut dtls_cert_params = rcgen::CertificateParams::new(vec!["gst-meet".to_owned()])?;
+    let dtls_cert = dtls_cert_params.self_signed(&dtls_key_pair)?;
+    let fingerprint: Vec<u8> = Sha256::digest(dtls_cert.der()).to_vec();
     let fingerprint_str =
       itertools::join(fingerprint.iter().map(|byte| format!("{:X}", byte)), ":");
-    let dtls_cert_pem = pem::encode(&Pem::new("CERTIFICATE", dtls_cert_der));
-    let dtls_private_key_pem = pem::encode(&Pem::new("PRIVATE KEY", dtls_cert.serialize_private_key_der()));
+    let dtls_cert_pem = dtls_cert.pem();
+    let dtls_private_key_pem = dtls_key_pair.serialize_pem();
     debug!("Local DTLS certificate:\n{}", dtls_cert_pem);
     debug!("Local DTLS fingerprint: {}", fingerprint_str);
 
@@ -538,7 +543,7 @@ impl JingleSession {
 
     debug!("building gstreamer pipeline");
 
-    let pipeline = gstreamer::Pipeline::new(None);
+    let pipeline = gstreamer::Pipeline::new();
 
     let rtpbin = gstreamer::ElementFactory::make("rtpbin")
       .name("rtpbin")
@@ -705,24 +710,30 @@ impl JingleSession {
             pt_map = pt_map.field(pt, rtx_pt);
           }
           ssrc_map = ssrc_map.field(&video_ssrc.to_string(), &(video_rtx_ssrc as u32));
-          let bin = gstreamer::Bin::new(None);
+          let bin = gstreamer::Bin::new();
           let rtx_sender = gstreamer::ElementFactory::make("rtprtxsend")
             .property("payload-type-map", pt_map.build())
             .property("ssrc-map", ssrc_map.build())
             .build()?;
           bin.add(&rtx_sender)?;
-          bin.add_pad(&gstreamer::GhostPad::with_target(
-            Some(&format!("src_{}", session)),
-            &rtx_sender
-              .static_pad("src")
-              .context("rtprtxsend has no src pad")?,
-          )?)?;
-          bin.add_pad(&gstreamer::GhostPad::with_target(
-            Some(&format!("sink_{}", session)),
-            &rtx_sender
-              .static_pad("sink")
-              .context("rtprtxsend has no sink pad")?,
-          )?)?;
+          bin.add_pad(
+            &gstreamer::GhostPad::builder_with_target(
+              &rtx_sender
+                .static_pad("src")
+                .context("rtprtxsend has no src pad")?,
+            )?
+            .name(format!("src_{}", session))
+            .build(),
+          )?;
+          bin.add_pad(
+            &gstreamer::GhostPad::builder_with_target(
+              &rtx_sender
+                .static_pad("sink")
+                .context("rtprtxsend has no sink pad")?,
+            )?
+            .name(format!("sink_{}", session))
+            .build(),
+          )?;
           Ok::<_, anyhow::Error>(Some(bin.to_value()))
         };
         match f() {
@@ -743,23 +754,29 @@ impl JingleSession {
         for (pt, rtx_pt) in pts.iter() {
           pt_map = pt_map.field(pt, rtx_pt);
         }
-        let bin = gstreamer::Bin::new(None);
+        let bin = gstreamer::Bin::new();
         let rtx_receiver = gstreamer::ElementFactory::make("rtprtxreceive")
           .property("payload-type-map", pt_map.build())
           .build()?;
         bin.add(&rtx_receiver)?;
-        bin.add_pad(&gstreamer::GhostPad::with_target(
-          Some(&format!("src_{}", session)),
-          &rtx_receiver
-            .static_pad("src")
-            .context("rtprtxreceive has no src pad")?,
-        )?)?;
-        bin.add_pad(&gstreamer::GhostPad::with_target(
-          Some(&format!("sink_{}", session)),
-          &rtx_receiver
-            .static_pad("sink")
-            .context("rtprtxreceive has no sink pad")?,
-        )?)?;
+        bin.add_pad(
+          &gstreamer::GhostPad::builder_with_target(
+            &rtx_receiver
+              .static_pad("src")
+              .context("rtprtxreceive has no src pad")?,
+          )?
+          .name(format!("src_{}", session))
+          .build(),
+        )?;
+        bin.add_pad(
+          &gstreamer::GhostPad::builder_with_target(
+            &rtx_receiver
+              .static_pad("sink")
+              .context("rtprtxreceive has no sink pad")?,
+          )?
+          .name(format!("sink_{}", session))
+          .build(),
+        )?;
         Ok::<_, anyhow::Error>(Some(bin.to_value()))
       };
       match f() {
@@ -861,8 +878,6 @@ impl JingleSession {
               .context(format!("failed to link rtpbin.{} to depayloader", pad_name))?;
 
             debug!("linked rtpbin.{} to depayloader", pad_name);
-
-            debug!("rtpbin pads:\n{}", dump_pads(&rtpbin));
 
             let queue = gstreamer::ElementFactory::make("queue").build()?;
             pipeline
@@ -975,13 +990,12 @@ impl JingleSession {
                 let sink_pad = sink_element
                   .request_pad_simple("sink_%u")
                   .context("no suitable sink pad provided by sink element in recv pipeline")?;
-                let ghost_pad = GhostPad::with_target(
-                  Some(&format!(
+                let ghost_pad = GhostPad::builder_with_target(&sink_pad)?
+                  .name(format!(
                     "participant_{}_{:?}",
                     participant_id, source.media_type
-                  )),
-                  &sink_pad,
-                )?;
+                  ))
+                  .build();
                 let bin: Bin = sink_element
                   .parent()
                   .context("sink element has no parent")?
@@ -1039,8 +1053,7 @@ impl JingleSession {
               src_pad.link(&sink_pad)?;
             }
 
-            gstreamer::debug_bin_to_dot_file(
-              &pipeline,
+            pipeline.debug_to_dot_file(
               gstreamer::DebugGraphDetails::ALL,
               &format!("ssrc-added-{}", ssrc),
             );
@@ -1238,8 +1251,6 @@ impl JingleSession {
     rtpbin.link_pads(Some("send_rtcp_src_0"), &rtcp_send_identity, None)?;
     rtcp_send_identity.link_pads(None, &dtlssrtpenc, Some("rtcp_sink_0"))?;
 
-    debug!("rtpbin pads:\n{}", dump_pads(&rtpbin));
-
     debug!("linking ice src -> dtlssrtpdec");
     nicesrc.link(&dtlssrtpdec)?;
 
@@ -1275,11 +1286,7 @@ impl JingleSession {
       }
     });
 
-    gstreamer::debug_bin_to_dot_file(
-      &pipeline,
-      gstreamer::DebugGraphDetails::ALL,
-      "session-initiate",
-    );
+    pipeline.debug_to_dot_file(gstreamer::DebugGraphDetails::ALL, "session-initiate");
 
     let local_candidates = ice_agent.local_candidates(ice_stream_id, ice_component_id);
     debug!("local candidates: {:?}", local_candidates);
@@ -1339,10 +1346,11 @@ impl JingleSession {
       };
 
       description.rtcp_mux = Some(RtcpMux);
+      
+      let endpoint_id = conference.endpoint_id()?;
 
-      let mslabel = Uuid::new_v4().to_string();
+      let mslabel = format!("{}-{}-0-1", endpoint_id, initiate_content.name.0);
       let label = Uuid::new_v4().to_string();
-      let cname = Uuid::new_v4().to_string();
 
       description.ssrc = Some(if initiate_content.name.0 == "audio" {
         audio_ssrc.to_string()
@@ -1352,20 +1360,17 @@ impl JingleSession {
       });
 
       description.ssrcs = if initiate_content.name.0 == "audio" {
-        vec![jingle_ssma::Source::new(audio_ssrc)]
+        vec![jingle_ssma::Source::new(audio_ssrc, Some(format!("{endpoint_id}-a0")), None)]
       }
       else {
+        let source_name = format!("{endpoint_id}-v0");
         vec![
-          jingle_ssma::Source::new(video_ssrc),
-          jingle_ssma::Source::new(video_rtx_ssrc),
+          jingle_ssma::Source::new(video_ssrc, Some(source_name.clone()), Some("camera".into())),
+          jingle_ssma::Source::new(video_rtx_ssrc, Some(source_name), Some("camera".into())),
         ]
       };
 
       for ssrc in description.ssrcs.iter_mut() {
-        ssrc.parameters.push(Parameter {
-          name: "cname".to_owned(),
-          value: Some(cname.clone()),
-        });
         ssrc.parameters.push(Parameter {
           name: "msid".to_owned(),
           value: Some(format!("{} {}", mslabel, label)),
@@ -1379,8 +1384,8 @@ impl JingleSession {
         vec![jingle_ssma::Group {
           semantics: Semantics::Fid,
           sources: vec![
-            jingle_ssma::Source::new(video_ssrc),
-            jingle_ssma::Source::new(video_rtx_ssrc),
+            jingle_ssma::Source::new(video_ssrc, None, None),
+            jingle_ssma::Source::new(video_rtx_ssrc, None, None),
           ],
         }]
       };
@@ -1505,45 +1510,20 @@ impl JingleSession {
   }
 }
 
-fn dump_pads(element: &Element) -> String {
-  element
-    .pads()
-    .into_iter()
-    .map(|pad| {
-      format!(
-        "  {}, peer={}.{}, caps=\"{}\"",
-        pad.name(),
-        pad
-          .peer()
-          .and_then(|peer| peer.parent_element())
-          .map(|element| element.name().to_string())
-          .unwrap_or_default(),
-        pad
-          .peer()
-          .map(|peer| peer.name().to_string())
-          .unwrap_or_default(),
-        pad.caps().map(|caps| caps.to_string()).unwrap_or_default(),
-      )
-    })
-    .join("\n")
-}
-
 fn participant_id_for_owner(owner: String) -> Result<Option<String>> {
   if owner == "jvb" {
     Ok(None)
   }
   else {
-    Ok(Some(
-      if owner.contains('/') {
-        owner
-          .split('/')
-          .nth(1)
-          .context("invalid ssrc-info owner")?
-          .to_owned()
-      }
-      else {
-        owner
-      }
-    ))
+    Ok(Some(if owner.contains('/') {
+      owner
+        .split('/')
+        .nth(1)
+        .context("invalid ssrc-info owner")?
+        .to_owned()
+    }
+    else {
+      owner
+    }))
   }
 }

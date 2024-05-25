@@ -13,34 +13,35 @@ authors = ["Jasper Hugo <jasper@avstack.io>"]
 anyhow = { version = "1", default-features = false, features = ["std"] }
 async-stream = { version = "0.3", default-features = false }
 async-trait = { version = "0.1", default-features = false }
-base64 = { version = "0.21", default-features = false }
+base64 = { version = "0.22", default-features = false }
 bytes = { version = "1", default-features = false, features = ["std"] }
 colibri = { version = "0.1", default-features = false }
 futures = { version = "0.3", default-features = false }
-glib = { version = "0.17", default-features = false }
-gstreamer = { version = "0.20", default-features = false, features = ["v1_20"] }
-gstreamer-rtp = { version = "0.20", default-features = false, features = ["v1_20"] }
+glib = { version = "0.19", default-features = false }
+gstreamer = { version = "0.22", default-features = false, features = ["v1_20"] }
+gstreamer-rtp = { version = "0.22", default-features = false, features = ["v1_20"] }
 hex = { version = "0.4", default-features = false, features = ["std"] }
-itertools = { version = "0.10", default-features = false, features = ["use_std"] }
+itertools = { version = "0.13", default-features = false, features = ["use_std"] }
+jid = { version = "0.10", default-features = false }
 jitsi-xmpp-parsers = { version = "0.2", path = "../jitsi-xmpp-parsers", default-features = false }
 libc = { version = "0.2", default-features = false }
 maplit = { version = "1", default-features = false }
 native-tls = { version = "0.2", default-features = false, optional = true }
 nice-gst-meet = { version = "0.3", path = "../nice-gst-meet", default-features = false, features = ["v0_1_18"] }
 once_cell = { version = "1", default-features = false, features = ["std"] }
-pem = { version = "2", default-features = false }
 rand = { version = "0.8", default-features = false, features = ["std", "std_rng"] }
-rcgen = { version = "0.11", default-features = false }
-ring = { version = "0.16", default-features = false }
-rtcp = { version = "0.8", default-features = false, optional = true }
-rustls = { version = "0.21", default-features = false, features = ["logging", "tls12"], optional = true }
-rustls-native-certs = { version = "0.6", default-features = false, optional = true }
+rcgen = { version = "0.13", default-features = false, features = ["crypto", "pem", "aws_lc_rs"] }
+ring = { version = "0.17", default-features = false }
+rtcp = { version = "0.11", default-features = false, optional = true }
+rustls = { version = "0.22", default-features = false, features = ["logging", "tls12", "aws_lc_rs"], optional = true }
+rustls-native-certs = { version = "0.7", default-features = false, optional = true }
 serde = { version = "1", default-features = false, features = ["derive"] }
 serde_json = { version = "1", default-features = false, features = ["std"] }
+sha2 = { version = "0.10", default-features = false, features = ["std"] }
 syntect = { version = "5", optional = true }
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "sync", "time"] }
 tokio-stream = { version = "0.1", default-features = false, features = ["time"] }
-tokio-tungstenite = { version = "0.19", default-features = false, features = ["connect"] }
+tokio-tungstenite = { version = "0.21", default-features = false, features = ["connect"] }
 tracing = { version = "0.1", default-features = false, features = ["attributes", "std"] }
 tracing-subscriber = { version = "0.3", optional = true, default-features = false, features = [
   "fmt",
@@ -50,8 +51,8 @@ tracing-subscriber = { version = "0.3", optional = true, default-features = fals
   "tracing-log",
 ] }
 uuid = { version = "1", default-features = false, features = ["v4"] }
-webpki-roots = { version = "0.23", default-features = false, optional = true }
-xmpp-parsers = { version = "0.19", default-features = false, features = ["disable-validation"] }
+webpki-roots = { version = "0.26", default-features = false, optional = true }
+xmpp-parsers = { version = "0.20", default-features = false, features = ["disable-validation"] }
 
 [features]
 # Ideally we would enable rustls/dangerous_configuration only when tls-insecure is enabled, but until weak-dep-features is stabilised, that
@@ -62,5 +63,5 @@ syntax-highlighting = ["syntect"]
 tls-insecure = []
 tls-native = ["tokio-tungstenite/native-tls", "native-tls"]
 tls-native-vendored = ["tokio-tungstenite/native-tls-vendored", "native-tls/vendored"]
-tls-rustls-native-roots = ["tokio-tungstenite/rustls-tls-native-roots", "rustls", "rustls-native-certs", "rustls/dangerous_configuration"]
-tls-rustls-webpki-roots = ["tokio-tungstenite/rustls-tls-webpki-roots", "rustls", "webpki-roots", "rustls/dangerous_configuration"]
+tls-rustls-native-roots = ["tokio-tungstenite/rustls-tls-native-roots", "rustls", "rustls-native-certs"]
+tls-rustls-webpki-roots = ["tokio-tungstenite/rustls-tls-webpki-roots", "rustls", "webpki-roots"]

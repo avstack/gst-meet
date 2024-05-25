@@ -1,8 +1,5 @@
 use minidom::{Element, NSChoice::Any};
-use xmpp_parsers::{
-  jingle_ssma::Semantics,
-  ns::JINGLE_SSMA,
-};
+use xmpp_parsers::{jingle_ssma::Semantics, ns::JINGLE_SSMA};
 
 use crate::ns::JITSI_MEET;
 
@@ -12,6 +9,9 @@ generate_element!(
   attributes: [
     /// Maps to the ssrc-id parameter.
     id: Required<u32> = "ssrc",
+
+    name: Option<String> = "name",
+    video_type: Option<String> = "videoType",
   ],
   children: [
     /// List of attributes for this source.
@@ -29,9 +29,11 @@ generate_element!(
 
 impl Source {
   /// Create a new SSMA Source element.
-  pub fn new(id: u32) -> Source {
+  pub fn new(id: u32, name: Option<String>, video_type: Option<String>) -> Source {
     Source {
       id,
+      name,
+      video_type,
       parameters: Vec::new(),
       info: None,
     }

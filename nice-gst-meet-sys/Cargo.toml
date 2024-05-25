@@ -50,9 +50,9 @@ name = "nice_sys"
 
 [dependencies]
 libc = { version = "0.2", default-features = false }
-glib = { version = "0.17", default-features = false }
-gio = { version = "0.17", default-features = false }
-gobject-sys = { version = "0.17", default-features = false }
+glib = { version = "0.19", default-features = false }
+gio = { version = "0.19", default-features = false }
+gobject-sys = { version = "0.19", default-features = false }
 
 [build-dependencies]
 system-deps = { version = "6", default-features = false }

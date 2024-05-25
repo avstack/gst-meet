@@ -9,7 +9,8 @@ use glib::{
   object::ObjectType as ObjectType_,
   signal::{connect_raw, SignalHandlerId},
   translate::*,
-  StaticType, ToValue,
+  types::StaticType,
+  value::ToValue,
 };
 use libc::{c_char, c_uint};
 use nice_sys as ffi;

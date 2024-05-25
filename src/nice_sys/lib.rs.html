@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `nice-gst-meet-sys/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nice_sys" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0 (90c541806 2023-05-31)" data-search-js="search-e077946657036a58.js" data-settings-js="settings-298e1ea74db45b39.js" data-settings-css="settings-7bfb4c59cc6bc502.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../static.files/source-script-905937fbbdc8e9ea.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f61008743c98d196.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../nice_sys/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `nice-gst-meet-sys/src/lib.rs`."><title>lib.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nice_sys" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../nice_sys/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -692,7 +694,7 @@
   clippy::unreadable_literal,
   clippy::upper_case_acronyms
 )]
-#![cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, feature(doc_cfg))]
+#![cfg_attr(feature = <span class="string">"dox"</span>, feature(doc_cfg))]
 
 #[allow(unused_imports)]
 </span><span class="kw">use </span>glib::ffi::{gboolean, gconstpointer, gpointer, GType};
@@ -807,14 +809,14 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>NiceAddress_s {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;NiceAddress_s @ {:p}&quot;</span>, <span class="self">self</span>))
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"NiceAddress_s @ {:p}"</span>, <span class="self">self</span>))
       .finish()
   }
 }
 
 <span class="comment">// Callbacks
 </span><span class="kw">pub type </span>NiceAgentRecvFunc =
-  <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>NiceAgent, c_uint, c_uint, c_uint, <span class="kw-2">*mut </span>c_char, gpointer)&gt;;
+  <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>NiceAgent, c_uint, c_uint, c_uint, <span class="kw-2">*mut </span>c_char, gpointer)&gt;;
 
 <span class="comment">// Records
 </span><span class="attr">#[repr(C)]
@@ -825,8 +827,8 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>NiceAddress {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;NiceAddress @ {:p}&quot;</span>, <span class="self">self</span>))
-      .field(<span class="string">&quot;s&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.s)
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"NiceAddress @ {:p}"</span>, <span class="self">self</span>))
+      .field(<span class="string">"s"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.s)
       .finish()
   }
 }
@@ -839,8 +841,8 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>NiceAgentClass {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;NiceAgentClass @ {:p}&quot;</span>, <span class="self">self</span>))
-      .field(<span class="string">&quot;parent_class&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.parent_class)
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"NiceAgentClass @ {:p}"</span>, <span class="self">self</span>))
+      .field(<span class="string">"parent_class"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.parent_class)
       .finish()
   }
 }
@@ -862,16 +864,16 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>NiceCandidate {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;NiceCandidate @ {:p}&quot;</span>, <span class="self">self</span>))
-      .field(<span class="string">&quot;type_&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.type_)
-      .field(<span class="string">&quot;transport&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.transport)
-      .field(<span class="string">&quot;addr&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.addr)
-      .field(<span class="string">&quot;base_addr&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.base_addr)
-      .field(<span class="string">&quot;priority&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.priority)
-      .field(<span class="string">&quot;stream_id&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.stream_id)
-      .field(<span class="string">&quot;component_id&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.component_id)
-      .field(<span class="string">&quot;username&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.username)
-      .field(<span class="string">&quot;password&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.password)
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"NiceCandidate @ {:p}"</span>, <span class="self">self</span>))
+      .field(<span class="string">"type_"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.type_)
+      .field(<span class="string">"transport"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.transport)
+      .field(<span class="string">"addr"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.addr)
+      .field(<span class="string">"base_addr"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.base_addr)
+      .field(<span class="string">"priority"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.priority)
+      .field(<span class="string">"stream_id"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.stream_id)
+      .field(<span class="string">"component_id"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.component_id)
+      .field(<span class="string">"username"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.username)
+      .field(<span class="string">"password"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.password)
       .finish()
   }
 }
@@ -887,11 +889,11 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>NiceInputMessage {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;NiceInputMessage @ {:p}&quot;</span>, <span class="self">self</span>))
-      .field(<span class="string">&quot;buffers&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.buffers)
-      .field(<span class="string">&quot;n_buffers&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.n_buffers)
-      .field(<span class="string">&quot;from&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.from)
-      .field(<span class="string">&quot;length&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.length)
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"NiceInputMessage @ {:p}"</span>, <span class="self">self</span>))
+      .field(<span class="string">"buffers"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.buffers)
+      .field(<span class="string">"n_buffers"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.n_buffers)
+      .field(<span class="string">"from"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.from)
+      .field(<span class="string">"length"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.length)
       .finish()
   }
 }
@@ -905,9 +907,9 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>NiceOutputMessage {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;NiceOutputMessage @ {:p}&quot;</span>, <span class="self">self</span>))
-      .field(<span class="string">&quot;buffers&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.buffers)
-      .field(<span class="string">&quot;n_buffers&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.n_buffers)
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"NiceOutputMessage @ {:p}"</span>, <span class="self">self</span>))
+      .field(<span class="string">"buffers"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.buffers)
+      .field(<span class="string">"n_buffers"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.n_buffers)
       .finish()
   }
 }
@@ -916,12 +918,12 @@
 #[derive(Copy, Clone)]
 </span><span class="kw">pub struct </span>PseudoTcpCallbacks {
   <span class="kw">pub </span>user_data: gpointer,
-  <span class="kw">pub </span>PseudoTcpOpened: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, gpointer)&gt;,
-  <span class="kw">pub </span>PseudoTcpReadable: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, gpointer)&gt;,
-  <span class="kw">pub </span>PseudoTcpWritable: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, gpointer)&gt;,
-  <span class="kw">pub </span>PseudoTcpClosed: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, u32, gpointer)&gt;,
+  <span class="kw">pub </span>PseudoTcpOpened: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, gpointer)&gt;,
+  <span class="kw">pub </span>PseudoTcpReadable: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, gpointer)&gt;,
+  <span class="kw">pub </span>PseudoTcpWritable: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, gpointer)&gt;,
+  <span class="kw">pub </span>PseudoTcpClosed: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(<span class="kw-2">*mut </span>PseudoTcpSocket, u32, gpointer)&gt;,
   <span class="kw">pub </span>WritePacket: <span class="prelude-ty">Option</span>&lt;
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(
       <span class="kw-2">*mut </span>PseudoTcpSocket,
       <span class="kw-2">*const </span>c_char,
       u32,
@@ -932,13 +934,13 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>PseudoTcpCallbacks {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;PseudoTcpCallbacks @ {:p}&quot;</span>, <span class="self">self</span>))
-      .field(<span class="string">&quot;user_data&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.user_data)
-      .field(<span class="string">&quot;PseudoTcpOpened&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpOpened)
-      .field(<span class="string">&quot;PseudoTcpReadable&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpReadable)
-      .field(<span class="string">&quot;PseudoTcpWritable&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpWritable)
-      .field(<span class="string">&quot;PseudoTcpClosed&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpClosed)
-      .field(<span class="string">&quot;WritePacket&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.WritePacket)
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"PseudoTcpCallbacks @ {:p}"</span>, <span class="self">self</span>))
+      .field(<span class="string">"user_data"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.user_data)
+      .field(<span class="string">"PseudoTcpOpened"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpOpened)
+      .field(<span class="string">"PseudoTcpReadable"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpReadable)
+      .field(<span class="string">"PseudoTcpWritable"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpWritable)
+      .field(<span class="string">"PseudoTcpClosed"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.PseudoTcpClosed)
+      .field(<span class="string">"WritePacket"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.WritePacket)
       .finish()
   }
 }
@@ -954,7 +956,7 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>NiceAgent {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;NiceAgent @ {:p}&quot;</span>, <span class="self">self</span>)).finish()
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"NiceAgent @ {:p}"</span>, <span class="self">self</span>)).finish()
   }
 }
 
@@ -963,13 +965,13 @@
 
 <span class="kw">impl </span>::std::fmt::Debug <span class="kw">for </span>PseudoTcpSocket {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>::std::fmt::Formatter) -&gt; ::std::fmt::Result {
-    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;PseudoTcpSocket @ {:p}&quot;</span>, <span class="self">self</span>))
+    f.debug_struct(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"PseudoTcpSocket @ {:p}"</span>, <span class="self">self</span>))
       .finish()
   }
 }
 
-<span class="attr">#[link(name = <span class="string">&quot;nice&quot;</span>)]
-</span><span class="kw">extern </span><span class="string">&quot;C&quot; </span>{
+<span class="attr">#[link(name = <span class="string">"nice"</span>)]
+</span><span class="kw">extern </span><span class="string">"C" </span>{
 
   <span class="comment">//=========================================================================
   // NiceAddress
@@ -977,8 +979,8 @@
   </span><span class="kw">pub fn </span>nice_address_copy_to_sockaddr(addr: <span class="kw-2">*const </span>NiceAddress, sin: <span class="kw-2">*mut </span>sockaddr);
   <span class="kw">pub fn </span>nice_address_dup(addr: <span class="kw-2">*const </span>NiceAddress) -&gt; <span class="kw-2">*mut </span>NiceAddress;
   <span class="kw">pub fn </span>nice_address_equal(a: <span class="kw-2">*const </span>NiceAddress, b: <span class="kw-2">*const </span>NiceAddress) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
   </span><span class="kw">pub fn </span>nice_address_equal_no_port(a: <span class="kw-2">*const </span>NiceAddress, b: <span class="kw-2">*const </span>NiceAddress) -&gt; gboolean;
   <span class="kw">pub fn </span>nice_address_free(addr: <span class="kw-2">*mut </span>NiceAddress);
   <span class="kw">pub fn </span>nice_address_get_port(addr: <span class="kw-2">*const </span>NiceAddress) -&gt; c_uint;
@@ -1000,18 +1002,18 @@
   </span><span class="kw">pub fn </span>nice_candidate_get_type() -&gt; GType;
   <span class="kw">pub fn </span>nice_candidate_new(type_: NiceCandidateType) -&gt; <span class="kw-2">*mut </span>NiceCandidate;
   <span class="kw">pub fn </span>nice_candidate_copy(candidate: <span class="kw-2">*const </span>NiceCandidate) -&gt; <span class="kw-2">*mut </span>NiceCandidate;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
   </span><span class="kw">pub fn </span>nice_candidate_equal_target(
     candidate1: <span class="kw-2">*const </span>NiceCandidate,
     candidate2: <span class="kw-2">*const </span>NiceCandidate,
   ) -&gt; gboolean;
   <span class="kw">pub fn </span>nice_candidate_free(candidate: <span class="kw-2">*mut </span>NiceCandidate);
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_18&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_18&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_18"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_18"</span>)))]
   </span><span class="kw">pub fn </span>nice_candidate_transport_to_string(transport: NiceCandidateTransport) -&gt; <span class="kw-2">*const </span>c_char;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_18&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_18&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_18"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_18"</span>)))]
   </span><span class="kw">pub fn </span>nice_candidate_type_to_string(type_: NiceCandidateType) -&gt; <span class="kw-2">*const </span>c_char;
 
   <span class="comment">//=========================================================================
@@ -1022,8 +1024,8 @@
     ctx: <span class="kw-2">*mut </span>glib::ffi::GMainContext,
     compat: NiceCompatibility,
   ) -&gt; <span class="kw-2">*mut </span>NiceAgent;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_new_full(
     ctx: <span class="kw-2">*mut </span>glib::ffi::GMainContext,
     compat: NiceCompatibility,
@@ -1043,46 +1045,46 @@
     func: NiceAgentRecvFunc,
     data: gpointer,
   ) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_16&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_16&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_16"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_16"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_close_async(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     callback: gio::ffi::GAsyncReadyCallback,
     callback_data: gpointer,
   );
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_20&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_20&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_20"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_20"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_consent_lost(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
     component_id: c_uint,
   ) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_6&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_6&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_6"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_6"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_forget_relays(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
     component_id: c_uint,
   ) -&gt; gboolean;
   <span class="kw">pub fn </span>nice_agent_gather_candidates(agent: <span class="kw-2">*mut </span>NiceAgent, stream_id: c_uint) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_generate_local_candidate_sdp(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     candidate: <span class="kw-2">*mut </span>NiceCandidate,
   ) -&gt; <span class="kw-2">*mut </span>c_char;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_generate_local_sdp(agent: <span class="kw-2">*mut </span>NiceAgent) -&gt; <span class="kw-2">*mut </span>c_char;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_generate_local_stream_sdp(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
     include_non_ice: gboolean,
   ) -&gt; <span class="kw-2">*mut </span>c_char;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_get_component_state(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1093,8 +1095,8 @@
     stream_id: c_uint,
     component_id: c_uint,
   ) -&gt; <span class="kw-2">*mut </span>NiceCandidate;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_get_io_stream(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1123,35 +1125,35 @@
     local: <span class="kw-2">*mut *mut </span>NiceCandidate,
     remote: <span class="kw-2">*mut *mut </span>NiceCandidate,
   ) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_get_selected_socket(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
     component_id: c_uint,
   ) -&gt; <span class="kw-2">*mut </span>gio::ffi::GSocket;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_17&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_17&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_17"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_17"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_get_sockets(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
     component_id: c_uint,
   ) -&gt; <span class="kw-2">*mut </span>glib::ffi::GPtrArray;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_get_stream_name(agent: <span class="kw-2">*mut </span>NiceAgent, stream_id: c_uint) -&gt; <span class="kw-2">*const </span>c_char;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_parse_remote_candidate_sdp(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
     sdp: <span class="kw-2">*const </span>c_char,
   ) -&gt; <span class="kw-2">*mut </span>NiceCandidate;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_parse_remote_sdp(agent: <span class="kw-2">*mut </span>NiceAgent, sdp: <span class="kw-2">*const </span>c_char) -&gt; c_int;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_parse_remote_stream_sdp(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1159,14 +1161,14 @@
     ufrag: <span class="kw-2">*mut *mut </span>c_char,
     pwd: <span class="kw-2">*mut *mut </span>c_char,
   ) -&gt; <span class="kw-2">*mut </span>glib::ffi::GSList;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_16&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_16&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_16"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_16"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_peer_candidate_gathering_done(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
   ) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_recv(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1176,8 +1178,8 @@
     cancellable: <span class="kw-2">*mut </span>gio::ffi::GCancellable,
     error: <span class="kw-2">*mut *mut </span>glib::ffi::GError,
   ) -&gt; ssize_t;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_recv_messages(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1187,8 +1189,8 @@
     cancellable: <span class="kw-2">*mut </span>gio::ffi::GCancellable,
     error: <span class="kw-2">*mut *mut </span>glib::ffi::GError,
   ) -&gt; c_int;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_recv_messages_nonblocking(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1198,8 +1200,8 @@
     cancellable: <span class="kw-2">*mut </span>gio::ffi::GCancellable,
     error: <span class="kw-2">*mut *mut </span>glib::ffi::GError,
   ) -&gt; c_int;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_recv_nonblocking(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1211,8 +1213,8 @@
   ) -&gt; ssize_t;
   <span class="kw">pub fn </span>nice_agent_remove_stream(agent: <span class="kw-2">*mut </span>NiceAgent, stream_id: c_uint);
   <span class="kw">pub fn </span>nice_agent_restart(agent: <span class="kw-2">*mut </span>NiceAgent) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_6&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_6&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_6"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_6"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_restart_stream(agent: <span class="kw-2">*mut </span>NiceAgent, stream_id: c_uint) -&gt; gboolean;
   <span class="kw">pub fn </span>nice_agent_send(
     agent: <span class="kw-2">*mut </span>NiceAgent,
@@ -1221,8 +1223,8 @@
     len: c_uint,
     buf: <span class="kw-2">*const </span>c_char,
   ) -&gt; c_int;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_send_messages_nonblocking(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1281,8 +1283,8 @@
     candidate: <span class="kw-2">*mut </span>NiceCandidate,
   ) -&gt; gboolean;
   <span class="kw">pub fn </span>nice_agent_set_software(agent: <span class="kw-2">*mut </span>NiceAgent, software: <span class="kw-2">*const </span>c_char);
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
   </span><span class="kw">pub fn </span>nice_agent_set_stream_name(
     agent: <span class="kw-2">*mut </span>NiceAgent,
     stream_id: c_uint,
@@ -1298,31 +1300,31 @@
     conversation: u32,
     callbacks: <span class="kw-2">*mut </span>PseudoTcpCallbacks,
   ) -&gt; <span class="kw-2">*mut </span>PseudoTcpSocket;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_can_send(self_: <span class="kw-2">*mut </span>PseudoTcpSocket) -&gt; gboolean;
   <span class="kw">pub fn </span>pseudo_tcp_socket_close(self_: <span class="kw-2">*mut </span>PseudoTcpSocket, force: gboolean);
   <span class="kw">pub fn </span>pseudo_tcp_socket_connect(self_: <span class="kw-2">*mut </span>PseudoTcpSocket) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_get_available_bytes(self_: <span class="kw-2">*mut </span>PseudoTcpSocket) -&gt; c_int;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_get_available_send_space(self_: <span class="kw-2">*mut </span>PseudoTcpSocket) -&gt; size_t;
   <span class="kw">pub fn </span>pseudo_tcp_socket_get_error(self_: <span class="kw-2">*mut </span>PseudoTcpSocket) -&gt; c_int;
   <span class="kw">pub fn </span>pseudo_tcp_socket_get_next_clock(
     self_: <span class="kw-2">*mut </span>PseudoTcpSocket,
     timeout: <span class="kw-2">*mut </span>u64,
   ) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_is_closed(self_: <span class="kw-2">*mut </span>PseudoTcpSocket) -&gt; gboolean;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_is_closed_remotely(self_: <span class="kw-2">*mut </span>PseudoTcpSocket) -&gt; gboolean;
   <span class="kw">pub fn </span>pseudo_tcp_socket_notify_clock(self_: <span class="kw-2">*mut </span>PseudoTcpSocket);
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_5&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_5&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_5"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_5"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_notify_message(
     self_: <span class="kw-2">*mut </span>PseudoTcpSocket,
     message: <span class="kw-2">*mut </span>NiceInputMessage,
@@ -1343,18 +1345,18 @@
     buffer: <span class="kw-2">*const </span>c_char,
     len: u32,
   ) -&gt; c_int;
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_set_time(self_: <span class="kw-2">*mut </span>PseudoTcpSocket, current_time: u32);
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
   </span><span class="kw">pub fn </span>pseudo_tcp_socket_shutdown(self_: <span class="kw-2">*mut </span>PseudoTcpSocket, how: PseudoTcpShutdown);
 
   <span class="comment">//=========================================================================
   // Other functions
   //=========================================================================
-  </span><span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_6&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_6&quot;</span>)))]
+  </span><span class="attr">#[cfg(any(feature = <span class="string">"v0_1_6"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_6"</span>)))]
   </span><span class="kw">pub fn </span>nice_component_state_to_string(state: NiceComponentState) -&gt; <span class="kw-2">*const </span>c_char;
   <span class="kw">pub fn </span>nice_debug_disable(with_stun: gboolean);
   <span class="kw">pub fn </span>nice_debug_enable(with_stun: gboolean);

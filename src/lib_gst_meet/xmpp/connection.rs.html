@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/xmpp/connection.rs`."><title>connection.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0 (90c541806 2023-05-31)" data-search-js="search-e077946657036a58.js" data-settings-js="settings-298e1ea74db45b39.js" data-settings-css="settings-7bfb4c59cc6bc502.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../../static.files/source-script-905937fbbdc8e9ea.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f61008743c98d196.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../lib_gst_meet/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/xmpp/connection.rs`."><title>connection.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../lib_gst_meet/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -367,6 +369,7 @@
 <a href="#367" id="367">367</a>
 <a href="#368" id="368">368</a>
 <a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{convert::TryFrom, fmt, future::Future, sync::Arc};
 
 <span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
@@ -419,10 +422,10 @@
 }
 
 <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>ConnectionInner {
-  <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
-    f.debug_struct(<span class="string">&quot;ConnectionInner&quot;</span>)
-      .field(<span class="string">&quot;state&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.state)
-      .field(<span class="string">&quot;jid&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.jid)
+  <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
+    f.debug_struct(<span class="string">"ConnectionInner"</span>)
+      .field(<span class="string">"state"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.state)
+      .field(<span class="string">"jid"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.jid)
       .finish()
   }
 }
@@ -449,41 +452,42 @@
     room_name: <span class="kw-2">&amp;</span>str,
     tls_insecure: bool,
   ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, <span class="kw">impl </span>Future&lt;Output = ()&gt;)&gt; {
-    <span class="kw">let </span>websocket_url: Uri = <span class="kw">match </span>authentication.clone() {
-        Authentication::Plain { .. } =&gt; websocket_url.parse().context(<span class="string">&quot;invalid WebSocket URL&quot;</span>)<span class="question-mark">?</span>,
-        Authentication::Jwt { token } =&gt; <span class="macro">format!</span>(
-          <span class="string">&quot;{}?room={}&amp;token={}&quot;</span>,
-          websocket_url.clone(), room_name.clone(), token.clone()
-        ).parse().context(<span class="string">&quot;invalid WebSocket URL&quot;</span>)<span class="question-mark">?</span>,
-        Authentication::Anonymous =&gt; websocket_url.parse().context(<span class="string">&quot;invalid WebSocket URL&quot;</span>)<span class="question-mark">?</span>,
+    <span class="kw">let </span>websocket_url: Uri = <span class="kw">match </span><span class="kw-2">&amp;</span>authentication {
+      Authentication::Plain { .. } =&gt; websocket_url.parse().context(<span class="string">"invalid WebSocket URL"</span>)<span class="question-mark">?</span>,
+      Authentication::Jwt { token } =&gt; {
+        <span class="macro">format!</span>(<span class="string">"{}?room={}&amp;token={}"</span>, websocket_url, room_name, token)
+          .parse()
+          .context(<span class="string">"invalid WebSocket URL"</span>)<span class="question-mark">?
+      </span>},
+      Authentication::Anonymous =&gt; websocket_url.parse().context(<span class="string">"invalid WebSocket URL"</span>)<span class="question-mark">?</span>,
     };
-    <span class="kw">let </span>xmpp_domain: BareJid = xmpp_domain.parse().context(<span class="string">&quot;invalid XMPP domain&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>xmpp_domain: BareJid = xmpp_domain.parse().context(<span class="string">"invalid XMPP domain"</span>)<span class="question-mark">?</span>;
 
-    <span class="macro">info!</span>(<span class="string">&quot;Connecting XMPP WebSocket to {}&quot;</span>, websocket_url);
+    <span class="macro">info!</span>(<span class="string">"Connecting XMPP WebSocket to {}"</span>, websocket_url);
     <span class="kw">let </span><span class="kw-2">mut </span>key = [<span class="number">0u8</span>; <span class="number">16</span>];
     thread_rng().fill_bytes(<span class="kw-2">&amp;mut </span>key);
     <span class="kw">let </span>request = Request::get(<span class="kw-2">&amp;</span>websocket_url)
-      .header(<span class="string">&quot;sec-websocket-protocol&quot;</span>, <span class="string">&quot;xmpp&quot;</span>)
-      .header(<span class="string">&quot;sec-websocket-key&quot;</span>, base64::encode(<span class="kw-2">&amp;</span>key))
-      .header(<span class="string">&quot;sec-websocket-version&quot;</span>, <span class="string">&quot;13&quot;</span>)
+      .header(<span class="string">"sec-websocket-protocol"</span>, <span class="string">"xmpp"</span>)
+      .header(<span class="string">"sec-websocket-key"</span>, base64::encode(<span class="kw-2">&amp;</span>key))
+      .header(<span class="string">"sec-websocket-version"</span>, <span class="string">"13"</span>)
       .header(
-        <span class="string">&quot;host&quot;</span>,
+        <span class="string">"host"</span>,
         websocket_url
           .host()
-          .context(<span class="string">&quot;invalid WebSocket URL: missing host&quot;</span>)<span class="question-mark">?</span>,
+          .context(<span class="string">"invalid WebSocket URL: missing host"</span>)<span class="question-mark">?</span>,
       )
-      .header(<span class="string">&quot;connection&quot;</span>, <span class="string">&quot;Upgrade&quot;</span>)
-      .header(<span class="string">&quot;upgrade&quot;</span>, <span class="string">&quot;websocket&quot;</span>)
+      .header(<span class="string">"connection"</span>, <span class="string">"Upgrade"</span>)
+      .header(<span class="string">"upgrade"</span>, <span class="string">"websocket"</span>)
       .body(())
-      .context(<span class="string">&quot;failed to build WebSocket request&quot;</span>)<span class="question-mark">?</span>;
+      .context(<span class="string">"failed to build WebSocket request"</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>(websocket, _response) = tokio_tungstenite::connect_async_tls_with_config(
       request,
       <span class="prelude-val">None</span>,
       <span class="bool-val">true</span>,
-      <span class="prelude-val">Some</span>(wss_connector(tls_insecure).context(<span class="string">&quot;failed to build TLS connector&quot;</span>)<span class="question-mark">?</span>),
+      <span class="prelude-val">Some</span>(wss_connector(tls_insecure).context(<span class="string">"failed to build TLS connector"</span>)<span class="question-mark">?</span>),
     )
     .<span class="kw">await
-    </span>.context(<span class="string">&quot;failed to connect XMPP WebSocket&quot;</span>)<span class="question-mark">?</span>;
+    </span>.context(<span class="string">"failed to connect XMPP WebSocket"</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>(sink, stream) = websocket.split();
     <span class="kw">let </span>(tx, rx) = mpsc::channel(<span class="number">64</span>);
 
@@ -507,16 +511,16 @@
     <span class="kw">let </span>reader = Connection::read_loop(inner, tx, stream);
 
     <span class="kw">let </span>background = <span class="kw">async move </span>{
-      <span class="macro">tokio::select! </span>{
-        res = reader =&gt; <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = res { <span class="macro">error!</span>(<span class="string">&quot;fatal (in read loop): {:?}&quot;</span>, e) },
-        res = writer =&gt; <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = res { <span class="macro">error!</span>(<span class="string">&quot;fatal (in write loop): {:?}&quot;</span>, e) },
+      <span class="macro">tokio::select!</span> {
+        res = reader =&gt; <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = res { <span class="macro">error!</span>(<span class="string">"fatal (in read loop): {:?}"</span>, e) },
+        res = writer =&gt; <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = res { <span class="macro">error!</span>(<span class="string">"fatal (in write loop): {:?}"</span>, e) },
       }
     };
 
     <span class="prelude-val">Ok</span>((connection, background))
   }
 
-  <span class="kw">pub async fn </span>add_stanza_filter(<span class="kw-2">&amp;</span><span class="self">self</span>, stanza_filter: <span class="kw">impl </span>StanzaFilter + Send + Sync + <span class="lifetime">&#39;static</span>) {
+  <span class="kw">pub async fn </span>add_stanza_filter(<span class="kw-2">&amp;</span><span class="self">self</span>, stanza_filter: <span class="kw">impl </span>StanzaFilter + Send + Sync + <span class="lifetime">'static</span>) {
     <span class="kw">let </span><span class="kw-2">mut </span>locked_inner = <span class="self">self</span>.inner.lock().<span class="kw">await</span>;
     locked_inner.stanza_filters.push(Box::new(stanza_filter));
   }
@@ -547,25 +551,25 @@
   <span class="kw">async fn </span>write_loop&lt;S&gt;(rx: mpsc::Receiver&lt;Element&gt;, <span class="kw-2">mut </span>sink: S) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;
   <span class="kw">where
     </span>S: Sink&lt;Message&gt; + Unpin,
-    S::Error: std::error::Error + Send + Sync + <span class="lifetime">&#39;static</span>,
+    S::Error: std::error::Error + Send + Sync + <span class="lifetime">'static</span>,
   {
     <span class="kw">let </span><span class="kw-2">mut </span>rx = ReceiverStream::new(rx);
     <span class="kw">while let </span><span class="prelude-val">Some</span>(element) = rx.next().<span class="kw">await </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>bytes = Vec::new();
       element.write_to(<span class="kw-2">&amp;mut </span>bytes)<span class="question-mark">?</span>;
       <span class="kw">let </span>xml = String::from_utf8(bytes)<span class="question-mark">?</span>;
-      <span class="attr">#[cfg(feature = <span class="string">&quot;syntax-highlighting&quot;</span>)]
+      <span class="attr">#[cfg(feature = <span class="string">"syntax-highlighting"</span>)]
       </span>{
         <span class="kw">let </span>ps = syntect::parsing::SyntaxSet::load_defaults_newlines();
         <span class="kw">let </span>ts = syntect::highlighting::ThemeSet::load_defaults();
-        <span class="kw">let </span>syntax = ps.find_syntax_by_extension(<span class="string">&quot;xml&quot;</span>).unwrap();
-        <span class="kw">let </span><span class="kw-2">mut </span>h = syntect::easy::HighlightLines::new(syntax, <span class="kw-2">&amp;</span>ts.themes[<span class="string">&quot;Solarized (dark)&quot;</span>]);
+        <span class="kw">let </span>syntax = ps.find_syntax_by_extension(<span class="string">"xml"</span>).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>h = syntect::easy::HighlightLines::new(syntax, <span class="kw-2">&amp;</span>ts.themes[<span class="string">"Solarized (dark)"</span>]);
         <span class="kw">let </span>ranges: Vec&lt;<span class="kw">_</span>&gt; = h.highlight_line(<span class="kw-2">&amp;</span>xml, <span class="kw-2">&amp;</span>ps).unwrap();
         <span class="kw">let </span>escaped = syntect::util::as_24_bit_terminal_escaped(<span class="kw-2">&amp;</span>ranges[..], <span class="bool-val">false</span>);
-        <span class="macro">debug!</span>(<span class="string">&quot;XMPP    \x1b[32;1m&gt;&gt;&gt; {}\x1b[0m&quot;</span>, escaped);
+        <span class="macro">debug!</span>(<span class="string">"XMPP    \x1b[32;1m&gt;&gt;&gt; {}\x1b[0m"</span>, escaped);
       }
-      <span class="attr">#[cfg(not(feature = <span class="string">&quot;syntax-highlighting&quot;</span>))]
-      </span><span class="macro">debug!</span>(<span class="string">&quot;XMPP    &gt;&gt;&gt; {}&quot;</span>, xml);
+      <span class="attr">#[cfg(not(feature = <span class="string">"syntax-highlighting"</span>))]
+      </span><span class="macro">debug!</span>(<span class="string">"XMPP    &gt;&gt;&gt; {}"</span>, xml);
       sink.send(Message::Text(xml)).<span class="kw">await</span><span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
@@ -583,26 +587,26 @@
       <span class="kw">let </span>message = stream
         .try_next()
         .<span class="kw">await</span><span class="question-mark">?
-        </span>.ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;unexpected EOF&quot;</span>))<span class="question-mark">?</span>;
+        </span>.ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">"unexpected EOF"</span>))<span class="question-mark">?</span>;
       <span class="kw">let </span>element: Element = <span class="kw">match </span>message {
         Message::Text(xml) =&gt; {
-          <span class="attr">#[cfg(feature = <span class="string">&quot;syntax-highlighting&quot;</span>)]
+          <span class="attr">#[cfg(feature = <span class="string">"syntax-highlighting"</span>)]
           </span>{
             <span class="kw">let </span>ps = syntect::parsing::SyntaxSet::load_defaults_newlines();
             <span class="kw">let </span>ts = syntect::highlighting::ThemeSet::load_defaults();
-            <span class="kw">let </span>syntax = ps.find_syntax_by_extension(<span class="string">&quot;xml&quot;</span>).unwrap();
-            <span class="kw">let </span><span class="kw-2">mut </span>h = syntect::easy::HighlightLines::new(syntax, <span class="kw-2">&amp;</span>ts.themes[<span class="string">&quot;Solarized (dark)&quot;</span>]);
+            <span class="kw">let </span>syntax = ps.find_syntax_by_extension(<span class="string">"xml"</span>).unwrap();
+            <span class="kw">let </span><span class="kw-2">mut </span>h = syntect::easy::HighlightLines::new(syntax, <span class="kw-2">&amp;</span>ts.themes[<span class="string">"Solarized (dark)"</span>]);
             <span class="kw">let </span>ranges: Vec&lt;<span class="kw">_</span>&gt; = h.highlight_line(<span class="kw-2">&amp;</span>xml, <span class="kw-2">&amp;</span>ps).unwrap();
             <span class="kw">let </span>escaped = syntect::util::as_24_bit_terminal_escaped(<span class="kw-2">&amp;</span>ranges[..], <span class="bool-val">false</span>);
-            <span class="macro">debug!</span>(<span class="string">&quot;XMPP    \x1b[31;1m&lt;&lt;&lt; {}\x1b[0m&quot;</span>, escaped);
+            <span class="macro">debug!</span>(<span class="string">"XMPP    \x1b[31;1m&lt;&lt;&lt; {}\x1b[0m"</span>, escaped);
           }
-          <span class="attr">#[cfg(not(feature = <span class="string">&quot;syntax-highlighting&quot;</span>))]
-          </span><span class="macro">debug!</span>(<span class="string">&quot;XMPP    &lt;&lt;&lt; {}&quot;</span>, xml);
+          <span class="attr">#[cfg(not(feature = <span class="string">"syntax-highlighting"</span>))]
+          </span><span class="macro">debug!</span>(<span class="string">"XMPP    &lt;&lt;&lt; {}"</span>, xml);
           xml.parse()<span class="question-mark">?
         </span>},
         <span class="kw">_ </span>=&gt; {
           <span class="macro">warn!</span>(
-            <span class="string">&quot;unexpected non-text message on XMPP WebSocket stream: {:?}&quot;</span>,
+            <span class="string">"unexpected non-text message on XMPP WebSocket stream: {:?}"</span>,
             message
           );
           <span class="kw">continue</span>;
@@ -615,7 +619,7 @@
       <span class="kw">match </span>locked_inner.state {
         OpeningPreAuthentication =&gt; {
           Open::try_from(element)<span class="question-mark">?</span>;
-          <span class="macro">info!</span>(<span class="string">&quot;Connected XMPP WebSocket&quot;</span>);
+          <span class="macro">info!</span>(<span class="string">"Connected XMPP WebSocket"</span>);
           locked_inner.state = ReceivingFeaturesPreAuthentication;
         },
         ReceivingFeaturesPreAuthentication =&gt; {
@@ -653,9 +657,9 @@
         OpeningPostAuthentication =&gt; {
           Open::try_from(element)<span class="question-mark">?</span>;
           <span class="kw">match </span><span class="kw-2">&amp;</span>locked_inner.authentication {
-            Authentication::Anonymous =&gt; <span class="macro">info!</span>(<span class="string">&quot;Logged in anonymously&quot;</span>),
-            Authentication::Plain { .. } =&gt; <span class="macro">info!</span>(<span class="string">&quot;Logged in with PLAIN&quot;</span>),
-            Authentication::Jwt { .. } =&gt; <span class="macro">info!</span>(<span class="string">&quot;Logged in with JWT&quot;</span>),
+            Authentication::Anonymous =&gt; <span class="macro">info!</span>(<span class="string">"Logged in anonymously"</span>),
+            Authentication::Plain { .. } =&gt; <span class="macro">info!</span>(<span class="string">"Logged in with PLAIN"</span>),
+            Authentication::Jwt { .. } =&gt; <span class="macro">info!</span>(<span class="string">"Logged in with JWT"</span>),
           }
           locked_inner.state = ReceivingFeaturesPostAuthentication;
         },
@@ -671,9 +675,9 @@
               FullJid::try_from(bind)<span class="question-mark">?
             </span>}
             <span class="kw">else </span>{
-              <span class="macro">bail!</span>(<span class="string">&quot;bind failed&quot;</span>);
+              <span class="macro">bail!</span>(<span class="string">"bind failed"</span>);
             };
-            <span class="macro">info!</span>(<span class="string">&quot;My JID: {}&quot;</span>, jid);
+            <span class="macro">info!</span>(<span class="string">"My JID: {}"</span>, jid);
             locked_inner.jid = <span class="prelude-val">Some</span>(jid.clone());
 
             locked_inner
@@ -687,7 +691,7 @@
             locked_inner.state = Discovering;
           },
           <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">debug!</span>(
-            <span class="string">&quot;received unexpected element while waiting for bind response: {}&quot;</span>,
+            <span class="string">"received unexpected element while waiting for bind response: {}"</span>,
             e
           ),
         },
@@ -697,12 +701,12 @@
             <span class="kw">let </span>_disco_info = DiscoInfoResult::try_from(element)<span class="question-mark">?</span>;
           }
           <span class="kw">else </span>{
-            <span class="macro">bail!</span>(<span class="string">&quot;disco failed&quot;</span>);
+            <span class="macro">bail!</span>(<span class="string">"disco failed"</span>);
           }
 
           <span class="kw">let </span>iq = Iq::from_get(generate_id(), xmpp::extdisco::ServicesQuery {})
             .with_from(Jid::Full(
-              locked_inner.jid.as_ref().context(<span class="string">&quot;missing jid&quot;</span>)<span class="question-mark">?</span>.clone(),
+              locked_inner.jid.as_ref().context(<span class="string">"missing jid"</span>)<span class="question-mark">?</span>.clone(),
             ))
             .with_to(Jid::Bare(locked_inner.xmpp_domain.clone()));
           tx.send(iq.into()).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -712,15 +716,15 @@
           <span class="kw">let </span>iq = Iq::try_from(element)<span class="question-mark">?</span>;
           <span class="kw">if let </span>IqType::Result(<span class="prelude-val">Some</span>(element)) = iq.payload {
             <span class="kw">let </span>services = xmpp::extdisco::ServicesResult::try_from(element)<span class="question-mark">?</span>;
-            <span class="macro">debug!</span>(<span class="string">&quot;external services: {:?}&quot;</span>, services.services);
+            <span class="macro">debug!</span>(<span class="string">"external services: {:?}"</span>, services.services);
             locked_inner.external_services = services.services;
           }
           <span class="kw">else </span>{
-            <span class="macro">warn!</span>(<span class="string">&quot;discovering external services failed: STUN/TURN will not work&quot;</span>);
+            <span class="macro">warn!</span>(<span class="string">"discovering external services failed: STUN/TURN will not work"</span>);
           }
 
           <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = locked_inner.connected_tx.take() {
-            tx.send(<span class="prelude-val">Ok</span>(())).map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">&quot;channel closed&quot;</span>))<span class="question-mark">?</span>;
+            tx.send(<span class="prelude-val">Ok</span>(())).map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">"channel closed"</span>))<span class="question-mark">?</span>;
           }
           locked_inner.state = Idle;
         },

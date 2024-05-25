@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `gst-meet/src/main.rs`."><title>main.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0 (90c541806 2023-05-31)" data-search-js="search-e077946657036a58.js" data-settings-js="settings-298e1ea74db45b39.js" data-settings-css="settings-7bfb4c59cc6bc502.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../static.files/source-script-905937fbbdc8e9ea.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f61008743c98d196.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../gst_meet/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `gst-meet/src/main.rs`."><title>main.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../gst_meet/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -515,15 +517,22 @@
 <a href="#515" id="515">515</a>
 <a href="#516" id="516">516</a>
 <a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::HashMap, time::Duration};
 
 <span class="kw">use </span>anyhow::{bail, Context, <span class="prelude-ty">Result</span>};
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">use </span>cocoa::appkit::NSApplication;
 <span class="kw">use </span>colibri::{ColibriMessage, Constraints, VideoType};
-<span class="kw">use </span>glib::ObjectExt;
+<span class="kw">use </span>glib::object::ObjectExt <span class="kw">as _</span>;
 <span class="kw">use </span>gstreamer::{
-  prelude::{ElementExt, ElementExtManual, GstBinExt},
+  prelude::{ElementExt <span class="kw">as _</span>, ElementExtManual <span class="kw">as _</span>, GstBinExt <span class="kw">as _</span>},
   GhostPad,
 };
 <span class="kw">use </span>http::Uri;
@@ -536,8 +545,8 @@
 
 <span class="attr">#[derive(Debug, Clone, StructOpt)]
 #[structopt(
-  name = <span class="string">&quot;gst-meet&quot;</span>,
-  about = <span class="string">&quot;Connect a GStreamer pipeline to a Jitsi Meet conference.&quot;
+  name = <span class="string">"gst-meet"</span>,
+  about = <span class="string">"Connect a GStreamer pipeline to a Jitsi Meet conference."
 </span>)]
 </span><span class="kw">struct </span>Opt {
   <span class="attr">#[structopt(long)]
@@ -545,7 +554,7 @@
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;If not specified, assumed to be the host part of &lt;web-socket-url&gt;&quot;
+    help = <span class="string">"If not specified, assumed to be the host part of &lt;web-socket-url&gt;"
   </span>)]
   </span>xmpp_domain: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
@@ -554,39 +563,33 @@
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;If not specified, assumed to be conference.&lt;xmpp-domain&gt;&quot;
+    help = <span class="string">"If not specified, assumed to be conference.&lt;xmpp-domain&gt;"
   </span>)]
   </span>muc_domain: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;If not specified, assumed to be focus@auth.&lt;xmpp-domain&gt;/focus&quot;
+    help = <span class="string">"If not specified, assumed to be focus@auth.&lt;xmpp-domain&gt;/focus"
   </span>)]
   </span>focus_jid: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-  <span class="attr">#[structopt(
-    long,
-    help = <span class="string">&quot;If not specified, anonymous auth is used.&quot;
-  </span>)]
+  <span class="attr">#[structopt(long, help = <span class="string">"If not specified, anonymous auth is used."</span>)]
   </span>xmpp_username: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
   <span class="attr">#[structopt(long)]
   </span>xmpp_password: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-  <span class="attr">#[structopt(
-    long,
-    help = <span class="string">&quot;The JWT token for Jitsi JWT authentication&quot;
-  </span>)]
+  <span class="attr">#[structopt(long, help = <span class="string">"The JWT token for Jitsi JWT authentication"</span>)]
   </span>xmpp_jwt: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
   <span class="attr">#[structopt(
     long,
-    default_value = <span class="string">&quot;vp9&quot;</span>,
-    help = <span class="string">&quot;The video codec to negotiate support for. One of: vp9, vp8, h264&quot;
+    default_value = <span class="string">"vp9"</span>,
+    help = <span class="string">"The video codec to negotiate support for. One of: vp9, vp8, h264"
   </span>)]
   </span>video_codec: String,
 
-  <span class="attr">#[structopt(long, default_value = <span class="string">&quot;gst-meet&quot;</span>)]
+  <span class="attr">#[structopt(long, default_value = <span class="string">"gst-meet"</span>)]
   </span>nick: String,
 
   <span class="attr">#[structopt(long)]
@@ -597,59 +600,59 @@
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;A GStreamer pipeline which will be instantiated at startup. If an element named &#39;audio&#39; is found, every remote participant&#39;s audio will be linked to it (and any &#39;audio&#39; element in the recv-pipeline-participant-template will be ignored). If an element named &#39;video&#39; is found, every remote participant&#39;s video will be linked to it (and any &#39;video&#39; element in the recv-pipeline-participant-template will be ignored).&quot;
+    help = <span class="string">"A GStreamer pipeline which will be instantiated at startup. If an element named 'audio' is found, every remote participant's audio will be linked to it (and any 'audio' element in the recv-pipeline-participant-template will be ignored). If an element named 'video' is found, every remote participant's video will be linked to it (and any 'video' element in the recv-pipeline-participant-template will be ignored)."
   </span>)]
   </span>recv_pipeline: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;A GStreamer pipeline which will be instantiated for each remote participant. If an element named &#39;audio&#39; is found, the participant&#39;s audio will be linked to it. If an element named &#39;video&#39; is found, the participant&#39;s video will be linked to it.&quot;
+    help = <span class="string">"A GStreamer pipeline which will be instantiated for each remote participant. If an element named 'audio' is found, the participant's audio will be linked to it. If an element named 'video' is found, the participant's video will be linked to it."
   </span>)]
   </span>recv_pipeline_participant_template: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;Comma-separated endpoint IDs to select (prioritise receiving of)&quot;
+    help = <span class="string">"Comma-separated endpoint IDs to select (prioritise receiving of)"
   </span>)]
   </span>select_endpoints: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;The maximum number of video streams we would like to receive&quot;
+    help = <span class="string">"The maximum number of video streams we would like to receive"
   </span>)]
   </span>last_n: <span class="prelude-ty">Option</span>&lt;u16&gt;,
 
   <span class="attr">#[structopt(
     long,
-    default_value = <span class="string">&quot;720&quot;</span>,
-    help = <span class="string">&quot;The maximum height we plan to send video at (used for stats only).&quot;
+    default_value = <span class="string">"720"</span>,
+    help = <span class="string">"The maximum height we plan to send video at (used for stats only)."
   </span>)]
   </span>send_video_height: u16,
 
   <span class="attr">#[structopt(
     long,
-    help = <span class="string">&quot;The video type to signal that we are sending. One of: camera, desktop&quot;
+    help = <span class="string">"The video type to signal that we are sending. One of: camera, desktop"
   </span>)]
   </span>video_type: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
   <span class="attr">#[structopt(
     long,
-    default_value = <span class="string">&quot;1280&quot;</span>,
-    help = <span class="string">&quot;The width to scale received video to before passing it to the recv-pipeline.&quot;
+    default_value = <span class="string">"1280"</span>,
+    help = <span class="string">"The width to scale received video to before passing it to the recv-pipeline."
   </span>)]
   </span>recv_video_scale_width: u16,
 
   <span class="attr">#[structopt(
     long,
-    default_value = <span class="string">&quot;720&quot;</span>,
-    help = <span class="string">&quot;The height to scale received video to before passing it to the recv-pipeline. This will also be signalled as the maximum height that JVB should send video to us at.&quot;
+    default_value = <span class="string">"720"</span>,
+    help = <span class="string">"The height to scale received video to before passing it to the recv-pipeline. This will also be signalled as the maximum height that JVB should send video to us at."
   </span>)]
   </span>recv_video_scale_height: u16,
 
   <span class="attr">#[structopt(
     long,
-    default_value = <span class="string">&quot;200&quot;</span>,
-    help = <span class="string">&quot;The size of the jitter buffers in milliseconds. Larger values are more resilient to packet loss and jitter, smaller values give lower latency.&quot;
+    default_value = <span class="string">"200"</span>,
+    help = <span class="string">"The size of the jitter buffers in milliseconds. Larger values are more resilient to packet loss and jitter, smaller values give lower latency."
   </span>)]
   </span>buffer_size: u32,
 
@@ -662,29 +665,29 @@
   <span class="attr">#[structopt(short, long, parse(from_occurrences))]
   </span>verbose: u8,
 
-  <span class="attr">#[cfg(feature = <span class="string">&quot;tls-insecure&quot;</span>)]
+  <span class="attr">#[cfg(feature = <span class="string">"tls-insecure"</span>)]
   #[structopt(
     long,
-    help = <span class="string">&quot;Disable TLS certificate verification (use with extreme caution)&quot;
+    help = <span class="string">"Disable TLS certificate verification (use with extreme caution)"
   </span>)]
   </span>tls_insecure: bool,
 
-  <span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
-  #[structopt(long, help = <span class="string">&quot;Log all RTP packets at DEBUG level (extremely verbose)&quot;</span>)]
+  <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
+  #[structopt(long, help = <span class="string">"Log all RTP packets at DEBUG level (extremely verbose)"</span>)]
   </span>log_rtp: bool,
 
-  <span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
-  #[structopt(long, help = <span class="string">&quot;Log all RTCP packets at DEBUG level&quot;</span>)]
+  <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
+  #[structopt(long, help = <span class="string">"Log all RTCP packets at DEBUG level"</span>)]
   </span>log_rtcp: bool,
 }
 
-<span class="attr">#[cfg(not(target_os = <span class="string">&quot;macos&quot;</span>))]
+<span class="attr">#[cfg(not(target_os = <span class="string">"macos"</span>))]
 #[tokio::main]
 </span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
   main_inner().<span class="kw">await
 </span>}
 
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+<span class="attr">#[cfg(target_os = <span class="string">"macos"</span>)]
 </span><span class="kw">fn </span>main() {
   <span class="comment">// GStreamer requires an NSApp event loop in order for osxvideosink etc to work.
   </span><span class="kw">let </span>app = <span class="kw">unsafe </span>{ cocoa::appkit::NSApp() };
@@ -696,7 +699,7 @@
 
   rt.spawn(<span class="kw">async move </span>{
     <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = main_inner().<span class="kw">await </span>{
-      <span class="macro">error!</span>(<span class="string">&quot;fatal: {:?}&quot;</span>, e);
+      <span class="macro">error!</span>(<span class="string">"fatal: {:?}"</span>, e);
     }
     <span class="kw">unsafe </span>{
       cocoa::appkit::NSApp().stop_(cocoa::base::nil);
@@ -710,9 +713,9 @@
 }
 
 <span class="kw">fn </span>init_gstreamer() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-  <span class="macro">trace!</span>(<span class="string">&quot;starting gstreamer init&quot;</span>);
+  <span class="macro">trace!</span>(<span class="string">"starting gstreamer init"</span>);
   gstreamer::init()<span class="question-mark">?</span>;
-  <span class="macro">trace!</span>(<span class="string">&quot;finished gstreamer init&quot;</span>);
+  <span class="macro">trace!</span>(<span class="string">"finished gstreamer init"</span>);
   <span class="prelude-val">Ok</span>(())
 }
 
@@ -728,21 +731,21 @@
 
   init_gstreamer()<span class="question-mark">?</span>;
 
-  <span class="comment">// Parse pipelines early so that we don&#39;t bother connecting to the conference if it&#39;s invalid.
+  <span class="comment">// Parse pipelines early so that we don't bother connecting to the conference if it's invalid.
 
   </span><span class="kw">let </span>send_pipeline = opt
     .send_pipeline
     .as_ref()
-    .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, <span class="bool-val">false</span>))
+    .map(|pipeline| gstreamer::parse::bin_from_description(pipeline, <span class="bool-val">false</span>))
     .transpose()
-    .context(<span class="string">&quot;failed to parse send pipeline&quot;</span>)<span class="question-mark">?</span>;
+    .context(<span class="string">"failed to parse send pipeline"</span>)<span class="question-mark">?</span>;
 
   <span class="kw">let </span>recv_pipeline = opt
     .recv_pipeline
     .as_ref()
-    .map(|pipeline| gstreamer::parse_bin_from_description(pipeline, <span class="bool-val">false</span>))
+    .map(|pipeline| gstreamer::parse::bin_from_description(pipeline, <span class="bool-val">false</span>))
     .transpose()
-    .context(<span class="string">&quot;failed to parse recv pipeline&quot;</span>)<span class="question-mark">?</span>;
+    .context(<span class="string">"failed to parse recv pipeline"</span>)<span class="question-mark">?</span>;
 
   <span class="kw">let </span><span class="kw-2">mut </span>web_socket_url: Uri = opt.web_socket_url.parse()<span class="question-mark">?</span>;
   <span class="kw">let </span><span class="kw-2">mut </span>web_socket_url_parts = web_socket_url.into_parts();
@@ -754,24 +757,27 @@
         .map(serde_urlencoded::from_str)
         .transpose()<span class="question-mark">?
         </span>.unwrap_or_default();
-      <span class="kw">if </span>!qs.contains_key(<span class="string">&quot;room&quot;</span>) {
-        qs.insert(<span class="string">&quot;room&quot;</span>.to_owned(), opt.room_name.clone());
+      <span class="kw">if </span>!qs.contains_key(<span class="string">"room"</span>) {
+        qs.insert(<span class="string">"room"</span>.to_owned(), opt.room_name.clone());
       }
-      <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(<span class="macro">format!</span>(
-        <span class="string">&quot;{}?{}&quot;</span>,
-        path_and_query.path(),
-        serde_urlencoded::to_string(<span class="kw-2">&amp;</span>qs)<span class="question-mark">?</span>,
-      ).parse()<span class="question-mark">?</span>)
+      <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(
+        <span class="macro">format!</span>(
+          <span class="string">"{}?{}"</span>,
+          path_and_query.path(),
+          serde_urlencoded::to_string(<span class="kw-2">&amp;</span>qs)<span class="question-mark">?</span>,
+        )
+        .parse()<span class="question-mark">?</span>,
+      )
     })
     .transpose()<span class="question-mark">?</span>;
-  
+
   web_socket_url = Uri::from_parts(web_socket_url_parts)<span class="question-mark">?</span>;
 
   <span class="kw">let </span>xmpp_domain = opt
     .xmpp_domain
     .as_deref()
     .or_else(|| web_socket_url.host())
-    .context(<span class="string">&quot;invalid WebSocket URL&quot;</span>)<span class="question-mark">?</span>;
+    .context(<span class="string">"invalid WebSocket URL"</span>)<span class="question-mark">?</span>;
 
   <span class="kw">let </span>(connection, background) = Connection::new(
     <span class="kw-2">&amp;</span>web_socket_url.to_string(),
@@ -779,39 +785,41 @@
     <span class="kw">match </span>opt.xmpp_username {
       <span class="prelude-val">Some</span>(username) =&gt; Authentication::Plain {
         username,
-        password: opt.xmpp_password.context(<span class="string">&quot;if xmpp-username is provided, xmpp-password must also be provided&quot;</span>)<span class="question-mark">?</span>,
+        password: opt
+          .xmpp_password
+          .context(<span class="string">"if xmpp-username is provided, xmpp-password must also be provided"</span>)<span class="question-mark">?</span>,
       },
       <span class="prelude-val">None </span>=&gt; <span class="kw">match </span>opt.xmpp_jwt {
-          <span class="prelude-val">Some</span>(token) =&gt; Authentication::Jwt { token },
-          <span class="prelude-val">None </span>=&gt; Authentication::Anonymous,
+        <span class="prelude-val">Some</span>(token) =&gt; Authentication::Jwt { token },
+        <span class="prelude-val">None </span>=&gt; Authentication::Anonymous,
       },
     },
     <span class="kw-2">&amp;</span>opt.room_name,
-    <span class="attr">#[cfg(feature = <span class="string">&quot;tls-insecure&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"tls-insecure"</span>)]
     </span>opt.tls_insecure,
-    <span class="attr">#[cfg(not(feature = <span class="string">&quot;tls-insecure&quot;</span>))]
+    <span class="attr">#[cfg(not(feature = <span class="string">"tls-insecure"</span>))]
     </span><span class="bool-val">false</span>,
   )
   .<span class="kw">await
-  </span>.context(<span class="string">&quot;failed to build connection&quot;</span>)<span class="question-mark">?</span>;
+  </span>.context(<span class="string">"failed to build connection"</span>)<span class="question-mark">?</span>;
 
   tokio::spawn(background);
 
   connection.connect().<span class="kw">await</span><span class="question-mark">?</span>;
 
   <span class="kw">let </span>room_jid = <span class="macro">format!</span>(
-    <span class="string">&quot;{}@{}&quot;</span>,
+    <span class="string">"{}@{}"</span>,
     opt.room_name,
     opt
       .muc_domain
       .clone()
-      .unwrap_or_else(|| { <span class="macro">format!</span>(<span class="string">&quot;conference.{}&quot;</span>, xmpp_domain) }),
+      .unwrap_or_else(|| { <span class="macro">format!</span>(<span class="string">"conference.{}"</span>, xmpp_domain) }),
   );
 
   <span class="kw">let </span>focus_jid = opt
     .focus_jid
     .clone()
-    .unwrap_or_else(|| <span class="macro">format!</span>(<span class="string">&quot;focus@auth.{}/focus&quot;</span>, xmpp_domain));
+    .unwrap_or_else(|| <span class="macro">format!</span>(<span class="string">"focus@auth.{}/focus"</span>, xmpp_domain));
 
   <span class="kw">let </span>Opt {
     nick,
@@ -824,9 +832,9 @@
     buffer_size,
     start_bitrate,
     stereo,
-    <span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
     </span>log_rtp,
-    <span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
     </span>log_rtcp,
     ..
   } = opt;
@@ -843,9 +851,9 @@
     recv_video_scale_height,
     recv_video_scale_width,
     buffer_size,
-    <span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
     </span>log_rtp,
-    <span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
     </span>log_rtcp,
   };
 
@@ -853,7 +861,7 @@
 
   <span class="kw">let </span>conference = JitsiConference::join(connection, main_loop.context(), config)
     .<span class="kw">await
-    </span>.context(<span class="string">&quot;failed to join conference&quot;</span>)<span class="question-mark">?</span>;
+    </span>.context(<span class="string">"failed to join conference"</span>)<span class="question-mark">?</span>;
 
   conference
     .set_send_resolution(send_video_height.into())
@@ -864,7 +872,7 @@
       last_n: <span class="prelude-val">Some</span>(opt.last_n.map(i32::from).unwrap_or(-<span class="number">1</span>)),
       selected_endpoints: opt
         .select_endpoints
-        .map(|endpoints| endpoints.split(<span class="string">&#39;,&#39;</span>).map(ToOwned::to_owned).collect()),
+        .map(|endpoints| endpoints.split(<span class="string">','</span>).map(ToOwned::to_owned).collect()),
       on_stage_endpoints: <span class="prelude-val">None</span>,
       default_constraints: <span class="prelude-val">Some</span>(Constraints {
         max_height: <span class="prelude-val">Some</span>(opt.recv_video_scale_height.into()),
@@ -878,9 +886,9 @@
     conference
       .send_colibri_message(ColibriMessage::VideoTypeMessage {
         video_type: <span class="kw">match </span>video_type.as_str() {
-          <span class="string">&quot;camera&quot; </span>=&gt; VideoType::Camera,
-          <span class="string">&quot;desktop&quot; </span>=&gt; VideoType::Desktop,
-          other =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">&quot;invalid video type: {}&quot;</span>, other)),
+          <span class="string">"camera" </span>=&gt; VideoType::Camera,
+          <span class="string">"desktop" </span>=&gt; VideoType::Desktop,
+          other =&gt; <span class="macro">bail!</span>(<span class="macro">format!</span>(<span class="string">"invalid video type: {}"</span>, other)),
         },
       })
       .<span class="kw">await</span><span class="question-mark">?</span>;
@@ -889,8 +897,8 @@
   <span class="kw">if let </span><span class="prelude-val">Some</span>(bin) = send_pipeline {
     conference.add_bin(<span class="kw-2">&amp;</span>bin).<span class="kw">await</span><span class="question-mark">?</span>;
 
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(audio) = bin.by_name(<span class="string">&quot;audio&quot;</span>) {
-      <span class="macro">info!</span>(<span class="string">&quot;Found audio element in pipeline, linking...&quot;</span>);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(audio) = bin.by_name(<span class="string">"audio"</span>) {
+      <span class="macro">info!</span>(<span class="string">"Found audio element in pipeline, linking..."</span>);
       <span class="kw">let </span>audio_sink = conference.audio_sink_element().<span class="kw">await</span><span class="question-mark">?</span>;
       audio.link(<span class="kw-2">&amp;</span>audio_sink)<span class="question-mark">?</span>;
     }
@@ -898,8 +906,8 @@
       conference.set_muted(MediaType::Audio, <span class="bool-val">true</span>).<span class="kw">await</span><span class="question-mark">?</span>;
     }
 
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(video) = bin.by_name(<span class="string">&quot;video&quot;</span>) {
-      <span class="macro">info!</span>(<span class="string">&quot;Found video element in pipeline, linking...&quot;</span>);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(video) = bin.by_name(<span class="string">"video"</span>) {
+      <span class="macro">info!</span>(<span class="string">"Found video element in pipeline, linking..."</span>);
       <span class="kw">let </span>video_sink = conference.video_sink_element().<span class="kw">await</span><span class="question-mark">?</span>;
       video.link(<span class="kw-2">&amp;</span>video_sink)<span class="question-mark">?</span>;
     }
@@ -915,18 +923,18 @@
   <span class="kw">if let </span><span class="prelude-val">Some</span>(bin) = recv_pipeline {
     conference.add_bin(<span class="kw-2">&amp;</span>bin).<span class="kw">await</span><span class="question-mark">?</span>;
 
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(audio_element) = bin.by_name(<span class="string">&quot;audio&quot;</span>) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(audio_element) = bin.by_name(<span class="string">"audio"</span>) {
       <span class="macro">info!</span>(
-        <span class="string">&quot;recv pipeline has an audio element, a sink pad will be requested from it for each participant&quot;
+        <span class="string">"recv pipeline has an audio element, a sink pad will be requested from it for each participant"
       </span>);
       conference
         .set_remote_participant_audio_sink_element(<span class="prelude-val">Some</span>(audio_element))
         .<span class="kw">await</span>;
     }
 
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(video_element) = bin.by_name(<span class="string">&quot;video&quot;</span>) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(video_element) = bin.by_name(<span class="string">"video"</span>) {
       <span class="macro">info!</span>(
-        <span class="string">&quot;recv pipeline has a video element, a sink pad will be requested from it for each participant&quot;
+        <span class="string">"recv pipeline has a video element, a sink pad will be requested from it for each participant"
       </span>);
       conference
         .set_remote_participant_video_sink_element(<span class="prelude-val">Some</span>(video_element))
@@ -938,12 +946,12 @@
     .on_participant(<span class="kw">move </span>|conference, participant| {
       <span class="kw">let </span>recv_pipeline_participant_template = recv_pipeline_participant_template.clone();
       Box::pin(<span class="kw">async move </span>{
-        <span class="macro">info!</span>(<span class="string">&quot;New participant: {:?}&quot;</span>, participant);
+        <span class="macro">info!</span>(<span class="string">"New participant: {:?}"</span>, participant);
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(template) = recv_pipeline_participant_template {
           <span class="kw">let </span>pipeline_description = template
             .replace(
-              <span class="string">&quot;{jid}&quot;</span>,
+              <span class="string">"{jid}"</span>,
               <span class="kw-2">&amp;</span>participant
                 .jid
                 .as_ref()
@@ -951,36 +959,44 @@
                 .unwrap_or_default(),
             )
             .replace(
-              <span class="string">&quot;{jid_user}&quot;</span>,
+              <span class="string">"{jid_user}"</span>,
               participant
                 .jid
                 .as_ref()
-                .and_then(|jid| jid.node.as_deref())
+                .and_then(|jid| jid.node_str())
                 .unwrap_or_default(),
             )
-            .replace(<span class="string">&quot;{participant_id}&quot;</span>, <span class="kw-2">&amp;</span>participant.muc_jid.resource)
-            .replace(<span class="string">&quot;{nick}&quot;</span>, <span class="kw-2">&amp;</span>participant.nick.unwrap_or_default());
+            .replace(<span class="string">"{participant_id}"</span>, <span class="kw-2">&amp;</span>participant.muc_jid.resource_str())
+            .replace(<span class="string">"{nick}"</span>, <span class="kw-2">&amp;</span>participant.nick.unwrap_or_default());
 
-          <span class="kw">let </span>bin = gstreamer::parse_bin_from_description(<span class="kw-2">&amp;</span>pipeline_description, <span class="bool-val">false</span>)
-            .context(<span class="string">&quot;failed to parse recv pipeline participant template&quot;</span>)<span class="question-mark">?</span>;
+          <span class="kw">let </span>bin = gstreamer::parse::bin_from_description(<span class="kw-2">&amp;</span>pipeline_description, <span class="bool-val">false</span>)
+            .context(<span class="string">"failed to parse recv pipeline participant template"</span>)<span class="question-mark">?</span>;
 
-          <span class="kw">if let </span><span class="prelude-val">Some</span>(audio_sink_element) = bin.by_name(<span class="string">&quot;audio&quot;</span>) {
-            <span class="kw">let </span>sink_pad = audio_sink_element.static_pad(<span class="string">&quot;sink&quot;</span>).context(
-              <span class="string">&quot;audio sink element in recv pipeline participant template has no sink pad&quot;</span>,
+          <span class="kw">if let </span><span class="prelude-val">Some</span>(audio_sink_element) = bin.by_name(<span class="string">"audio"</span>) {
+            <span class="kw">let </span>sink_pad = audio_sink_element.static_pad(<span class="string">"sink"</span>).context(
+              <span class="string">"audio sink element in recv pipeline participant template has no sink pad"</span>,
             )<span class="question-mark">?</span>;
-            bin.add_pad(<span class="kw-2">&amp;</span>GhostPad::with_target(<span class="prelude-val">Some</span>(<span class="string">&quot;audio&quot;</span>), <span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+            bin.add_pad(
+              <span class="kw-2">&amp;</span>GhostPad::builder_with_target(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?
+                </span>.name(<span class="string">"audio"</span>)
+                .build(),
+            )<span class="question-mark">?</span>;
           }
 
-          <span class="kw">if let </span><span class="prelude-val">Some</span>(video_sink_element) = bin.by_name(<span class="string">&quot;video&quot;</span>) {
-            <span class="kw">let </span>sink_pad = video_sink_element.static_pad(<span class="string">&quot;sink&quot;</span>).context(
-              <span class="string">&quot;video sink element in recv pipeline participant template has no sink pad&quot;</span>,
+          <span class="kw">if let </span><span class="prelude-val">Some</span>(video_sink_element) = bin.by_name(<span class="string">"video"</span>) {
+            <span class="kw">let </span>sink_pad = video_sink_element.static_pad(<span class="string">"sink"</span>).context(
+              <span class="string">"video sink element in recv pipeline participant template has no sink pad"</span>,
             )<span class="question-mark">?</span>;
-            bin.add_pad(<span class="kw-2">&amp;</span>GhostPad::with_target(<span class="prelude-val">Some</span>(<span class="string">&quot;video&quot;</span>), <span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+            bin.add_pad(
+              <span class="kw-2">&amp;</span>GhostPad::builder_with_target(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?
+                </span>.name(<span class="string">"video"</span>)
+                .build(),
+            )<span class="question-mark">?</span>;
           }
 
           bin.set_property(
-            <span class="string">&quot;name&quot;</span>,
-            <span class="macro">format!</span>(<span class="string">&quot;participant_{}&quot;</span>, participant.muc_jid.resource),
+            <span class="string">"name"</span>,
+            <span class="macro">format!</span>(<span class="string">"participant_{}"</span>, participant.muc_jid.resource()),
           );
           conference.add_bin(<span class="kw-2">&amp;</span>bin).<span class="kw">await</span><span class="question-mark">?</span>;
         }
@@ -993,7 +1009,7 @@
   conference
     .on_participant_left(<span class="kw">move </span>|_conference, participant| {
       Box::pin(<span class="kw">async move </span>{
-        <span class="macro">info!</span>(<span class="string">&quot;Participant left: {:?}&quot;</span>, participant);
+        <span class="macro">info!</span>(<span class="string">"Participant left: {:?}"</span>, participant);
         <span class="prelude-val">Ok</span>(())
       })
     })
@@ -1002,7 +1018,7 @@
   conference
     .on_colibri_message(<span class="kw">move </span>|_conference, message| {
       Box::pin(<span class="kw">async move </span>{
-        <span class="macro">info!</span>(<span class="string">&quot;Colibri message: {:?}&quot;</span>, message);
+        <span class="macro">info!</span>(<span class="string">"Colibri message: {:?}"</span>, message);
         <span class="prelude-val">Ok</span>(())
       })
     })
@@ -1017,12 +1033,12 @@
   tokio::spawn(<span class="kw">async move </span>{
     ctrl_c().<span class="kw">await</span>.unwrap();
 
-    <span class="macro">info!</span>(<span class="string">&quot;Exiting...&quot;</span>);
+    <span class="macro">info!</span>(<span class="string">"Exiting..."</span>);
 
     <span class="kw">match </span>timeout(Duration::from_secs(<span class="number">10</span>), conference_.leave()).<span class="kw">await </span>{
       <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(<span class="kw">_</span>)) =&gt; {},
-      <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(e)) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Error leaving conference: {:?}&quot;</span>, e),
-      <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;Timed out leaving conference&quot;</span>),
+      <span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(e)) =&gt; <span class="macro">warn!</span>(<span class="string">"Error leaving conference: {:?}"</span>, e),
+      <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">warn!</span>(<span class="string">"Timed out leaving conference"</span>),
     }
 
     main_loop_.quit();

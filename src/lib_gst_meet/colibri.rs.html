@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/colibri.rs`."><title>colibri.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0 (90c541806 2023-05-31)" data-search-js="search-e077946657036a58.js" data-settings-js="settings-298e1ea74db45b39.js" data-settings-css="settings-7bfb4c59cc6bc502.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../static.files/source-script-905937fbbdc8e9ea.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f61008743c98d196.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../lib_gst_meet/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/colibri.rs`."><title>colibri.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../lib_gst_meet/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -186,44 +188,44 @@
 <span class="kw">impl </span>ColibriChannel {
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">async fn </span>new(uri: <span class="kw-2">&amp;</span>str, tls_insecure: bool) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
     <span class="kw">let </span>uri: Uri = uri.parse()<span class="question-mark">?</span>;
-    <span class="kw">let </span>host = uri.host().context(<span class="string">&quot;invalid WebSocket URL: missing host&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>host = uri.host().context(<span class="string">"invalid WebSocket URL: missing host"</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>retries = <span class="number">0</span>;
     <span class="kw">let </span>colibri_websocket = <span class="kw">loop </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>key = [<span class="number">0u8</span>; <span class="number">16</span>];
       thread_rng().fill_bytes(<span class="kw-2">&amp;mut </span>key);
       <span class="kw">let </span>request = Request::get(<span class="kw-2">&amp;</span>uri)
-        .header(<span class="string">&quot;sec-websocket-key&quot;</span>, base64::encode(<span class="kw-2">&amp;</span>key))
-        .header(<span class="string">&quot;sec-websocket-version&quot;</span>, <span class="string">&quot;13&quot;</span>)
-        .header(<span class="string">&quot;host&quot;</span>, host)
+        .header(<span class="string">"sec-websocket-key"</span>, base64::encode(<span class="kw-2">&amp;</span>key))
+        .header(<span class="string">"sec-websocket-version"</span>, <span class="string">"13"</span>)
+        .header(<span class="string">"host"</span>, host)
         <span class="comment">// TODO: the server should probably not enforce this since non-browser clients are now possible
-        </span>.header(<span class="string">&quot;origin&quot;</span>, <span class="macro">format!</span>(<span class="string">&quot;https://{}&quot;</span>, host))
-        .header(<span class="string">&quot;connection&quot;</span>, <span class="string">&quot;Upgrade&quot;</span>)
-        .header(<span class="string">&quot;upgrade&quot;</span>, <span class="string">&quot;websocket&quot;</span>)
+        </span>.header(<span class="string">"origin"</span>, <span class="macro">format!</span>(<span class="string">"https://{}"</span>, host))
+        .header(<span class="string">"connection"</span>, <span class="string">"Upgrade"</span>)
+        .header(<span class="string">"upgrade"</span>, <span class="string">"websocket"</span>)
         .body(())<span class="question-mark">?</span>;
       <span class="kw">match </span>tokio_tungstenite::connect_async_tls_with_config(
         request,
         <span class="prelude-val">None</span>,
         <span class="bool-val">true</span>,
-        <span class="prelude-val">Some</span>(wss_connector(tls_insecure).context(<span class="string">&quot;failed to build TLS connector&quot;</span>)<span class="question-mark">?</span>),
+        <span class="prelude-val">Some</span>(wss_connector(tls_insecure).context(<span class="string">"failed to build TLS connector"</span>)<span class="question-mark">?</span>),
       )
       .<span class="kw">await
       </span>{
         <span class="prelude-val">Ok</span>((websocket, <span class="kw">_</span>)) =&gt; <span class="kw">break </span>websocket,
         <span class="prelude-val">Err</span>(e) =&gt; {
           <span class="kw">if </span>retries &lt; MAX_CONNECT_RETRIES {
-            <span class="macro">warn!</span>(<span class="string">&quot;Failed to connect Colibri WebSocket, will retry: {:?}&quot;</span>, e);
+            <span class="macro">warn!</span>(<span class="string">"Failed to connect Colibri WebSocket, will retry: {:?}"</span>, e);
             sleep(CONNECT_RETRY_SLEEP).<span class="kw">await</span>;
             retries += <span class="number">1</span>;
           }
           <span class="kw">else </span>{
-            <span class="kw">return </span><span class="prelude-val">Err</span>(e).context(<span class="string">&quot;Failed to connect Colibri WebSocket&quot;</span>);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(e).context(<span class="string">"Failed to connect Colibri WebSocket"</span>);
           }
         },
       }
     };
 
-    <span class="macro">info!</span>(<span class="string">&quot;Connected Colibri WebSocket&quot;</span>);
+    <span class="macro">info!</span>(<span class="string">"Connected Colibri WebSocket"</span>);
 
     <span class="kw">let </span>(<span class="kw-2">mut </span>colibri_sink, <span class="kw-2">mut </span>colibri_stream) = colibri_websocket.split();
     <span class="kw">let </span>recv_tx: Arc&lt;Mutex&lt;Vec&lt;mpsc::Sender&lt;ColibriMessage&gt;&gt;&gt;&gt; = Arc::new(Mutex::new(<span class="macro">vec!</span>[]));
@@ -233,30 +235,30 @@
         <span class="kw">while let </span><span class="prelude-val">Some</span>(msg) = colibri_stream.try_next().<span class="kw">await</span><span class="question-mark">? </span>{
           <span class="kw">match </span>msg {
             Message::Text(text) =&gt; {
-              <span class="macro">debug!</span>(<span class="string">&quot;Colibri &lt;&lt;&lt; {}&quot;</span>, text);
+              <span class="macro">debug!</span>(<span class="string">"Colibri &lt;&lt;&lt; {}"</span>, text);
               <span class="kw">match </span>serde_json::from_str::&lt;ColibriMessage&gt;(<span class="kw-2">&amp;</span>text) {
                 <span class="prelude-val">Ok</span>(colibri_msg) =&gt; {
                   <span class="kw">let </span><span class="kw-2">mut </span>txs = recv_tx.lock().<span class="kw">await</span>;
                   <span class="kw">let </span>txs_clone = txs.clone();
                   <span class="kw">for </span>(i, tx) <span class="kw">in </span>txs_clone.iter().enumerate().rev() {
                     <span class="kw">if </span>tx.send(colibri_msg.clone()).<span class="kw">await</span>.is_err() {
-                      <span class="macro">debug!</span>(<span class="string">&quot;colibri subscriber closed, removing&quot;</span>);
+                      <span class="macro">debug!</span>(<span class="string">"colibri subscriber closed, removing"</span>);
                       txs.remove(i);
                     }
                   }
                 },
                 <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(
-                  <span class="string">&quot;failed to parse frame on colibri websocket: {:?}\nframe: {}&quot;</span>,
+                  <span class="string">"failed to parse frame on colibri websocket: {:?}\nframe: {}"</span>,
                   e, text
                 ),
               }
             },
             Message::Binary(data) =&gt; <span class="macro">debug!</span>(
-              <span class="string">&quot;received unexpected {} byte binary frame on colibri websocket&quot;</span>,
+              <span class="string">"received unexpected {} byte binary frame on colibri websocket"</span>,
               data.len()
             ),
             Message::Close(<span class="kw">_</span>) =&gt; {
-              <span class="macro">debug!</span>(<span class="string">&quot;received close frame on colibri websocket&quot;</span>);
+              <span class="macro">debug!</span>(<span class="string">"received close frame on colibri websocket"</span>);
               <span class="comment">// TODO reconnect
               </span><span class="kw">break</span>;
             },
@@ -273,23 +275,23 @@
       <span class="kw">while let </span><span class="prelude-val">Some</span>(colibri_msg) = stream.next().<span class="kw">await </span>{
         <span class="kw">match </span>serde_json::to_string(<span class="kw-2">&amp;</span>colibri_msg) {
           <span class="prelude-val">Ok</span>(json) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">&quot;Colibri &gt;&gt;&gt; {}&quot;</span>, json);
+            <span class="macro">debug!</span>(<span class="string">"Colibri &gt;&gt;&gt; {}"</span>, json);
             <span class="kw">let </span>msg = Message::Text(json);
             colibri_sink.send(msg).<span class="kw">await</span><span class="question-mark">?</span>;
           },
-          <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">&quot;failed to serialise colibri message: {:?}&quot;</span>, e),
+          <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">warn!</span>(<span class="string">"failed to serialise colibri message: {:?}"</span>, e),
         }
       }
       <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(())
     });
 
     tokio::spawn(<span class="kw">async move </span>{
-      <span class="macro">tokio::select! </span>{
+      <span class="macro">tokio::select!</span> {
         res = recv_task =&gt; <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(e)) = res {
-          <span class="macro">error!</span>(<span class="string">&quot;colibri recv loop: {:?}&quot;</span>, e);
+          <span class="macro">error!</span>(<span class="string">"colibri recv loop: {:?}"</span>, e);
         },
         res = send_task =&gt; <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Err</span>(e)) = res {
-          <span class="macro">error!</span>(<span class="string">&quot;colibri send loop: {:?}&quot;</span>, e);
+          <span class="macro">error!</span>(<span class="string">"colibri send loop: {:?}"</span>, e);
         },
       };
     });

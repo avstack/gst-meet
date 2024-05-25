@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/jingle.rs`."><title>jingle.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0 (90c541806 2023-05-31)" data-search-js="search-e077946657036a58.js" data-settings-js="settings-298e1ea74db45b39.js" data-settings-css="settings-7bfb4c59cc6bc502.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../static.files/source-script-905937fbbdc8e9ea.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f61008743c98d196.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../lib_gst_meet/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/jingle.rs`."><title>jingle.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../lib_gst_meet/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1527,38 +1529,24 @@
 <a href="#1527" id="1527">1527</a>
 <a href="#1528" id="1528">1528</a>
 <a href="#1529" id="1529">1529</a>
-<a href="#1530" id="1530">1530</a>
-<a href="#1531" id="1531">1531</a>
-<a href="#1532" id="1532">1532</a>
-<a href="#1533" id="1533">1533</a>
-<a href="#1534" id="1534">1534</a>
-<a href="#1535" id="1535">1535</a>
-<a href="#1536" id="1536">1536</a>
-<a href="#1537" id="1537">1537</a>
-<a href="#1538" id="1538">1538</a>
-<a href="#1539" id="1539">1539</a>
-<a href="#1540" id="1540">1540</a>
-<a href="#1541" id="1541">1541</a>
-<a href="#1542" id="1542">1542</a>
-<a href="#1543" id="1543">1543</a>
-<a href="#1544" id="1544">1544</a>
-<a href="#1545" id="1545">1545</a>
-<a href="#1546" id="1546">1546</a>
-<a href="#1547" id="1547">1547</a>
-<a href="#1548" id="1548">1548</a>
-<a href="#1549" id="1549">1549</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::HashMap, fmt, net::SocketAddr};
 
 <span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
-<span class="kw">use </span>futures::stream::StreamExt;
-<span class="kw">use </span>glib::{Cast, ObjectExt, ToValue};
-<span class="kw">use </span>gstreamer::{
-  prelude::{ElementExt, ElementExtManual, GObjectExtManualGst, GstBinExt, GstObjectExt, PadExt},
-  Bin, Element, GhostPad,
+<span class="kw">use </span>futures::stream::StreamExt <span class="kw">as _</span>;
+<span class="kw">use </span>glib::{
+  object::ObjectExt <span class="kw">as _</span>,
+  prelude::{Cast <span class="kw">as _</span>, ToValue <span class="kw">as _</span>},
 };
-<span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
+<span class="kw">use </span>gstreamer::{
+  prelude::{
+    ElementExt <span class="kw">as _</span>, ElementExtManual <span class="kw">as _</span>, GObjectExtManualGst <span class="kw">as _</span>, GstBinExt <span class="kw">as _</span>,
+    GstBinExtManual <span class="kw">as _</span>, GstObjectExt <span class="kw">as _</span>, PadExt <span class="kw">as _</span>,
+  },
+  Bin, GhostPad,
+};
+<span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
 </span><span class="kw">use </span>gstreamer_rtp::RTPBuffer;
-<span class="kw">use </span>gstreamer_rtp::{prelude::RTPHeaderExtensionExt, RTPHeaderExtension};
+<span class="kw">use </span>gstreamer_rtp::{prelude::RTPHeaderExtensionExt <span class="kw">as _</span>, RTPHeaderExtension};
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>jitsi_xmpp_parsers::{
   jingle::{Action, Content, Description, Jingle, Transport},
@@ -1568,10 +1556,8 @@
   jingle_ssma::{<span class="self">self</span>, Parameter},
 };
 <span class="kw">use </span>nice_gst_meet <span class="kw">as </span>nice;
-<span class="kw">use </span>pem::Pem;
 <span class="kw">use </span>rand::random;
-<span class="kw">use </span>rcgen::{Certificate, CertificateParams, PKCS_ECDSA_P256_SHA256};
-<span class="kw">use </span>ring::digest::{digest, SHA256};
+<span class="kw">use </span>sha2::{Digest <span class="kw">as _</span>, Sha256};
 <span class="kw">use </span>tokio::{net::lookup_host, runtime::Handle, sync::oneshot, task::JoinHandle};
 <span class="kw">use </span>tracing::{debug, error, info, warn};
 <span class="kw">use </span>uuid::Uuid;
@@ -1596,9 +1582,9 @@
   util::generate_id,
 };
 
-<span class="kw">const </span>RTP_HDREXT_SSRC_AUDIO_LEVEL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;urn:ietf:params:rtp-hdrext:ssrc-audio-level&quot;</span>;
+<span class="kw">const </span>RTP_HDREXT_SSRC_AUDIO_LEVEL: <span class="kw-2">&amp;</span>str = <span class="string">"urn:ietf:params:rtp-hdrext:ssrc-audio-level"</span>;
 <span class="kw">const </span>RTP_HDREXT_TRANSPORT_CC: <span class="kw-2">&amp;</span>str =
-  <span class="string">&quot;http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01&quot;</span>;
+  <span class="string">"http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"</span>;
 
 <span class="kw">const </span>DEFAULT_STUN_PORT: u16 = <span class="number">3478</span>;
 <span class="kw">const </span>DEFAULT_TURNS_PORT: u16 = <span class="number">5349</span>;
@@ -1643,46 +1629,46 @@
 
   <span class="kw">fn </span>is_codec(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; bool {
     <span class="kw">match </span>name {
-      <span class="string">&quot;h264&quot; </span>=&gt; <span class="self">self</span>.name == CodecName::H264,
-      <span class="string">&quot;vp8&quot; </span>=&gt; <span class="self">self</span>.name == CodecName::Vp8,
-      <span class="string">&quot;vp9&quot; </span>=&gt; <span class="self">self</span>.name == CodecName::Vp9,
+      <span class="string">"h264" </span>=&gt; <span class="self">self</span>.name == CodecName::H264,
+      <span class="string">"vp8" </span>=&gt; <span class="self">self</span>.name == CodecName::Vp8,
+      <span class="string">"vp9" </span>=&gt; <span class="self">self</span>.name == CodecName::Vp9,
       <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
     }
   }
 
-  <span class="kw">fn </span>encoding_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+  <span class="kw">fn </span>encoding_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
     <span class="kw">match </span><span class="self">self</span>.name {
-      CodecName::Opus =&gt; <span class="string">&quot;opus&quot;</span>,
-      CodecName::H264 =&gt; <span class="string">&quot;H264&quot;</span>,
-      CodecName::Vp8 =&gt; <span class="string">&quot;VP8&quot;</span>,
-      CodecName::Vp9 =&gt; <span class="string">&quot;VP9&quot;</span>,
+      CodecName::Opus =&gt; <span class="string">"opus"</span>,
+      CodecName::H264 =&gt; <span class="string">"H264"</span>,
+      CodecName::Vp8 =&gt; <span class="string">"VP8"</span>,
+      CodecName::Vp9 =&gt; <span class="string">"VP9"</span>,
     }
   }
 
-  <span class="kw">fn </span>depayloader_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+  <span class="kw">fn </span>depayloader_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
     <span class="kw">match </span><span class="self">self</span>.name {
-      CodecName::Opus =&gt; <span class="string">&quot;rtpopusdepay&quot;</span>,
-      CodecName::H264 =&gt; <span class="string">&quot;rtph264depay&quot;</span>,
-      CodecName::Vp8 =&gt; <span class="string">&quot;rtpvp8depay&quot;</span>,
-      CodecName::Vp9 =&gt; <span class="string">&quot;rtpvp9depay&quot;</span>,
+      CodecName::Opus =&gt; <span class="string">"rtpopusdepay"</span>,
+      CodecName::H264 =&gt; <span class="string">"rtph264depay"</span>,
+      CodecName::Vp8 =&gt; <span class="string">"rtpvp8depay"</span>,
+      CodecName::Vp9 =&gt; <span class="string">"rtpvp9depay"</span>,
     }
   }
 
-  <span class="kw">fn </span>decoder_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+  <span class="kw">fn </span>decoder_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
     <span class="kw">match </span><span class="self">self</span>.name {
-      CodecName::Opus =&gt; <span class="string">&quot;opusdec&quot;</span>,
-      CodecName::H264 =&gt; <span class="string">&quot;avdec_h264&quot;</span>,
-      CodecName::Vp8 =&gt; <span class="string">&quot;vp8dec&quot;</span>,
-      CodecName::Vp9 =&gt; <span class="string">&quot;vp9dec&quot;</span>,
+      CodecName::Opus =&gt; <span class="string">"opusdec"</span>,
+      CodecName::H264 =&gt; <span class="string">"avdec_h264"</span>,
+      CodecName::Vp8 =&gt; <span class="string">"vp8dec"</span>,
+      CodecName::Vp9 =&gt; <span class="string">"vp9dec"</span>,
     }
   }
 
-  <span class="kw">fn </span>payloader_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+  <span class="kw">fn </span>payloader_name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
     <span class="kw">match </span><span class="self">self</span>.name {
-      CodecName::Opus =&gt; <span class="string">&quot;rtpopuspay&quot;</span>,
-      CodecName::H264 =&gt; <span class="string">&quot;rtph264pay&quot;</span>,
-      CodecName::Vp8 =&gt; <span class="string">&quot;rtpvp8pay&quot;</span>,
-      CodecName::Vp9 =&gt; <span class="string">&quot;rtpvp9pay&quot;</span>,
+      CodecName::Opus =&gt; <span class="string">"rtpopuspay"</span>,
+      CodecName::H264 =&gt; <span class="string">"rtph264pay"</span>,
+      CodecName::Vp8 =&gt; <span class="string">"rtpvp8pay"</span>,
+      CodecName::Vp9 =&gt; <span class="string">"rtpvp9pay"</span>,
     }
   }
 }
@@ -1708,8 +1694,8 @@
 }
 
 <span class="kw">impl </span>fmt::Debug <span class="kw">for </span>JingleSession {
-  <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
-    f.debug_struct(<span class="string">&quot;JingleSession&quot;</span>).finish()
+  <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
+    f.debug_struct(<span class="string">"JingleSession"</span>).finish()
   }
 }
 
@@ -1727,10 +1713,10 @@
   }
 
   <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pause_all_sinks(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(rtpbin) = <span class="self">self</span>.pipeline.by_name(<span class="string">&quot;rtpbin&quot;</span>) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(rtpbin) = <span class="self">self</span>.pipeline.by_name(<span class="string">"rtpbin"</span>) {
       rtpbin.foreach_src_pad(|<span class="kw">_</span>, pad| {
-        <span class="kw">let </span>pad_name: String = pad.property(<span class="string">&quot;name&quot;</span>);
-        <span class="kw">if </span>pad_name.starts_with(<span class="string">&quot;recv_rtp_src_0_&quot;</span>) {
+        <span class="kw">let </span>pad_name: String = pad.property(<span class="string">"name"</span>);
+        <span class="kw">if </span>pad_name.starts_with(<span class="string">"recv_rtp_src_0_"</span>) {
           <span class="kw">if let </span><span class="prelude-val">Some</span>(peer_pad) = pad.peer() {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(element) = peer_pad.parent_element() {
               element.set_state(gstreamer::State::Paused).unwrap();
@@ -1758,10 +1744,10 @@
     <span class="kw">let </span><span class="kw-2">mut </span>audio_hdrext_transport_cc = <span class="prelude-val">None</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>video_hdrext_transport_cc = <span class="prelude-val">None</span>;
 
-    <span class="kw">if </span>description.media == <span class="string">&quot;audio&quot; </span>{
+    <span class="kw">if </span>description.media == <span class="string">"audio" </span>{
       <span class="kw">for </span>pt <span class="kw">in </span>description.payload_types.iter() {
         <span class="comment">// We don’t support any static codec, so name MUST be set.
-        </span><span class="kw">if </span>pt.name.as_deref() == <span class="prelude-val">Some</span>(<span class="string">&quot;opus&quot;</span>) {
+        </span><span class="kw">if </span>pt.name.as_deref() == <span class="prelude-val">Some</span>(<span class="string">"opus"</span>) {
           opus = <span class="prelude-val">Some</span>(Codec {
             name: CodecName::Opus,
             pt: pt.id,
@@ -1779,12 +1765,12 @@
         }
       }
     }
-    <span class="kw">else if </span>description.media == <span class="string">&quot;video&quot; </span>{
+    <span class="kw">else if </span>description.media == <span class="string">"video" </span>{
       <span class="kw">for </span>pt <span class="kw">in </span>description.payload_types.iter() {
         <span class="comment">// We don’t support any static codec, so name MUST be set.
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(name) = <span class="kw-2">&amp;</span>pt.name {
           <span class="kw">match </span>name.as_str() {
-            <span class="string">&quot;H264&quot; </span>=&gt; {
+            <span class="string">"H264" </span>=&gt; {
               h264 = <span class="prelude-val">Some</span>(Codec {
                 name: CodecName::H264,
                 pt: pt.id,
@@ -1792,7 +1778,7 @@
                 rtcp_fbs: pt.rtcp_fbs.clone(),
               });
             },
-            <span class="string">&quot;VP8&quot; </span>=&gt; {
+            <span class="string">"VP8" </span>=&gt; {
               vp8 = <span class="prelude-val">Some</span>(Codec {
                 name: CodecName::Vp8,
                 pt: pt.id,
@@ -1800,7 +1786,7 @@
                 rtcp_fbs: pt.rtcp_fbs.clone(),
               });
             },
-            <span class="string">&quot;VP9&quot; </span>=&gt; {
+            <span class="string">"VP9" </span>=&gt; {
               vp9 = <span class="prelude-val">Some</span>(Codec {
                 name: CodecName::Vp9,
                 pt: pt.id,
@@ -1814,9 +1800,9 @@
       }
       <span class="kw">for </span>pt <span class="kw">in </span>description.payload_types.iter() {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(name) = <span class="kw-2">&amp;</span>pt.name {
-          <span class="kw">if </span>name == <span class="string">&quot;rtx&quot; </span>{
+          <span class="kw">if </span>name == <span class="string">"rtx" </span>{
             <span class="kw">for </span>param <span class="kw">in </span>pt.parameters.iter() {
-              <span class="kw">if </span>param.name == <span class="string">&quot;apt&quot; </span>{
+              <span class="kw">if </span>param.name == <span class="string">"apt" </span>{
                 <span class="kw">let </span>apt_pt: u8 = param.value.parse()<span class="question-mark">?</span>;
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(h264) = <span class="kw-2">&amp;mut </span>h264 {
                   <span class="kw">if </span>apt_pt == h264.pt {
@@ -1845,7 +1831,7 @@
       }
     }
     <span class="kw">else </span>{
-      <span class="macro">debug!</span>(<span class="string">&quot;skipping media: {}&quot;</span>, description.media);
+      <span class="macro">debug!</span>(<span class="string">"skipping media: {}"</span>, description.media);
       <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
     }
 
@@ -1855,17 +1841,17 @@
       <span class="kw">let </span>owner = ssrc
         .info
         .as_ref()
-        .context(<span class="string">&quot;missing ssrc-info&quot;</span>)<span class="question-mark">?
+        .context(<span class="string">"missing ssrc-info"</span>)<span class="question-mark">?
         </span>.owner
         .clone();
 
-      <span class="macro">debug!</span>(<span class="string">&quot;adding ssrc to remote_ssrc_map: {:?}&quot;</span>, ssrc);
+      <span class="macro">debug!</span>(<span class="string">"adding ssrc to remote_ssrc_map: {:?}"</span>, ssrc);
       remote_ssrc_map.insert(
         ssrc.id,
         Source {
           ssrc: ssrc.id,
           participant_id: participant_id_for_owner(owner)<span class="question-mark">?</span>,
-          media_type: <span class="kw">if </span>description.media == <span class="string">&quot;audio&quot; </span>{
+          media_type: <span class="kw">if </span>description.media == <span class="string">"audio" </span>{
             MediaType::Audio
           }
           <span class="kw">else </span>{
@@ -1895,21 +1881,23 @@
     <span class="kw">let </span>maybe_stun = conference
       .external_services
       .iter()
-      .find(|svc| svc.r#type == <span class="string">&quot;stun&quot;</span>);
+      .find(|svc| svc.r#type == <span class="string">"stun"</span>);
 
     <span class="kw">let </span>stun_addr = <span class="kw">if let </span><span class="prelude-val">Some</span>(stun) = maybe_stun {
+      <span class="macro">debug!</span>(<span class="string">"resolving address for STUN server: {}"</span>, stun.host);
       lookup_host(<span class="macro">format!</span>(
-        <span class="string">&quot;{}:{}&quot;</span>,
+        <span class="string">"{}:{}"</span>,
         stun.host,
         stun.port.unwrap_or(DEFAULT_STUN_PORT)
       ))
-      .<span class="kw">await</span><span class="question-mark">?
+      .<span class="kw">await
+      </span>.context(<span class="string">"failed to resolve STUN server hostname"</span>)<span class="question-mark">?
       </span>.next()
     }
     <span class="kw">else </span>{
       <span class="prelude-val">None
     </span>};
-    <span class="macro">debug!</span>(<span class="string">&quot;STUN address: {:?}&quot;</span>, stun_addr);
+    <span class="macro">debug!</span>(<span class="string">"STUN address: {:?}"</span>, stun_addr);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>((stun_addr, stun_port)) = stun_addr.map(|sa| (sa.ip().to_string(), sa.port())) {
       ice_agent.set_stun_server(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>stun_addr));
@@ -1919,11 +1907,11 @@
     <span class="kw">let </span>maybe_turn = conference
       .external_services
       .iter()
-      .find(|svc| svc.r#type == <span class="string">&quot;turns&quot;</span>);
+      .find(|svc| svc.r#type == <span class="string">"turns"</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(turn_server) = maybe_turn {
       <span class="kw">let </span>maybe_addr = lookup_host(<span class="macro">format!</span>(
-        <span class="string">&quot;{}:{}&quot;</span>,
+        <span class="string">"{}:{}"</span>,
         turn_server.host,
         turn_server.port.unwrap_or(DEFAULT_TURNS_PORT)
       ))
@@ -1931,7 +1919,7 @@
       </span>.next();
 
       <span class="kw">if let </span><span class="prelude-val">Some</span>(addr) = maybe_addr {
-        <span class="macro">debug!</span>(<span class="string">&quot;TURN address: {:?}&quot;</span>, addr);
+        <span class="macro">debug!</span>(<span class="string">"TURN address: {:?}"</span>, addr);
         ice_agent.set_relay_info(
           ice_stream_id,
           ice_component_id,
@@ -1948,35 +1936,35 @@
       ice_stream_id,
       ice_component_id,
       <span class="kw-2">&amp;</span>conference.glib_main_context,
-      |<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>, s| <span class="macro">debug!</span>(<span class="string">&quot;ICE nice_agent_attach_recv cb: {}&quot;</span>, s),
+      |<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>, s| <span class="macro">debug!</span>(<span class="string">"ICE nice_agent_attach_recv cb: {}"</span>, s),
     ) {
-      <span class="macro">warn!</span>(<span class="string">&quot;nice_agent_attach_recv failed&quot;</span>);
+      <span class="macro">warn!</span>(<span class="string">"nice_agent_attach_recv failed"</span>);
     }
 
-    <span class="macro">debug!</span>(<span class="string">&quot;ice_agent={:?}&quot;</span>, ice_agent);
-    <span class="macro">debug!</span>(<span class="string">&quot;ice_stream_id={}&quot;</span>, ice_stream_id);
-    <span class="macro">debug!</span>(<span class="string">&quot;ice_component_id={}&quot;</span>, ice_component_id);
+    <span class="macro">debug!</span>(<span class="string">"ice_agent={:?}"</span>, ice_agent);
+    <span class="macro">debug!</span>(<span class="string">"ice_stream_id={}"</span>, ice_stream_id);
+    <span class="macro">debug!</span>(<span class="string">"ice_component_id={}"</span>, ice_component_id);
 
     <span class="kw">if let </span>(<span class="prelude-val">Some</span>(ufrag), <span class="prelude-val">Some</span>(pwd)) = (<span class="kw-2">&amp;</span>transport.ufrag, <span class="kw-2">&amp;</span>transport.pwd) {
-      <span class="macro">debug!</span>(<span class="string">&quot;setting ICE remote credentials&quot;</span>);
+      <span class="macro">debug!</span>(<span class="string">"setting ICE remote credentials"</span>);
       <span class="kw">if </span>!ice_agent.set_remote_credentials(ice_stream_id, ufrag, pwd) {
-        <span class="macro">warn!</span>(<span class="string">&quot;nice_agent_set_remote_candidates failed&quot;</span>);
+        <span class="macro">warn!</span>(<span class="string">"nice_agent_set_remote_candidates failed"</span>);
       }
     }
 
     ice_agent.connect_candidate_gathering_done(<span class="kw">move </span>|_agent, candidates| {
-      <span class="macro">debug!</span>(<span class="string">&quot;ICE candidate-gathering-done {:?}&quot;</span>, candidates);
+      <span class="macro">debug!</span>(<span class="string">"ICE candidate-gathering-done {:?}"</span>, candidates);
     });
 
-    <span class="macro">debug!</span>(<span class="string">&quot;gathering ICE candidates&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">"gathering ICE candidates"</span>);
     <span class="kw">if </span>!ice_agent.gather_candidates(ice_stream_id) {
-      <span class="macro">warn!</span>(<span class="string">&quot;nice_agent_gather_candidates failed&quot;</span>);
+      <span class="macro">warn!</span>(<span class="string">"nice_agent_gather_candidates failed"</span>);
     }
 
     <span class="kw">if let </span>(<span class="prelude-val">Some</span>(ufrag), <span class="prelude-val">Some</span>(pwd), remote_candidates) =
       (<span class="kw-2">&amp;</span>transport.ufrag, <span class="kw-2">&amp;</span>transport.pwd, <span class="kw-2">&amp;</span>transport.candidates)
     {
-      <span class="macro">debug!</span>(<span class="string">&quot;setting ICE remote candidates: {:?}&quot;</span>, remote_candidates);
+      <span class="macro">debug!</span>(<span class="string">"setting ICE remote candidates: {:?}"</span>, remote_candidates);
       <span class="kw">let </span>remote_candidates: Vec&lt;<span class="kw">_</span>&gt; = remote_candidates
         .iter()
         .map(|c| {
@@ -1993,14 +1981,14 @@
           candidate.set_priority(c.priority);
           candidate.set_username(ufrag);
           candidate.set_password(pwd);
-          <span class="macro">debug!</span>(<span class="string">&quot;candidate: {:?}&quot;</span>, candidate);
+          <span class="macro">debug!</span>(<span class="string">"candidate: {:?}"</span>, candidate);
           candidate
         })
         .collect();
       <span class="kw">let </span>candidate_refs: Vec&lt;<span class="kw">_</span>&gt; = remote_candidates.iter().collect();
       <span class="kw">let </span>res = ice_agent.set_remote_candidates(ice_stream_id, ice_component_id, <span class="kw-2">&amp;</span>candidate_refs);
       <span class="kw">if </span>res &lt; remote_candidates.len() <span class="kw">as </span>i32 {
-        <span class="macro">warn!</span>(<span class="string">&quot;some remote candidates failed to add: {}&quot;</span>, res);
+        <span class="macro">warn!</span>(<span class="string">"some remote candidates failed to add: {}"</span>, res);
       }
     }
 
@@ -2011,10 +1999,10 @@
     <span class="kw">let </span>initiator = jingle
       .initiator
       .as_ref()
-      .ok_or_else(|| <span class="macro">anyhow!</span>(<span class="string">&quot;session-initiate with no initiator&quot;</span>))<span class="question-mark">?
+      .context(<span class="string">"session-initiate with no initiator"</span>)<span class="question-mark">?
       </span>.clone();
 
-    <span class="macro">debug!</span>(<span class="string">&quot;Received Jingle session-initiate from {}&quot;</span>, initiator);
+    <span class="macro">debug!</span>(<span class="string">"Received Jingle session-initiate from {}"</span>, initiator);
 
     <span class="kw">let </span><span class="kw-2">mut </span>ice_transport = <span class="prelude-val">None</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>codecs = <span class="macro">vec!</span>[];
@@ -2042,148 +2030,147 @@
       <span class="kw">if let </span><span class="prelude-val">Some</span>(Transport::IceUdp(transport)) = <span class="kw-2">&amp;</span>content.transport {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(fingerprint) = <span class="kw-2">&amp;</span>transport.fingerprint {
           <span class="kw">if </span>fingerprint.hash != Algo::Sha_256 {
-            <span class="macro">bail!</span>(<span class="string">&quot;unsupported fingerprint hash: {:?}&quot;</span>, fingerprint.hash);
+            <span class="macro">bail!</span>(<span class="string">"unsupported fingerprint hash: {:?}"</span>, fingerprint.hash);
           }
         }
         ice_transport = <span class="prelude-val">Some</span>(transport);
       }
     }
 
-    <span class="kw">let </span>ice_transport = ice_transport.context(<span class="string">&quot;missing ICE transport&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>ice_transport = ice_transport.context(<span class="string">"missing ICE transport"</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(remote_fingerprint) = <span class="kw-2">&amp;</span>ice_transport.fingerprint {
       <span class="macro">warn!</span>(
-        <span class="string">&quot;Remote DTLS fingerprint (verification not implemented yet): {:?}&quot;</span>,
+        <span class="string">"Remote DTLS fingerprint (verification not implemented yet): {:?}"</span>,
         remote_fingerprint
       );
     }
 
-    <span class="kw">let </span><span class="kw-2">mut </span>dtls_cert_params = CertificateParams::new(<span class="macro">vec!</span>[<span class="string">&quot;gst-meet&quot;</span>.to_owned()]);
-    dtls_cert_params.alg = <span class="kw-2">&amp;</span>PKCS_ECDSA_P256_SHA256;
-    <span class="kw">let </span>dtls_cert = Certificate::from_params(dtls_cert_params)<span class="question-mark">?</span>;
-    <span class="kw">let </span>dtls_cert_der = dtls_cert.serialize_der()<span class="question-mark">?</span>;
-    <span class="kw">let </span>fingerprint = digest(<span class="kw-2">&amp;</span>SHA256, <span class="kw-2">&amp;</span>dtls_cert_der).as_ref().to_vec();
+    <span class="kw">let </span>dtls_key_pair = rcgen::KeyPair::generate()<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>dtls_cert_params = rcgen::CertificateParams::new(<span class="macro">vec!</span>[<span class="string">"gst-meet"</span>.to_owned()])<span class="question-mark">?</span>;
+    <span class="kw">let </span>dtls_cert = dtls_cert_params.self_signed(<span class="kw-2">&amp;</span>dtls_key_pair)<span class="question-mark">?</span>;
+    <span class="kw">let </span>fingerprint: Vec&lt;u8&gt; = Sha256::digest(dtls_cert.der()).to_vec();
     <span class="kw">let </span>fingerprint_str =
-      itertools::join(fingerprint.iter().map(|byte| <span class="macro">format!</span>(<span class="string">&quot;{:X}&quot;</span>, byte)), <span class="string">&quot;:&quot;</span>);
-    <span class="kw">let </span>dtls_cert_pem = pem::encode(<span class="kw-2">&amp;</span>Pem::new(<span class="string">&quot;CERTIFICATE&quot;</span>, dtls_cert_der));
-    <span class="kw">let </span>dtls_private_key_pem = pem::encode(<span class="kw-2">&amp;</span>Pem::new(<span class="string">&quot;PRIVATE KEY&quot;</span>, dtls_cert.serialize_private_key_der()));
-    <span class="macro">debug!</span>(<span class="string">&quot;Local DTLS certificate:\n{}&quot;</span>, dtls_cert_pem);
-    <span class="macro">debug!</span>(<span class="string">&quot;Local DTLS fingerprint: {}&quot;</span>, fingerprint_str);
+      itertools::join(fingerprint.iter().map(|byte| <span class="macro">format!</span>(<span class="string">"{:X}"</span>, byte)), <span class="string">":"</span>);
+    <span class="kw">let </span>dtls_cert_pem = dtls_cert.pem();
+    <span class="kw">let </span>dtls_private_key_pem = dtls_key_pair.serialize_pem();
+    <span class="macro">debug!</span>(<span class="string">"Local DTLS certificate:\n{}"</span>, dtls_cert_pem);
+    <span class="macro">debug!</span>(<span class="string">"Local DTLS fingerprint: {}"</span>, fingerprint_str);
 
     <span class="kw">let </span>audio_ssrc: u32 = random();
     <span class="kw">let </span>video_ssrc: u32 = random();
     <span class="kw">let </span>video_rtx_ssrc: u32 = random();
 
-    <span class="macro">debug!</span>(<span class="string">&quot;audio SSRC: {}&quot;</span>, audio_ssrc);
-    <span class="macro">debug!</span>(<span class="string">&quot;video SSRC: {}&quot;</span>, video_ssrc);
-    <span class="macro">debug!</span>(<span class="string">&quot;video RTX SSRC: {}&quot;</span>, video_rtx_ssrc);
+    <span class="macro">debug!</span>(<span class="string">"audio SSRC: {}"</span>, audio_ssrc);
+    <span class="macro">debug!</span>(<span class="string">"video SSRC: {}"</span>, video_ssrc);
+    <span class="macro">debug!</span>(<span class="string">"video RTX SSRC: {}"</span>, video_rtx_ssrc);
 
     <span class="kw">let </span>(ice_agent, ice_stream_id, ice_component_id) =
       JingleSession::setup_ice(conference, ice_transport).<span class="kw">await</span><span class="question-mark">?</span>;
 
     <span class="kw">let </span>(ice_local_ufrag, ice_local_pwd) = ice_agent
       .local_credentials(ice_stream_id)
-      .context(<span class="string">&quot;no local ICE credentials&quot;</span>)<span class="question-mark">?</span>;
+      .context(<span class="string">"no local ICE credentials"</span>)<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;building gstreamer pipeline&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">"building gstreamer pipeline"</span>);
 
-    <span class="kw">let </span>pipeline = gstreamer::Pipeline::new(<span class="prelude-val">None</span>);
+    <span class="kw">let </span>pipeline = gstreamer::Pipeline::new();
 
-    <span class="kw">let </span>rtpbin = gstreamer::ElementFactory::make(<span class="string">&quot;rtpbin&quot;</span>)
-      .name(<span class="string">&quot;rtpbin&quot;</span>)
-      .property_from_str(<span class="string">&quot;rtp-profile&quot;</span>, <span class="string">&quot;savpf&quot;</span>)
-      .property(<span class="string">&quot;autoremove&quot;</span>, <span class="bool-val">true</span>)
-      .property(<span class="string">&quot;do-lost&quot;</span>, <span class="bool-val">true</span>)
-      .property(<span class="string">&quot;do-sync-event&quot;</span>, <span class="bool-val">true</span>)
+    <span class="kw">let </span>rtpbin = gstreamer::ElementFactory::make(<span class="string">"rtpbin"</span>)
+      .name(<span class="string">"rtpbin"</span>)
+      .property_from_str(<span class="string">"rtp-profile"</span>, <span class="string">"savpf"</span>)
+      .property(<span class="string">"autoremove"</span>, <span class="bool-val">true</span>)
+      .property(<span class="string">"do-lost"</span>, <span class="bool-val">true</span>)
+      .property(<span class="string">"do-sync-event"</span>, <span class="bool-val">true</span>)
       .build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>rtpbin)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>nicesrc = gstreamer::ElementFactory::make(<span class="string">&quot;nicesrc&quot;</span>)
-      .property(<span class="string">&quot;stream&quot;</span>, ice_stream_id)
-      .property(<span class="string">&quot;component&quot;</span>, ice_component_id)
-      .property(<span class="string">&quot;agent&quot;</span>, <span class="kw-2">&amp;</span>ice_agent)
+    <span class="kw">let </span>nicesrc = gstreamer::ElementFactory::make(<span class="string">"nicesrc"</span>)
+      .property(<span class="string">"stream"</span>, ice_stream_id)
+      .property(<span class="string">"component"</span>, ice_component_id)
+      .property(<span class="string">"agent"</span>, <span class="kw-2">&amp;</span>ice_agent)
       .build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>nicesrc)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>nicesink = gstreamer::ElementFactory::make(<span class="string">&quot;nicesink&quot;</span>)
-      .property(<span class="string">&quot;stream&quot;</span>, ice_stream_id)
-      .property(<span class="string">&quot;component&quot;</span>, ice_component_id)
-      .property(<span class="string">&quot;agent&quot;</span>, <span class="kw-2">&amp;</span>ice_agent)
+    <span class="kw">let </span>nicesink = gstreamer::ElementFactory::make(<span class="string">"nicesink"</span>)
+      .property(<span class="string">"stream"</span>, ice_stream_id)
+      .property(<span class="string">"component"</span>, ice_component_id)
+      .property(<span class="string">"agent"</span>, <span class="kw-2">&amp;</span>ice_agent)
       .build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>nicesink)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>dtls_srtp_connection_id = <span class="string">&quot;gst-meet&quot;</span>;
+    <span class="kw">let </span>dtls_srtp_connection_id = <span class="string">"gst-meet"</span>;
 
-    <span class="kw">let </span>dtlssrtpenc = gstreamer::ElementFactory::make(<span class="string">&quot;dtlssrtpenc&quot;</span>)
-      .property(<span class="string">&quot;connection-id&quot;</span>, dtls_srtp_connection_id)
-      .property(<span class="string">&quot;is-client&quot;</span>, <span class="bool-val">true</span>)
+    <span class="kw">let </span>dtlssrtpenc = gstreamer::ElementFactory::make(<span class="string">"dtlssrtpenc"</span>)
+      .property(<span class="string">"connection-id"</span>, dtls_srtp_connection_id)
+      .property(<span class="string">"is-client"</span>, <span class="bool-val">true</span>)
       .build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>dtlssrtpenc)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>dtlssrtpdec = gstreamer::ElementFactory::make(<span class="string">&quot;dtlssrtpdec&quot;</span>)
-      .property(<span class="string">&quot;connection-id&quot;</span>, dtls_srtp_connection_id)
+    <span class="kw">let </span>dtlssrtpdec = gstreamer::ElementFactory::make(<span class="string">"dtlssrtpdec"</span>)
+      .property(<span class="string">"connection-id"</span>, dtls_srtp_connection_id)
       .property(
-        <span class="string">&quot;pem&quot;</span>,
-        <span class="macro">format!</span>(<span class="string">&quot;{}\n{}&quot;</span>, dtls_cert_pem, dtls_private_key_pem),
+        <span class="string">"pem"</span>,
+        <span class="macro">format!</span>(<span class="string">"{}\n{}"</span>, dtls_cert_pem, dtls_private_key_pem),
       )
       .build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>dtlssrtpdec)<span class="question-mark">?</span>;
 
     {
       <span class="kw">let </span>codecs = codecs.clone();
-      rtpbin.connect(<span class="string">&quot;request-pt-map&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+      rtpbin.connect(<span class="string">"request-pt-map"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
         <span class="kw">let </span>f = || {
-          <span class="macro">debug!</span>(<span class="string">&quot;rtpbin request-pt-map {:?}&quot;</span>, values);
+          <span class="macro">debug!</span>(<span class="string">"rtpbin request-pt-map {:?}"</span>, values);
           <span class="kw">let </span>pt = values[<span class="number">2</span>].get::&lt;u32&gt;()<span class="question-mark">? </span><span class="kw">as </span>u8;
-          <span class="kw">let </span><span class="kw-2">mut </span>caps = gstreamer::Caps::builder(<span class="string">&quot;application/x-rtp&quot;</span>).field(<span class="string">&quot;payload&quot;</span>, pt <span class="kw">as </span>i32);
+          <span class="kw">let </span><span class="kw-2">mut </span>caps = gstreamer::Caps::builder(<span class="string">"application/x-rtp"</span>).field(<span class="string">"payload"</span>, pt <span class="kw">as </span>i32);
           <span class="kw">for </span>codec <span class="kw">in </span>codecs.iter() {
             <span class="kw">if </span>codec.is(pt) {
               <span class="kw">if </span>codec.is_audio() {
                 caps = caps
-                  .field(<span class="string">&quot;media&quot;</span>, <span class="string">&quot;audio&quot;</span>)
-                  .field(<span class="string">&quot;encoding-name&quot;</span>, <span class="string">&quot;OPUS&quot;</span>)
-                  .field(<span class="string">&quot;clock-rate&quot;</span>, <span class="number">48000</span>);
+                  .field(<span class="string">"media"</span>, <span class="string">"audio"</span>)
+                  .field(<span class="string">"encoding-name"</span>, <span class="string">"OPUS"</span>)
+                  .field(<span class="string">"clock-rate"</span>, <span class="number">48000</span>);
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(hdrext) = audio_hdrext_ssrc_audio_level {
-                  caps = caps.field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;extmap-{}&quot;</span>, hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
+                  caps = caps.field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"extmap-{}"</span>, hdrext), RTP_HDREXT_SSRC_AUDIO_LEVEL);
                 }
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(hdrext) = audio_hdrext_transport_cc {
-                  caps = caps.field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;extmap-{}&quot;</span>, hdrext), RTP_HDREXT_TRANSPORT_CC);
+                  caps = caps.field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"extmap-{}"</span>, hdrext), RTP_HDREXT_TRANSPORT_CC);
                 }
               }
               <span class="kw">else </span>{
                 <span class="comment">// A video codec, as the only audio codec we support is Opus.
                 </span>caps = caps
-                  .field(<span class="string">&quot;media&quot;</span>, <span class="string">&quot;video&quot;</span>)
-                  .field(<span class="string">&quot;clock-rate&quot;</span>, <span class="number">90000</span>)
-                  .field(<span class="string">&quot;encoding-name&quot;</span>, codec.encoding_name())
-                  .field(<span class="string">&quot;rtcp-fb-nack-pli&quot;</span>, <span class="bool-val">true</span>);
+                  .field(<span class="string">"media"</span>, <span class="string">"video"</span>)
+                  .field(<span class="string">"clock-rate"</span>, <span class="number">90000</span>)
+                  .field(<span class="string">"encoding-name"</span>, codec.encoding_name())
+                  .field(<span class="string">"rtcp-fb-nack-pli"</span>, <span class="bool-val">true</span>);
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(hdrext) = video_hdrext_transport_cc {
-                  caps = caps.field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;extmap-{}&quot;</span>, hdrext), RTP_HDREXT_TRANSPORT_CC);
+                  caps = caps.field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"extmap-{}"</span>, hdrext), RTP_HDREXT_TRANSPORT_CC);
                 }
               }
               <span class="kw">return </span><span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(<span class="prelude-val">Some</span>(caps.build()));
             }
             <span class="kw">else if </span>codec.is_rtx(pt) {
               caps = caps
-                .field(<span class="string">&quot;media&quot;</span>, <span class="string">&quot;video&quot;</span>)
-                .field(<span class="string">&quot;clock-rate&quot;</span>, <span class="number">90000</span>)
-                .field(<span class="string">&quot;encoding-name&quot;</span>, <span class="string">&quot;RTX&quot;</span>)
-                .field(<span class="string">&quot;apt&quot;</span>, codec.pt);
+                .field(<span class="string">"media"</span>, <span class="string">"video"</span>)
+                .field(<span class="string">"clock-rate"</span>, <span class="number">90000</span>)
+                .field(<span class="string">"encoding-name"</span>, <span class="string">"RTX"</span>)
+                .field(<span class="string">"apt"</span>, codec.pt);
               <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(caps.build()));
             }
           }
 
-          <span class="macro">warn!</span>(<span class="string">&quot;unknown payload type: {}&quot;</span>, pt);
+          <span class="macro">warn!</span>(<span class="string">"unknown payload type: {}"</span>, pt);
           <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
         };
         <span class="kw">match </span>f() {
           <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(caps)) =&gt; {
-            <span class="macro">debug!</span>(<span class="string">&quot;mapped pt to caps: {:?}&quot;</span>, caps);
+            <span class="macro">debug!</span>(<span class="string">"mapped pt to caps: {:?}"</span>, caps);
             <span class="prelude-val">Some</span>(caps.to_value())
           },
           <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
           <span class="prelude-val">Err</span>(e) =&gt; {
-            <span class="macro">error!</span>(<span class="string">&quot;handling request-pt-map: {:?}&quot;</span>, e);
+            <span class="macro">error!</span>(<span class="string">"handling request-pt-map: {:?}"</span>, e);
             <span class="prelude-val">None
           </span>},
         }
@@ -2193,7 +2180,7 @@
     <span class="kw">let </span>handle = Handle::current();
     <span class="kw">let </span>jingle_session = conference.jingle_session.clone();
     <span class="kw">let </span>buffer_size = conference.config.buffer_size;
-    rtpbin.connect(<span class="string">&quot;new-jitterbuffer&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+    rtpbin.connect(<span class="string">"new-jitterbuffer"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
       <span class="kw">let </span>handle = handle.clone();
       <span class="kw">let </span>jingle_session = jingle_session.clone();
       <span class="kw">let </span>f = <span class="kw">move </span>|| {
@@ -2201,7 +2188,7 @@
         <span class="kw">let </span>session: u32 = values[<span class="number">2</span>].get()<span class="question-mark">?</span>;
         <span class="kw">let </span>ssrc: u32 = values[<span class="number">3</span>].get()<span class="question-mark">?</span>;
         <span class="macro">debug!</span>(
-          <span class="string">&quot;new jitterbuffer created for session {} ssrc {}&quot;</span>,
+          <span class="string">"new jitterbuffer created for session {} ssrc {}"</span>,
           session, ssrc
         );
 
@@ -2211,24 +2198,24 @@
               .lock()
               .<span class="kw">await
               </span>.as_ref()
-              .context(<span class="string">&quot;not connected (no jingle session)&quot;</span>)<span class="question-mark">?
+              .context(<span class="string">"not connected (no jingle session)"</span>)<span class="question-mark">?
               </span>.remote_ssrc_map
               .get(<span class="kw-2">&amp;</span>ssrc)
-              .context(<span class="macro">format!</span>(<span class="string">&quot;unknown ssrc: {}&quot;</span>, ssrc))<span class="question-mark">?
+              .context(<span class="macro">format!</span>(<span class="string">"unknown ssrc: {}"</span>, ssrc))<span class="question-mark">?
               </span>.clone(),
           )
         })<span class="question-mark">?</span>;
-        <span class="macro">debug!</span>(<span class="string">&quot;jitterbuffer is for remote source: {:?}&quot;</span>, source);
+        <span class="macro">debug!</span>(<span class="string">"jitterbuffer is for remote source: {:?}"</span>, source);
         <span class="kw">if </span>source.media_type == MediaType::Video &amp;&amp; source.participant_id.is_some() {
-          <span class="macro">debug!</span>(<span class="string">&quot;enabling RTX for ssrc {}&quot;</span>, ssrc);
-          rtpjitterbuffer.set_property(<span class="string">&quot;do-retransmission&quot;</span>, <span class="bool-val">true</span>);
-          rtpjitterbuffer.set_property(<span class="string">&quot;drop-on-latency&quot;</span>, <span class="bool-val">true</span>);
-          rtpjitterbuffer.set_property(<span class="string">&quot;latency&quot;</span>, buffer_size);
+          <span class="macro">debug!</span>(<span class="string">"enabling RTX for ssrc {}"</span>, ssrc);
+          rtpjitterbuffer.set_property(<span class="string">"do-retransmission"</span>, <span class="bool-val">true</span>);
+          rtpjitterbuffer.set_property(<span class="string">"drop-on-latency"</span>, <span class="bool-val">true</span>);
+          rtpjitterbuffer.set_property(<span class="string">"latency"</span>, buffer_size);
         }
         <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(())
       };
       <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = f() {
-        <span class="macro">warn!</span>(<span class="string">&quot;new-jitterbuffer: {:?}&quot;</span>, e);
+        <span class="macro">warn!</span>(<span class="string">"new-jitterbuffer: {:?}"</span>, e);
       }
       <span class="prelude-val">None
     </span>});
@@ -2244,77 +2231,89 @@
       .collect();
     {
       <span class="kw">let </span>pts = pts.clone();
-      rtpbin.connect(<span class="string">&quot;request-aux-sender&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+      rtpbin.connect(<span class="string">"request-aux-sender"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
         <span class="kw">let </span>f = || {
           <span class="kw">let </span>session: u32 = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
-          <span class="macro">debug!</span>(<span class="string">&quot;creating RTX sender for session {}&quot;</span>, session);
-          <span class="kw">let </span><span class="kw-2">mut </span>pt_map = gstreamer::Structure::builder(<span class="string">&quot;application/x-rtp-pt-map&quot;</span>);
-          <span class="kw">let </span><span class="kw-2">mut </span>ssrc_map = gstreamer::Structure::builder(<span class="string">&quot;application/x-rtp-ssrc-map&quot;</span>);
+          <span class="macro">debug!</span>(<span class="string">"creating RTX sender for session {}"</span>, session);
+          <span class="kw">let </span><span class="kw-2">mut </span>pt_map = gstreamer::Structure::builder(<span class="string">"application/x-rtp-pt-map"</span>);
+          <span class="kw">let </span><span class="kw-2">mut </span>ssrc_map = gstreamer::Structure::builder(<span class="string">"application/x-rtp-ssrc-map"</span>);
           <span class="kw">for </span>(pt, rtx_pt) <span class="kw">in </span>pts.iter() {
             pt_map = pt_map.field(pt, rtx_pt);
           }
           ssrc_map = ssrc_map.field(<span class="kw-2">&amp;</span>video_ssrc.to_string(), <span class="kw-2">&amp;</span>(video_rtx_ssrc <span class="kw">as </span>u32));
-          <span class="kw">let </span>bin = gstreamer::Bin::new(<span class="prelude-val">None</span>);
-          <span class="kw">let </span>rtx_sender = gstreamer::ElementFactory::make(<span class="string">&quot;rtprtxsend&quot;</span>)
-            .property(<span class="string">&quot;payload-type-map&quot;</span>, pt_map.build())
-            .property(<span class="string">&quot;ssrc-map&quot;</span>, ssrc_map.build())
+          <span class="kw">let </span>bin = gstreamer::Bin::new();
+          <span class="kw">let </span>rtx_sender = gstreamer::ElementFactory::make(<span class="string">"rtprtxsend"</span>)
+            .property(<span class="string">"payload-type-map"</span>, pt_map.build())
+            .property(<span class="string">"ssrc-map"</span>, ssrc_map.build())
             .build()<span class="question-mark">?</span>;
           bin.add(<span class="kw-2">&amp;</span>rtx_sender)<span class="question-mark">?</span>;
-          bin.add_pad(<span class="kw-2">&amp;</span>gstreamer::GhostPad::with_target(
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;src_{}&quot;</span>, session)),
-            <span class="kw-2">&amp;</span>rtx_sender
-              .static_pad(<span class="string">&quot;src&quot;</span>)
-              .context(<span class="string">&quot;rtprtxsend has no src pad&quot;</span>)<span class="question-mark">?</span>,
-          )<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-          bin.add_pad(<span class="kw-2">&amp;</span>gstreamer::GhostPad::with_target(
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;sink_{}&quot;</span>, session)),
-            <span class="kw-2">&amp;</span>rtx_sender
-              .static_pad(<span class="string">&quot;sink&quot;</span>)
-              .context(<span class="string">&quot;rtprtxsend has no sink pad&quot;</span>)<span class="question-mark">?</span>,
-          )<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+          bin.add_pad(
+            <span class="kw-2">&amp;</span>gstreamer::GhostPad::builder_with_target(
+              <span class="kw-2">&amp;</span>rtx_sender
+                .static_pad(<span class="string">"src"</span>)
+                .context(<span class="string">"rtprtxsend has no src pad"</span>)<span class="question-mark">?</span>,
+            )<span class="question-mark">?
+            </span>.name(<span class="macro">format!</span>(<span class="string">"src_{}"</span>, session))
+            .build(),
+          )<span class="question-mark">?</span>;
+          bin.add_pad(
+            <span class="kw-2">&amp;</span>gstreamer::GhostPad::builder_with_target(
+              <span class="kw-2">&amp;</span>rtx_sender
+                .static_pad(<span class="string">"sink"</span>)
+                .context(<span class="string">"rtprtxsend has no sink pad"</span>)<span class="question-mark">?</span>,
+            )<span class="question-mark">?
+            </span>.name(<span class="macro">format!</span>(<span class="string">"sink_{}"</span>, session))
+            .build(),
+          )<span class="question-mark">?</span>;
           <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(<span class="prelude-val">Some</span>(bin.to_value()))
         };
         <span class="kw">match </span>f() {
           <span class="prelude-val">Ok</span>(o) =&gt; o,
           <span class="prelude-val">Err</span>(e) =&gt; {
-            <span class="macro">warn!</span>(<span class="string">&quot;request-aux-sender: {:?}&quot;</span>, e);
+            <span class="macro">warn!</span>(<span class="string">"request-aux-sender: {:?}"</span>, e);
             <span class="prelude-val">None
           </span>},
         }
       });
     }
 
-    rtpbin.connect(<span class="string">&quot;request-aux-receiver&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+    rtpbin.connect(<span class="string">"request-aux-receiver"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
       <span class="kw">let </span>f = || {
         <span class="kw">let </span>session: u32 = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
-        <span class="macro">debug!</span>(<span class="string">&quot;creating RTX receiver for session {}&quot;</span>, session);
-        <span class="kw">let </span><span class="kw-2">mut </span>pt_map = gstreamer::Structure::builder(<span class="string">&quot;application/x-rtp-pt-map&quot;</span>);
+        <span class="macro">debug!</span>(<span class="string">"creating RTX receiver for session {}"</span>, session);
+        <span class="kw">let </span><span class="kw-2">mut </span>pt_map = gstreamer::Structure::builder(<span class="string">"application/x-rtp-pt-map"</span>);
         <span class="kw">for </span>(pt, rtx_pt) <span class="kw">in </span>pts.iter() {
           pt_map = pt_map.field(pt, rtx_pt);
         }
-        <span class="kw">let </span>bin = gstreamer::Bin::new(<span class="prelude-val">None</span>);
-        <span class="kw">let </span>rtx_receiver = gstreamer::ElementFactory::make(<span class="string">&quot;rtprtxreceive&quot;</span>)
-          .property(<span class="string">&quot;payload-type-map&quot;</span>, pt_map.build())
+        <span class="kw">let </span>bin = gstreamer::Bin::new();
+        <span class="kw">let </span>rtx_receiver = gstreamer::ElementFactory::make(<span class="string">"rtprtxreceive"</span>)
+          .property(<span class="string">"payload-type-map"</span>, pt_map.build())
           .build()<span class="question-mark">?</span>;
         bin.add(<span class="kw-2">&amp;</span>rtx_receiver)<span class="question-mark">?</span>;
-        bin.add_pad(<span class="kw-2">&amp;</span>gstreamer::GhostPad::with_target(
-          <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;src_{}&quot;</span>, session)),
-          <span class="kw-2">&amp;</span>rtx_receiver
-            .static_pad(<span class="string">&quot;src&quot;</span>)
-            .context(<span class="string">&quot;rtprtxreceive has no src pad&quot;</span>)<span class="question-mark">?</span>,
-        )<span class="question-mark">?</span>)<span class="question-mark">?</span>;
-        bin.add_pad(<span class="kw-2">&amp;</span>gstreamer::GhostPad::with_target(
-          <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;sink_{}&quot;</span>, session)),
-          <span class="kw-2">&amp;</span>rtx_receiver
-            .static_pad(<span class="string">&quot;sink&quot;</span>)
-            .context(<span class="string">&quot;rtprtxreceive has no sink pad&quot;</span>)<span class="question-mark">?</span>,
-        )<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+        bin.add_pad(
+          <span class="kw-2">&amp;</span>gstreamer::GhostPad::builder_with_target(
+            <span class="kw-2">&amp;</span>rtx_receiver
+              .static_pad(<span class="string">"src"</span>)
+              .context(<span class="string">"rtprtxreceive has no src pad"</span>)<span class="question-mark">?</span>,
+          )<span class="question-mark">?
+          </span>.name(<span class="macro">format!</span>(<span class="string">"src_{}"</span>, session))
+          .build(),
+        )<span class="question-mark">?</span>;
+        bin.add_pad(
+          <span class="kw-2">&amp;</span>gstreamer::GhostPad::builder_with_target(
+            <span class="kw-2">&amp;</span>rtx_receiver
+              .static_pad(<span class="string">"sink"</span>)
+              .context(<span class="string">"rtprtxreceive has no sink pad"</span>)<span class="question-mark">?</span>,
+          )<span class="question-mark">?
+          </span>.name(<span class="macro">format!</span>(<span class="string">"sink_{}"</span>, session))
+          .build(),
+        )<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(<span class="prelude-val">Some</span>(bin.to_value()))
       };
       <span class="kw">match </span>f() {
         <span class="prelude-val">Ok</span>(o) =&gt; o,
         <span class="prelude-val">Err</span>(e) =&gt; {
-          <span class="macro">warn!</span>(<span class="string">&quot;request-aux-receiver: {:?}&quot;</span>, e);
+          <span class="macro">warn!</span>(<span class="string">"request-aux-receiver: {:?}"</span>, e);
           <span class="prelude-val">None
         </span>},
       }
@@ -2326,16 +2325,16 @@
       <span class="kw">let </span>pipeline = pipeline.clone();
       <span class="kw">let </span>rtpbin_ = rtpbin.clone();
       <span class="kw">let </span>codecs = codecs.clone();
-      rtpbin.connect(<span class="string">&quot;pad-added&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+      rtpbin.connect(<span class="string">"pad-added"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
         <span class="kw">let </span>rtpbin = <span class="kw-2">&amp;</span>rtpbin_;
         <span class="kw">let </span>f = || {
-          <span class="macro">debug!</span>(<span class="string">&quot;rtpbin pad-added {:?}&quot;</span>, values);
+          <span class="macro">debug!</span>(<span class="string">"rtpbin pad-added {:?}"</span>, values);
           <span class="kw">let </span>pad: gstreamer::Pad = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
-          <span class="kw">let </span>pad_name: String = pad.property(<span class="string">&quot;name&quot;</span>);
-          <span class="kw">if </span>pad_name.starts_with(<span class="string">&quot;recv_rtp_src_0_&quot;</span>) {
-            <span class="kw">let </span><span class="kw-2">mut </span>parts = pad_name.split(<span class="string">&#39;_&#39;</span>).skip(<span class="number">4</span>);
-            <span class="kw">let </span>ssrc: u32 = parts.next().context(<span class="string">&quot;malformed pad name&quot;</span>)<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
-            <span class="kw">let </span>pt: u8 = parts.next().context(<span class="string">&quot;malformed pad name&quot;</span>)<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
+          <span class="kw">let </span>pad_name: String = pad.property(<span class="string">"name"</span>);
+          <span class="kw">if </span>pad_name.starts_with(<span class="string">"recv_rtp_src_0_"</span>) {
+            <span class="kw">let </span><span class="kw-2">mut </span>parts = pad_name.split(<span class="string">'_'</span>).skip(<span class="number">4</span>);
+            <span class="kw">let </span>ssrc: u32 = parts.next().context(<span class="string">"malformed pad name"</span>)<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
+            <span class="kw">let </span>pt: u8 = parts.next().context(<span class="string">"malformed pad name"</span>)<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
             <span class="kw">let </span>source = handle.block_on(<span class="kw">async </span>{
               <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(
                 conference
@@ -2343,15 +2342,15 @@
                   .lock()
                   .<span class="kw">await
                   </span>.as_ref()
-                  .context(<span class="string">&quot;not connected (no jingle session)&quot;</span>)<span class="question-mark">?
+                  .context(<span class="string">"not connected (no jingle session)"</span>)<span class="question-mark">?
                   </span>.remote_ssrc_map
                   .get(<span class="kw-2">&amp;</span>ssrc)
-                  .context(<span class="macro">format!</span>(<span class="string">&quot;unknown ssrc: {}&quot;</span>, ssrc))<span class="question-mark">?
+                  .context(<span class="macro">format!</span>(<span class="string">"unknown ssrc: {}"</span>, ssrc))<span class="question-mark">?
                   </span>.clone(),
               )
             })<span class="question-mark">?</span>;
 
-            <span class="macro">debug!</span>(<span class="string">&quot;pad added for remote source: {:?}&quot;</span>, source);
+            <span class="macro">debug!</span>(<span class="string">"pad added for remote source: {:?}"</span>, source);
 
             <span class="kw">let </span>depayloader = <span class="kw">match </span>source.media_type {
               MediaType::Audio =&gt; {
@@ -2363,7 +2362,7 @@
                   gstreamer::ElementFactory::make(codec.depayloader_name()).build()<span class="question-mark">?
                 </span>}
                 <span class="kw">else </span>{
-                  <span class="macro">bail!</span>(<span class="string">&quot;received audio with unsupported PT {}&quot;</span>, pt);
+                  <span class="macro">bail!</span>(<span class="string">"received audio with unsupported PT {}"</span>, pt);
                 }
               },
               MediaType::Video =&gt; {
@@ -2375,26 +2374,26 @@
                   gstreamer::ElementFactory::make(codec.depayloader_name()).build()<span class="question-mark">?
                 </span>}
                 <span class="kw">else </span>{
-                  <span class="macro">bail!</span>(<span class="string">&quot;received video with unsupported PT {}&quot;</span>, pt);
+                  <span class="macro">bail!</span>(<span class="string">"received video with unsupported PT {}"</span>, pt);
                 }
               },
             };
 
-            depayloader.set_property(<span class="string">&quot;auto-header-extension&quot;</span>, <span class="bool-val">false</span>);
-            depayloader.connect(<span class="string">&quot;request-extension&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+            depayloader.set_property(<span class="string">"auto-header-extension"</span>, <span class="bool-val">false</span>);
+            depayloader.connect(<span class="string">"request-extension"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
               <span class="kw">let </span>f = || {
                 <span class="kw">let </span>ext_id: u32 = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
                 <span class="kw">let </span>ext_uri: String = values[<span class="number">2</span>].get()<span class="question-mark">?</span>;
-                <span class="macro">debug!</span>(<span class="string">&quot;depayloader requested extension: {} {}&quot;</span>, ext_id, ext_uri);
+                <span class="macro">debug!</span>(<span class="string">"depayloader requested extension: {} {}"</span>, ext_id, ext_uri);
                 <span class="kw">let </span>hdrext = RTPHeaderExtension::create_from_uri(<span class="kw-2">&amp;</span>ext_uri)
-                  .context(<span class="string">&quot;failed to create hdrext&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to create hdrext"</span>)<span class="question-mark">?</span>;
                 hdrext.set_id(ext_id);
                 <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(hdrext)
               };
               <span class="kw">match </span>f() {
                 <span class="prelude-val">Ok</span>(hdrext) =&gt; <span class="prelude-val">Some</span>(hdrext.to_value()),
                 <span class="prelude-val">Err</span>(e) =&gt; {
-                  <span class="macro">warn!</span>(<span class="string">&quot;request-extension: {:?}&quot;</span>, e);
+                  <span class="macro">warn!</span>(<span class="string">"request-extension: {:?}"</span>, e);
                   <span class="prelude-val">None
                 </span>},
               }
@@ -2402,25 +2401,23 @@
 
             pipeline
               .add(<span class="kw-2">&amp;</span>depayloader)
-              .context(<span class="string">&quot;failed to add depayloader to pipeline&quot;</span>)<span class="question-mark">?</span>;
+              .context(<span class="string">"failed to add depayloader to pipeline"</span>)<span class="question-mark">?</span>;
             depayloader.sync_state_with_parent()<span class="question-mark">?</span>;
-            <span class="macro">debug!</span>(<span class="string">&quot;created depayloader&quot;</span>);
+            <span class="macro">debug!</span>(<span class="string">"created depayloader"</span>);
             rtpbin
               .link_pads(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>pad_name), <span class="kw-2">&amp;</span>depayloader, <span class="prelude-val">None</span>)
-              .context(<span class="macro">format!</span>(<span class="string">&quot;failed to link rtpbin.{} to depayloader&quot;</span>, pad_name))<span class="question-mark">?</span>;
+              .context(<span class="macro">format!</span>(<span class="string">"failed to link rtpbin.{} to depayloader"</span>, pad_name))<span class="question-mark">?</span>;
 
-            <span class="macro">debug!</span>(<span class="string">&quot;linked rtpbin.{} to depayloader&quot;</span>, pad_name);
+            <span class="macro">debug!</span>(<span class="string">"linked rtpbin.{} to depayloader"</span>, pad_name);
 
-            <span class="macro">debug!</span>(<span class="string">&quot;rtpbin pads:\n{}&quot;</span>, dump_pads(<span class="kw-2">&amp;</span>rtpbin));
-
-            <span class="kw">let </span>queue = gstreamer::ElementFactory::make(<span class="string">&quot;queue&quot;</span>).build()<span class="question-mark">?</span>;
+            <span class="kw">let </span>queue = gstreamer::ElementFactory::make(<span class="string">"queue"</span>).build()<span class="question-mark">?</span>;
             pipeline
               .add(<span class="kw-2">&amp;</span>queue)
-              .context(<span class="string">&quot;failed to add queue to pipeline&quot;</span>)<span class="question-mark">?</span>;
+              .context(<span class="string">"failed to add queue to pipeline"</span>)<span class="question-mark">?</span>;
             queue.sync_state_with_parent()<span class="question-mark">?</span>;
             depayloader
               .link(<span class="kw-2">&amp;</span>queue)
-              .context(<span class="string">&quot;failed to link depayloader to queue&quot;</span>)<span class="question-mark">?</span>;
+              .context(<span class="string">"failed to link depayloader to queue"</span>)<span class="question-mark">?</span>;
 
             <span class="kw">let </span>decoder = <span class="kw">match </span>source.media_type {
               MediaType::Audio =&gt; {
@@ -2433,7 +2430,7 @@
                   </span><span class="comment">// TODO: fec
                 </span>}
                 <span class="kw">else </span>{
-                  <span class="macro">bail!</span>(<span class="string">&quot;received audio with unsupported PT {}&quot;</span>, pt);
+                  <span class="macro">bail!</span>(<span class="string">"received audio with unsupported PT {}"</span>, pt);
                 }
               },
               MediaType::Video =&gt; {
@@ -2443,70 +2440,70 @@
                   .find(|codec| codec.is(pt));
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(codec) = codec {
                   <span class="kw">let </span>decoder = gstreamer::ElementFactory::make(codec.decoder_name()).build()<span class="question-mark">?</span>;
-                  decoder.set_property(<span class="string">&quot;automatic-request-sync-points&quot;</span>, <span class="bool-val">true</span>);
+                  decoder.set_property(<span class="string">"automatic-request-sync-points"</span>, <span class="bool-val">true</span>);
                   decoder.set_property_from_str(
-                    <span class="string">&quot;automatic-request-sync-point-flags&quot;</span>,
-                    <span class="string">&quot;GST_VIDEO_DECODER_REQUEST_SYNC_POINT_CORRUPT_OUTPUT&quot;</span>,
+                    <span class="string">"automatic-request-sync-point-flags"</span>,
+                    <span class="string">"GST_VIDEO_DECODER_REQUEST_SYNC_POINT_CORRUPT_OUTPUT"</span>,
                   );
                   decoder
                 }
                 <span class="kw">else </span>{
-                  <span class="macro">bail!</span>(<span class="string">&quot;received video with unsupported PT {}&quot;</span>, pt);
+                  <span class="macro">bail!</span>(<span class="string">"received video with unsupported PT {}"</span>, pt);
                 }
               },
             };
 
             pipeline
               .add(<span class="kw-2">&amp;</span>decoder)
-              .context(<span class="string">&quot;failed to add decoder to pipeline&quot;</span>)<span class="question-mark">?</span>;
+              .context(<span class="string">"failed to add decoder to pipeline"</span>)<span class="question-mark">?</span>;
             decoder.sync_state_with_parent()<span class="question-mark">?</span>;
             queue
               .link(<span class="kw-2">&amp;</span>decoder)
-              .context(<span class="string">&quot;failed to link queue to decoder&quot;</span>)<span class="question-mark">?</span>;
+              .context(<span class="string">"failed to link queue to decoder"</span>)<span class="question-mark">?</span>;
 
             <span class="kw">let </span>src_pad = <span class="kw">match </span>source.media_type {
               MediaType::Audio =&gt; decoder
-                .static_pad(<span class="string">&quot;src&quot;</span>)
-                .context(<span class="string">&quot;decoder has no src pad&quot;</span>)<span class="question-mark">?</span>,
+                .static_pad(<span class="string">"src"</span>)
+                .context(<span class="string">"decoder has no src pad"</span>)<span class="question-mark">?</span>,
               MediaType::Video =&gt; {
-                <span class="kw">let </span>videoscale = gstreamer::ElementFactory::make(<span class="string">&quot;videoscale&quot;</span>).build()<span class="question-mark">?</span>;
+                <span class="kw">let </span>videoscale = gstreamer::ElementFactory::make(<span class="string">"videoscale"</span>).build()<span class="question-mark">?</span>;
                 pipeline
                   .add(<span class="kw-2">&amp;</span>videoscale)
-                  .context(<span class="string">&quot;failed to add videoscale to pipeline&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to add videoscale to pipeline"</span>)<span class="question-mark">?</span>;
                 videoscale.sync_state_with_parent()<span class="question-mark">?</span>;
                 decoder
                   .link(<span class="kw-2">&amp;</span>videoscale)
-                  .context(<span class="string">&quot;failed to link decoder to videoscale&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to link decoder to videoscale"</span>)<span class="question-mark">?</span>;
 
-                <span class="kw">let </span>capsfilter = gstreamer::ElementFactory::make(<span class="string">&quot;capsfilter&quot;</span>).build()<span class="question-mark">?</span>;
+                <span class="kw">let </span>capsfilter = gstreamer::ElementFactory::make(<span class="string">"capsfilter"</span>).build()<span class="question-mark">?</span>;
                 capsfilter.set_property_from_str(
-                  <span class="string">&quot;caps&quot;</span>,
+                  <span class="string">"caps"</span>,
                   <span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                    <span class="string">&quot;video/x-raw, width={}, height={}&quot;</span>,
+                    <span class="string">"video/x-raw, width={}, height={}"</span>,
                     conference.config.recv_video_scale_width,
                     conference.config.recv_video_scale_height
                   ),
                 );
                 pipeline
                   .add(<span class="kw-2">&amp;</span>capsfilter)
-                  .context(<span class="string">&quot;failed to add capsfilter to pipeline&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to add capsfilter to pipeline"</span>)<span class="question-mark">?</span>;
                 capsfilter.sync_state_with_parent()<span class="question-mark">?</span>;
                 videoscale
                   .link(<span class="kw-2">&amp;</span>capsfilter)
-                  .context(<span class="string">&quot;failed to link videoscale to capsfilter&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to link videoscale to capsfilter"</span>)<span class="question-mark">?</span>;
 
-                <span class="kw">let </span>videoconvert = gstreamer::ElementFactory::make(<span class="string">&quot;videoconvert&quot;</span>).build()<span class="question-mark">?</span>;
+                <span class="kw">let </span>videoconvert = gstreamer::ElementFactory::make(<span class="string">"videoconvert"</span>).build()<span class="question-mark">?</span>;
                 pipeline
                   .add(<span class="kw-2">&amp;</span>videoconvert)
-                  .context(<span class="string">&quot;failed to add videoconvert to pipeline&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to add videoconvert to pipeline"</span>)<span class="question-mark">?</span>;
                 videoconvert.sync_state_with_parent()<span class="question-mark">?</span>;
                 capsfilter
                   .link(<span class="kw-2">&amp;</span>videoconvert)
-                  .context(<span class="string">&quot;failed to link capsfilter to videoconvert&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to link capsfilter to videoconvert"</span>)<span class="question-mark">?</span>;
 
                 videoconvert
-                  .static_pad(<span class="string">&quot;src&quot;</span>)
-                  .context(<span class="string">&quot;videoconvert has no src pad&quot;</span>)<span class="question-mark">?
+                  .static_pad(<span class="string">"src"</span>)
+                  .context(<span class="string">"videoconvert has no src pad"</span>)<span class="question-mark">?
               </span>},
             };
 
@@ -2522,76 +2519,74 @@
               };
               <span class="kw">if let </span><span class="prelude-val">Some</span>(sink_element) = maybe_sink_element {
                 <span class="kw">let </span>sink_pad = sink_element
-                  .request_pad_simple(<span class="string">&quot;sink_%u&quot;</span>)
-                  .context(<span class="string">&quot;no suitable sink pad provided by sink element in recv pipeline&quot;</span>)<span class="question-mark">?</span>;
-                <span class="kw">let </span>ghost_pad = GhostPad::with_target(
-                  <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                    <span class="string">&quot;participant_{}_{:?}&quot;</span>,
+                  .request_pad_simple(<span class="string">"sink_%u"</span>)
+                  .context(<span class="string">"no suitable sink pad provided by sink element in recv pipeline"</span>)<span class="question-mark">?</span>;
+                <span class="kw">let </span>ghost_pad = GhostPad::builder_with_target(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?
+                  </span>.name(<span class="macro">format!</span>(
+                    <span class="string">"participant_{}_{:?}"</span>,
                     participant_id, source.media_type
-                  )),
-                  <span class="kw-2">&amp;</span>sink_pad,
-                )<span class="question-mark">?</span>;
+                  ))
+                  .build();
                 <span class="kw">let </span>bin: Bin = sink_element
                   .parent()
-                  .context(<span class="string">&quot;sink element has no parent&quot;</span>)<span class="question-mark">?
+                  .context(<span class="string">"sink element has no parent"</span>)<span class="question-mark">?
                   </span>.downcast()
-                  .map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">&quot;sink element&#39;s parent is not a bin&quot;</span>))<span class="question-mark">?</span>;
+                  .map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">"sink element's parent is not a bin"</span>))<span class="question-mark">?</span>;
                 bin.add_pad(<span class="kw-2">&amp;</span>ghost_pad)<span class="question-mark">?</span>;
 
                 src_pad
                   .link(<span class="kw-2">&amp;</span>ghost_pad)
-                  .context(<span class="string">&quot;failed to link decode chain to participant bin from recv pipeline&quot;</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to link decode chain to participant bin from recv pipeline"</span>)<span class="question-mark">?</span>;
                 <span class="macro">info!</span>(
-                  <span class="string">&quot;linked {}/{:?} to new pad in recv pipeline&quot;</span>,
+                  <span class="string">"linked {}/{:?} to new pad in recv pipeline"</span>,
                   participant_id, source.media_type
                 );
               }
               <span class="kw">else if let </span><span class="prelude-val">Some</span>(participant_bin) =
-                pipeline.by_name(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;participant_{}&quot;</span>, participant_id))
+                pipeline.by_name(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"participant_{}"</span>, participant_id))
               {
                 <span class="kw">let </span>sink_pad_name = <span class="kw">match </span>source.media_type {
-                  MediaType::Audio =&gt; <span class="string">&quot;audio&quot;</span>,
-                  MediaType::Video =&gt; <span class="string">&quot;video&quot;</span>,
+                  MediaType::Audio =&gt; <span class="string">"audio"</span>,
+                  MediaType::Video =&gt; <span class="string">"video"</span>,
                 };
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(sink_pad) = participant_bin.static_pad(sink_pad_name) {
                   src_pad.link(<span class="kw-2">&amp;</span>sink_pad).context(
-                    <span class="string">&quot;failed to link decode chain to participant bin from recv participant pipeline&quot;</span>,
+                    <span class="string">"failed to link decode chain to participant bin from recv participant pipeline"</span>,
                   )<span class="question-mark">?</span>;
                   <span class="macro">info!</span>(
-                    <span class="string">&quot;linked {}/{:?} to recv participant pipeline&quot;</span>,
+                    <span class="string">"linked {}/{:?} to recv participant pipeline"</span>,
                     participant_id, source.media_type
                   );
                 }
                 <span class="kw">else </span>{
                   <span class="macro">warn!</span>(
-                    <span class="string">&quot;no {} sink pad on {} participant bin in recv participant pipeline&quot;</span>,
+                    <span class="string">"no {} sink pad on {} participant bin in recv participant pipeline"</span>,
                     sink_pad_name, participant_id
                   );
                 }
               }
               <span class="kw">else </span>{
-                <span class="macro">warn!</span>(<span class="string">&quot;no pipeline handled new participant: {}&quot;</span>, participant_id);
+                <span class="macro">warn!</span>(<span class="string">"no pipeline handled new participant: {}"</span>, participant_id);
               }
             }
             <span class="kw">else </span>{
-              <span class="macro">debug!</span>(<span class="string">&quot;not looking for participant bin, source is owned by JVB&quot;</span>);
+              <span class="macro">debug!</span>(<span class="string">"not looking for participant bin, source is owned by JVB"</span>);
             }
 
             <span class="kw">if </span>!src_pad.is_linked() {
-              <span class="macro">debug!</span>(<span class="string">&quot;nothing linked to decoder, adding fakesink&quot;</span>);
-              <span class="kw">let </span>fakesink = gstreamer::ElementFactory::make(<span class="string">&quot;fakesink&quot;</span>).build()<span class="question-mark">?</span>;
+              <span class="macro">debug!</span>(<span class="string">"nothing linked to decoder, adding fakesink"</span>);
+              <span class="kw">let </span>fakesink = gstreamer::ElementFactory::make(<span class="string">"fakesink"</span>).build()<span class="question-mark">?</span>;
               pipeline.add(<span class="kw-2">&amp;</span>fakesink)<span class="question-mark">?</span>;
               fakesink.sync_state_with_parent()<span class="question-mark">?</span>;
               <span class="kw">let </span>sink_pad = fakesink
-                .static_pad(<span class="string">&quot;sink&quot;</span>)
-                .context(<span class="string">&quot;fakesink has no sink pad&quot;</span>)<span class="question-mark">?</span>;
+                .static_pad(<span class="string">"sink"</span>)
+                .context(<span class="string">"fakesink has no sink pad"</span>)<span class="question-mark">?</span>;
               src_pad.link(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?</span>;
             }
 
-            gstreamer::debug_bin_to_dot_file(
-              <span class="kw-2">&amp;</span>pipeline,
+            pipeline.debug_to_dot_file(
               gstreamer::DebugGraphDetails::ALL,
-              <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;ssrc-added-{}&quot;</span>, ssrc),
+              <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"ssrc-added-{}"</span>, ssrc),
             );
 
             <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(())
@@ -2601,7 +2596,7 @@
           }
         };
         <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = f() {
-          <span class="macro">error!</span>(<span class="string">&quot;handling pad-added: {:?}&quot;</span>, e);
+          <span class="macro">error!</span>(<span class="string">"handling pad-added: {:?}"</span>, e);
         }
         <span class="prelude-val">None
       </span>});
@@ -2610,40 +2605,40 @@
     <span class="kw">let </span>opus = codecs.iter().find(|codec| codec.name == CodecName::Opus);
     <span class="kw">let </span>audio_sink_element = <span class="kw">if let </span><span class="prelude-val">Some</span>(opus) = opus {
       <span class="kw">let </span>audio_sink_element = gstreamer::ElementFactory::make(opus.payloader_name()).build()<span class="question-mark">?</span>;
-      audio_sink_element.set_property(<span class="string">&quot;pt&quot;</span>, opus.pt <span class="kw">as </span>u32);
+      audio_sink_element.set_property(<span class="string">"pt"</span>, opus.pt <span class="kw">as </span>u32);
       audio_sink_element
     }
     <span class="kw">else </span>{
-      <span class="macro">bail!</span>(<span class="string">&quot;no opus payload type in jingle session-initiate&quot;</span>);
+      <span class="macro">bail!</span>(<span class="string">"no opus payload type in jingle session-initiate"</span>);
     };
-    audio_sink_element.set_property(<span class="string">&quot;min-ptime&quot;</span>, <span class="number">10i64 </span>* <span class="number">1000 </span>* <span class="number">1000</span>);
-    audio_sink_element.set_property(<span class="string">&quot;ssrc&quot;</span>, audio_ssrc);
-    <span class="kw">if </span>audio_sink_element.has_property(<span class="string">&quot;auto-header-extension&quot;</span>, <span class="prelude-val">None</span>) {
-      audio_sink_element.set_property(<span class="string">&quot;auto-header-extension&quot;</span>, <span class="bool-val">false</span>);
-      audio_sink_element.connect(<span class="string">&quot;request-extension&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+    audio_sink_element.set_property(<span class="string">"min-ptime"</span>, <span class="number">10i64 </span>* <span class="number">1000 </span>* <span class="number">1000</span>);
+    audio_sink_element.set_property(<span class="string">"ssrc"</span>, audio_ssrc);
+    <span class="kw">if </span>audio_sink_element.has_property(<span class="string">"auto-header-extension"</span>, <span class="prelude-val">None</span>) {
+      audio_sink_element.set_property(<span class="string">"auto-header-extension"</span>, <span class="bool-val">false</span>);
+      audio_sink_element.connect(<span class="string">"request-extension"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
         <span class="kw">let </span>f = || {
           <span class="kw">let </span>ext_id: u32 = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
           <span class="kw">let </span>ext_uri: String = values[<span class="number">2</span>].get()<span class="question-mark">?</span>;
           <span class="macro">debug!</span>(
-            <span class="string">&quot;audio payloader requested extension: {} {}&quot;</span>,
+            <span class="string">"audio payloader requested extension: {} {}"</span>,
             ext_id, ext_uri
           );
           <span class="kw">let </span>hdrext =
-            RTPHeaderExtension::create_from_uri(<span class="kw-2">&amp;</span>ext_uri).context(<span class="string">&quot;failed to create hdrext&quot;</span>)<span class="question-mark">?</span>;
+            RTPHeaderExtension::create_from_uri(<span class="kw-2">&amp;</span>ext_uri).context(<span class="string">"failed to create hdrext"</span>)<span class="question-mark">?</span>;
           hdrext.set_id(ext_id);
           <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(hdrext)
         };
         <span class="kw">match </span>f() {
           <span class="prelude-val">Ok</span>(hdrext) =&gt; <span class="prelude-val">Some</span>(hdrext.to_value()),
           <span class="prelude-val">Err</span>(e) =&gt; {
-            <span class="macro">warn!</span>(<span class="string">&quot;request-extension: {:?}&quot;</span>, e);
+            <span class="macro">warn!</span>(<span class="string">"request-extension: {:?}"</span>, e);
             <span class="prelude-val">None
           </span>},
         }
       });
     }
     <span class="kw">else </span>{
-      <span class="macro">debug!</span>(<span class="string">&quot;audio payloader: no rtp header extension support&quot;</span>);
+      <span class="macro">debug!</span>(<span class="string">"audio payloader: no rtp header extension support"</span>);
     }
     pipeline.add(<span class="kw-2">&amp;</span>audio_sink_element)<span class="question-mark">?</span>;
 
@@ -2651,75 +2646,75 @@
     <span class="kw">let </span>codec = codecs.iter().find(|codec| codec.is_codec(codec_name));
     <span class="kw">let </span>video_sink_element = <span class="kw">if let </span><span class="prelude-val">Some</span>(codec) = codec {
       <span class="kw">let </span>element = gstreamer::ElementFactory::make(codec.payloader_name()).build()<span class="question-mark">?</span>;
-      element.set_property(<span class="string">&quot;pt&quot;</span>, codec.pt <span class="kw">as </span>u32);
+      element.set_property(<span class="string">"pt"</span>, codec.pt <span class="kw">as </span>u32);
       <span class="kw">if </span>codec.name == CodecName::H264 {
-        element.set_property_from_str(<span class="string">&quot;aggregate-mode&quot;</span>, <span class="string">&quot;zero-latency&quot;</span>);
+        element.set_property_from_str(<span class="string">"aggregate-mode"</span>, <span class="string">"zero-latency"</span>);
       }
       <span class="kw">else </span>{
-        element.set_property_from_str(<span class="string">&quot;picture-id-mode&quot;</span>, <span class="string">&quot;15-bit&quot;</span>);
+        element.set_property_from_str(<span class="string">"picture-id-mode"</span>, <span class="string">"15-bit"</span>);
       }
       element
     }
     <span class="kw">else </span>{
-      <span class="macro">bail!</span>(<span class="string">&quot;unsupported video codec: {}&quot;</span>, codec_name);
+      <span class="macro">bail!</span>(<span class="string">"unsupported video codec: {}"</span>, codec_name);
     };
-    video_sink_element.set_property(<span class="string">&quot;ssrc&quot;</span>, video_ssrc);
-    <span class="kw">if </span>video_sink_element.has_property(<span class="string">&quot;auto-header-extension&quot;</span>, <span class="prelude-val">None</span>) {
-      video_sink_element.set_property(<span class="string">&quot;auto-header-extension&quot;</span>, <span class="bool-val">false</span>);
-      video_sink_element.connect(<span class="string">&quot;request-extension&quot;</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
+    video_sink_element.set_property(<span class="string">"ssrc"</span>, video_ssrc);
+    <span class="kw">if </span>video_sink_element.has_property(<span class="string">"auto-header-extension"</span>, <span class="prelude-val">None</span>) {
+      video_sink_element.set_property(<span class="string">"auto-header-extension"</span>, <span class="bool-val">false</span>);
+      video_sink_element.connect(<span class="string">"request-extension"</span>, <span class="bool-val">false</span>, <span class="kw">move </span>|values| {
         <span class="kw">let </span>f = || {
           <span class="kw">let </span>ext_id: u32 = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
           <span class="kw">let </span>ext_uri: String = values[<span class="number">2</span>].get()<span class="question-mark">?</span>;
           <span class="macro">debug!</span>(
-            <span class="string">&quot;video payloader requested extension: {} {}&quot;</span>,
+            <span class="string">"video payloader requested extension: {} {}"</span>,
             ext_id, ext_uri
           );
           <span class="kw">let </span>hdrext =
-            RTPHeaderExtension::create_from_uri(<span class="kw-2">&amp;</span>ext_uri).context(<span class="string">&quot;failed to create hdrext&quot;</span>)<span class="question-mark">?</span>;
+            RTPHeaderExtension::create_from_uri(<span class="kw-2">&amp;</span>ext_uri).context(<span class="string">"failed to create hdrext"</span>)<span class="question-mark">?</span>;
           hdrext.set_id(ext_id);
           <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(hdrext)
         };
         <span class="kw">match </span>f() {
           <span class="prelude-val">Ok</span>(hdrext) =&gt; <span class="prelude-val">Some</span>(hdrext.to_value()),
           <span class="prelude-val">Err</span>(e) =&gt; {
-            <span class="macro">warn!</span>(<span class="string">&quot;request-extension: {:?}&quot;</span>, e);
+            <span class="macro">warn!</span>(<span class="string">"request-extension: {:?}"</span>, e);
             <span class="prelude-val">None
           </span>},
         }
       });
     }
     <span class="kw">else </span>{
-      <span class="macro">debug!</span>(<span class="string">&quot;video payloader: no rtp header extension support&quot;</span>);
+      <span class="macro">debug!</span>(<span class="string">"video payloader: no rtp header extension support"</span>);
     }
     pipeline.add(<span class="kw-2">&amp;</span>video_sink_element)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>rtpfunnel = gstreamer::ElementFactory::make(<span class="string">&quot;rtpfunnel&quot;</span>).build()<span class="question-mark">?</span>;
+    <span class="kw">let </span>rtpfunnel = gstreamer::ElementFactory::make(<span class="string">"rtpfunnel"</span>).build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>rtpfunnel)<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;linking video payloader -&gt; rtpfunnel&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">"linking video payloader -&gt; rtpfunnel"</span>);
     video_sink_element.link(<span class="kw-2">&amp;</span>rtpfunnel)<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;linking audio payloader -&gt; rtpfunnel&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">"linking audio payloader -&gt; rtpfunnel"</span>);
     audio_sink_element.link(<span class="kw-2">&amp;</span>rtpfunnel)<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;linking rtpfunnel -&gt; rtpbin&quot;</span>);
-    rtpfunnel.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>rtpbin, <span class="prelude-val">Some</span>(<span class="string">&quot;send_rtp_sink_0&quot;</span>))<span class="question-mark">?</span>;
+    <span class="macro">debug!</span>(<span class="string">"linking rtpfunnel -&gt; rtpbin"</span>);
+    rtpfunnel.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>rtpbin, <span class="prelude-val">Some</span>(<span class="string">"send_rtp_sink_0"</span>))<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>rtp_recv_identity = gstreamer::ElementFactory::make(<span class="string">&quot;identity&quot;</span>).build()<span class="question-mark">?</span>;
+    <span class="kw">let </span>rtp_recv_identity = gstreamer::ElementFactory::make(<span class="string">"identity"</span>).build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>rtp_recv_identity)<span class="question-mark">?</span>;
-    <span class="kw">let </span>rtcp_recv_identity = gstreamer::ElementFactory::make(<span class="string">&quot;identity&quot;</span>).build()<span class="question-mark">?</span>;
+    <span class="kw">let </span>rtcp_recv_identity = gstreamer::ElementFactory::make(<span class="string">"identity"</span>).build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>rtcp_recv_identity)<span class="question-mark">?</span>;
-    <span class="kw">let </span>rtp_send_identity = gstreamer::ElementFactory::make(<span class="string">&quot;identity&quot;</span>).build()<span class="question-mark">?</span>;
+    <span class="kw">let </span>rtp_send_identity = gstreamer::ElementFactory::make(<span class="string">"identity"</span>).build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>rtp_send_identity)<span class="question-mark">?</span>;
-    <span class="kw">let </span>rtcp_send_identity = gstreamer::ElementFactory::make(<span class="string">&quot;identity&quot;</span>).build()<span class="question-mark">?</span>;
+    <span class="kw">let </span>rtcp_send_identity = gstreamer::ElementFactory::make(<span class="string">"identity"</span>).build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>rtcp_send_identity)<span class="question-mark">?</span>;
 
-    <span class="attr">#[cfg(feature = <span class="string">&quot;log-rtp&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
     </span>{
       <span class="kw">if </span>conference.config.log_rtp {
-        <span class="macro">debug!</span>(<span class="string">&quot;setting up RTP packet logging&quot;</span>);
+        <span class="macro">debug!</span>(<span class="string">"setting up RTP packet logging"</span>);
 
-        <span class="kw">let </span>make_rtp_logger = |direction: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str| {
+        <span class="kw">let </span>make_rtp_logger = |direction: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str| {
           <span class="kw">move </span>|values: <span class="kw-2">&amp;</span>[glib::Value]| -&gt; <span class="prelude-ty">Option</span>&lt;glib::Value&gt; {
             <span class="kw">let </span>f = || {
               <span class="kw">let </span>buffer: gstreamer::Buffer = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
@@ -2732,70 +2727,68 @@
                 marker = rtp_buffer.is_marker(),
                 extension = rtp_buffer.is_extension(),
                 payload_size = rtp_buffer.payload_size(),
-                <span class="string">&quot;RTP {}&quot;</span>,
+                <span class="string">"RTP {}"</span>,
                 direction,
               );
               <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(())
             };
             <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = f() {
-              <span class="macro">warn!</span>(<span class="string">&quot;RTP {}: {:?}&quot;</span>, direction, e);
+              <span class="macro">warn!</span>(<span class="string">"RTP {}: {:?}"</span>, direction, e);
             }
             <span class="prelude-val">None
           </span>}
         };
 
-        rtp_recv_identity.connect(<span class="string">&quot;handoff&quot;</span>, <span class="bool-val">false</span>, make_rtp_logger(<span class="string">&quot;RECV&quot;</span>));
-        rtp_send_identity.connect(<span class="string">&quot;handoff&quot;</span>, <span class="bool-val">false</span>, make_rtp_logger(<span class="string">&quot;SEND&quot;</span>));
+        rtp_recv_identity.connect(<span class="string">"handoff"</span>, <span class="bool-val">false</span>, make_rtp_logger(<span class="string">"RECV"</span>));
+        rtp_send_identity.connect(<span class="string">"handoff"</span>, <span class="bool-val">false</span>, make_rtp_logger(<span class="string">"SEND"</span>));
       }
 
       <span class="kw">if </span>conference.config.log_rtcp {
-        <span class="macro">debug!</span>(<span class="string">&quot;setting up RTCP packet logging&quot;</span>);
+        <span class="macro">debug!</span>(<span class="string">"setting up RTCP packet logging"</span>);
 
-        <span class="kw">let </span>make_rtcp_logger = |direction: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str| {
+        <span class="kw">let </span>make_rtcp_logger = |direction: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str| {
           <span class="kw">move </span>|values: <span class="kw-2">&amp;</span>[glib::Value]| -&gt; <span class="prelude-ty">Option</span>&lt;glib::Value&gt; {
             <span class="kw">let </span>f = || {
               <span class="kw">let </span>buffer: gstreamer::Buffer = values[<span class="number">1</span>].get()<span class="question-mark">?</span>;
               <span class="kw">let </span><span class="kw-2">mut </span>buf = [<span class="number">0u8</span>; <span class="number">1500</span>];
               buffer
                 .copy_to_slice(<span class="number">0</span>, <span class="kw-2">&amp;mut </span>buf[..buffer.size()])
-                .map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">&quot;invalid RTCP packet size&quot;</span>))<span class="question-mark">?</span>;
+                .map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">"invalid RTCP packet size"</span>))<span class="question-mark">?</span>;
               <span class="kw">let </span>decoded = rtcp::packet::unmarshal(<span class="kw-2">&amp;mut &amp;</span>buf[..buffer.size()])<span class="question-mark">?</span>;
-              <span class="macro">debug!</span>(<span class="string">&quot;RTCP {} size={}\n{:#?}&quot;</span>, direction, buffer.size(), decoded,);
+              <span class="macro">debug!</span>(<span class="string">"RTCP {} size={}\n{:#?}"</span>, direction, buffer.size(), decoded,);
               <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, anyhow::Error&gt;(())
             };
             <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = f() {
-              <span class="macro">warn!</span>(<span class="string">&quot;RTCP {}: {:?}&quot;</span>, direction, e);
+              <span class="macro">warn!</span>(<span class="string">"RTCP {}: {:?}"</span>, direction, e);
             }
             <span class="prelude-val">None
           </span>}
         };
 
-        rtcp_recv_identity.connect(<span class="string">&quot;handoff&quot;</span>, <span class="bool-val">false</span>, make_rtcp_logger(<span class="string">&quot;RECV&quot;</span>));
-        rtcp_send_identity.connect(<span class="string">&quot;handoff&quot;</span>, <span class="bool-val">false</span>, make_rtcp_logger(<span class="string">&quot;SEND&quot;</span>));
+        rtcp_recv_identity.connect(<span class="string">"handoff"</span>, <span class="bool-val">false</span>, make_rtcp_logger(<span class="string">"RECV"</span>));
+        rtcp_send_identity.connect(<span class="string">"handoff"</span>, <span class="bool-val">false</span>, make_rtcp_logger(<span class="string">"SEND"</span>));
       }
     }
 
-    <span class="macro">debug!</span>(<span class="string">&quot;link dtlssrtpdec -&gt; rtpbin&quot;</span>);
-    dtlssrtpdec.link_pads(<span class="prelude-val">Some</span>(<span class="string">&quot;rtp_src&quot;</span>), <span class="kw-2">&amp;</span>rtp_recv_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-    rtp_recv_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>rtpbin, <span class="prelude-val">Some</span>(<span class="string">&quot;recv_rtp_sink_0&quot;</span>))<span class="question-mark">?</span>;
-    dtlssrtpdec.link_pads(<span class="prelude-val">Some</span>(<span class="string">&quot;rtcp_src&quot;</span>), <span class="kw-2">&amp;</span>rtcp_recv_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-    rtcp_recv_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>rtpbin, <span class="prelude-val">Some</span>(<span class="string">&quot;recv_rtcp_sink_0&quot;</span>))<span class="question-mark">?</span>;
+    <span class="macro">debug!</span>(<span class="string">"link dtlssrtpdec -&gt; rtpbin"</span>);
+    dtlssrtpdec.link_pads(<span class="prelude-val">Some</span>(<span class="string">"rtp_src"</span>), <span class="kw-2">&amp;</span>rtp_recv_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+    rtp_recv_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>rtpbin, <span class="prelude-val">Some</span>(<span class="string">"recv_rtp_sink_0"</span>))<span class="question-mark">?</span>;
+    dtlssrtpdec.link_pads(<span class="prelude-val">Some</span>(<span class="string">"rtcp_src"</span>), <span class="kw-2">&amp;</span>rtcp_recv_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+    rtcp_recv_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>rtpbin, <span class="prelude-val">Some</span>(<span class="string">"recv_rtcp_sink_0"</span>))<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;linking rtpbin -&gt; dtlssrtpenc&quot;</span>);
-    rtpbin.link_pads(<span class="prelude-val">Some</span>(<span class="string">&quot;send_rtp_src_0&quot;</span>), <span class="kw-2">&amp;</span>rtp_send_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-    rtp_send_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>dtlssrtpenc, <span class="prelude-val">Some</span>(<span class="string">&quot;rtp_sink_0&quot;</span>))<span class="question-mark">?</span>;
-    rtpbin.link_pads(<span class="prelude-val">Some</span>(<span class="string">&quot;send_rtcp_src_0&quot;</span>), <span class="kw-2">&amp;</span>rtcp_send_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-    rtcp_send_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>dtlssrtpenc, <span class="prelude-val">Some</span>(<span class="string">&quot;rtcp_sink_0&quot;</span>))<span class="question-mark">?</span>;
+    <span class="macro">debug!</span>(<span class="string">"linking rtpbin -&gt; dtlssrtpenc"</span>);
+    rtpbin.link_pads(<span class="prelude-val">Some</span>(<span class="string">"send_rtp_src_0"</span>), <span class="kw-2">&amp;</span>rtp_send_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+    rtp_send_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>dtlssrtpenc, <span class="prelude-val">Some</span>(<span class="string">"rtp_sink_0"</span>))<span class="question-mark">?</span>;
+    rtpbin.link_pads(<span class="prelude-val">Some</span>(<span class="string">"send_rtcp_src_0"</span>), <span class="kw-2">&amp;</span>rtcp_send_identity, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+    rtcp_send_identity.link_pads(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>dtlssrtpenc, <span class="prelude-val">Some</span>(<span class="string">"rtcp_sink_0"</span>))<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;rtpbin pads:\n{}&quot;</span>, dump_pads(<span class="kw-2">&amp;</span>rtpbin));
-
-    <span class="macro">debug!</span>(<span class="string">&quot;linking ice src -&gt; dtlssrtpdec&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">"linking ice src -&gt; dtlssrtpdec"</span>);
     nicesrc.link(<span class="kw-2">&amp;</span>dtlssrtpdec)<span class="question-mark">?</span>;
 
-    <span class="macro">debug!</span>(<span class="string">&quot;linking dtlssrtpenc -&gt; ice sink&quot;</span>);
-    dtlssrtpenc.link_pads(<span class="prelude-val">Some</span>(<span class="string">&quot;src&quot;</span>), <span class="kw-2">&amp;</span>nicesink, <span class="prelude-val">Some</span>(<span class="string">&quot;sink&quot;</span>))<span class="question-mark">?</span>;
+    <span class="macro">debug!</span>(<span class="string">"linking dtlssrtpenc -&gt; ice sink"</span>);
+    dtlssrtpenc.link_pads(<span class="prelude-val">Some</span>(<span class="string">"src"</span>), <span class="kw-2">&amp;</span>nicesink, <span class="prelude-val">Some</span>(<span class="string">"sink"</span>))<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>bus = pipeline.bus().context(<span class="string">&quot;failed to get pipeline bus&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>bus = pipeline.bus().context(<span class="string">"failed to get pipeline bus"</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>(pipeline_state_null_tx, pipeline_state_null_rx) = oneshot::channel();
     tokio::spawn(<span class="kw">async move </span>{
@@ -2804,18 +2797,18 @@
         <span class="kw">match </span>msg.view() {
           gstreamer::MessageView::Error(e) =&gt; {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(d) = e.debug() {
-              <span class="macro">error!</span>(<span class="string">&quot;{}&quot;</span>, d);
+              <span class="macro">error!</span>(<span class="string">"{}"</span>, d);
             }
           },
           gstreamer::MessageView::Warning(e) =&gt; {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(d) = e.debug() {
-              <span class="macro">warn!</span>(<span class="string">&quot;{}&quot;</span>, d);
+              <span class="macro">warn!</span>(<span class="string">"{}"</span>, d);
             }
           },
           gstreamer::MessageView::StateChanged(state)
             <span class="kw">if </span>state.current() == gstreamer::State::Null =&gt;
           {
-            <span class="macro">debug!</span>(<span class="string">&quot;pipeline state is null&quot;</span>);
+            <span class="macro">debug!</span>(<span class="string">"pipeline state is null"</span>);
             pipeline_state_null_tx.send(()).unwrap();
             <span class="kw">break</span>;
           },
@@ -2824,22 +2817,18 @@
       }
     });
 
-    gstreamer::debug_bin_to_dot_file(
-      <span class="kw-2">&amp;</span>pipeline,
-      gstreamer::DebugGraphDetails::ALL,
-      <span class="string">&quot;session-initiate&quot;</span>,
-    );
+    pipeline.debug_to_dot_file(gstreamer::DebugGraphDetails::ALL, <span class="string">"session-initiate"</span>);
 
     <span class="kw">let </span>local_candidates = ice_agent.local_candidates(ice_stream_id, ice_component_id);
-    <span class="macro">debug!</span>(<span class="string">&quot;local candidates: {:?}&quot;</span>, local_candidates);
+    <span class="macro">debug!</span>(<span class="string">"local candidates: {:?}"</span>, local_candidates);
 
-    <span class="macro">debug!</span>(<span class="string">&quot;building Jingle session-accept&quot;</span>);
+    <span class="macro">debug!</span>(<span class="string">"building Jingle session-accept"</span>);
     <span class="kw">let </span><span class="kw-2">mut </span>jingle_accept = Jingle::new(Action::SessionAccept, jingle.sid.clone())
       .with_initiator(
         jingle
           .initiator
           .as_ref()
-          .context(<span class="string">&quot;jingle session-initiate with no initiator&quot;</span>)<span class="question-mark">?
+          .context(<span class="string">"jingle session-initiate with no initiator"</span>)<span class="question-mark">?
           </span>.clone(),
       )
       .with_responder(Jid::Full(conference.jid.clone()));
@@ -2847,15 +2836,15 @@
     <span class="kw">for </span>initiate_content <span class="kw">in </span><span class="kw-2">&amp;</span>jingle.contents {
       <span class="kw">let </span><span class="kw-2">mut </span>description = RtpDescription::new(initiate_content.name.<span class="number">0</span>.clone());
 
-      description.payload_types = <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">&quot;audio&quot; </span>{
+      description.payload_types = <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">"audio" </span>{
         <span class="kw">let </span>codec = codecs.iter().find(|codec| codec.name == CodecName::Opus);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(codec) = codec {
-          <span class="kw">let </span><span class="kw-2">mut </span>pt = PayloadType::new(codec.pt, <span class="string">&quot;opus&quot;</span>.to_owned(), <span class="number">48000</span>, <span class="number">2</span>);
+          <span class="kw">let </span><span class="kw-2">mut </span>pt = PayloadType::new(codec.pt, <span class="string">"opus"</span>.to_owned(), <span class="number">48000</span>, <span class="number">2</span>);
           pt.rtcp_fbs = codec.rtcp_fbs.clone();
           <span class="macro">vec!</span>[pt]
         }
         <span class="kw">else </span>{
-          <span class="macro">bail!</span>(<span class="string">&quot;no opus payload type in jingle session-initiate&quot;</span>);
+          <span class="macro">bail!</span>(<span class="string">"no opus payload type in jingle session-initiate"</span>);
         }
       }
       <span class="kw">else </span>{
@@ -2867,74 +2856,72 @@
           pt.rtcp_fbs = codec.rtcp_fbs.clone();
           pts.push(pt);
           <span class="kw">if let </span><span class="prelude-val">Some</span>(rtx_pt) = codec.rtx_pt {
-            <span class="kw">let </span><span class="kw-2">mut </span>rtx_pt = PayloadType::new(rtx_pt, <span class="string">&quot;rtx&quot;</span>.to_owned(), <span class="number">90000</span>, <span class="number">1</span>);
+            <span class="kw">let </span><span class="kw-2">mut </span>rtx_pt = PayloadType::new(rtx_pt, <span class="string">"rtx"</span>.to_owned(), <span class="number">90000</span>, <span class="number">1</span>);
             rtx_pt.parameters = <span class="macro">vec!</span>[jingle_rtp::Parameter {
-              name: <span class="string">&quot;apt&quot;</span>.to_owned(),
+              name: <span class="string">"apt"</span>.to_owned(),
               value: codec.pt.to_string(),
             }];
             rtx_pt.rtcp_fbs = codec
               .rtcp_fbs
               .clone()
               .into_iter()
-              .filter(|fb| fb.type_ != <span class="string">&quot;transport-cc&quot;</span>)
+              .filter(|fb| fb.type_ != <span class="string">"transport-cc"</span>)
               .collect();
             pts.push(rtx_pt);
           }
         }
         <span class="kw">else </span>{
-          <span class="macro">bail!</span>(<span class="string">&quot;unsupported video codec: {}&quot;</span>, codec_name);
+          <span class="macro">bail!</span>(<span class="string">"unsupported video codec: {}"</span>, codec_name);
         }
         pts
       };
 
       description.rtcp_mux = <span class="prelude-val">Some</span>(RtcpMux);
+      
+      <span class="kw">let </span>endpoint_id = conference.endpoint_id()<span class="question-mark">?</span>;
 
-      <span class="kw">let </span>mslabel = Uuid::new_v4().to_string();
+      <span class="kw">let </span>mslabel = <span class="macro">format!</span>(<span class="string">"{}-{}-0-1"</span>, endpoint_id, initiate_content.name.<span class="number">0</span>);
       <span class="kw">let </span>label = Uuid::new_v4().to_string();
-      <span class="kw">let </span>cname = Uuid::new_v4().to_string();
 
-      description.ssrc = <span class="prelude-val">Some</span>(<span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">&quot;audio&quot; </span>{
+      description.ssrc = <span class="prelude-val">Some</span>(<span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">"audio" </span>{
         audio_ssrc.to_string()
       }
       <span class="kw">else </span>{
         video_ssrc.to_string()
       });
 
-      description.ssrcs = <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">&quot;audio&quot; </span>{
-        <span class="macro">vec!</span>[jingle_ssma::Source::new(audio_ssrc)]
+      description.ssrcs = <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">"audio" </span>{
+        <span class="macro">vec!</span>[jingle_ssma::Source::new(audio_ssrc, <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"{endpoint_id}-a0"</span>)), <span class="prelude-val">None</span>)]
       }
       <span class="kw">else </span>{
+        <span class="kw">let </span>source_name = <span class="macro">format!</span>(<span class="string">"{endpoint_id}-v0"</span>);
         <span class="macro">vec!</span>[
-          jingle_ssma::Source::new(video_ssrc),
-          jingle_ssma::Source::new(video_rtx_ssrc),
+          jingle_ssma::Source::new(video_ssrc, <span class="prelude-val">Some</span>(source_name.clone()), <span class="prelude-val">Some</span>(<span class="string">"camera"</span>.into())),
+          jingle_ssma::Source::new(video_rtx_ssrc, <span class="prelude-val">Some</span>(source_name), <span class="prelude-val">Some</span>(<span class="string">"camera"</span>.into())),
         ]
       };
 
       <span class="kw">for </span>ssrc <span class="kw">in </span>description.ssrcs.iter_mut() {
         ssrc.parameters.push(Parameter {
-          name: <span class="string">&quot;cname&quot;</span>.to_owned(),
-          value: <span class="prelude-val">Some</span>(cname.clone()),
-        });
-        ssrc.parameters.push(Parameter {
-          name: <span class="string">&quot;msid&quot;</span>.to_owned(),
-          value: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, mslabel, label)),
+          name: <span class="string">"msid"</span>.to_owned(),
+          value: <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"{} {}"</span>, mslabel, label)),
         });
       }
 
-      description.ssrc_groups = <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">&quot;audio&quot; </span>{
+      description.ssrc_groups = <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">"audio" </span>{
         <span class="macro">vec!</span>[]
       }
       <span class="kw">else </span>{
         <span class="macro">vec!</span>[jingle_ssma::Group {
           semantics: Semantics::Fid,
           sources: <span class="macro">vec!</span>[
-            jingle_ssma::Source::new(video_ssrc),
-            jingle_ssma::Source::new(video_rtx_ssrc),
+            jingle_ssma::Source::new(video_ssrc, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
+            jingle_ssma::Source::new(video_rtx_ssrc, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
           ],
         }]
       };
 
-      <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">&quot;audio&quot; </span>{
+      <span class="kw">if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">"audio" </span>{
         <span class="kw">if let </span><span class="prelude-val">Some</span>(hdrext) = audio_hdrext_ssrc_audio_level {
           description.hdrexts.push(RtpHdrext::new(
             hdrext,
@@ -2947,7 +2934,7 @@
             .push(RtpHdrext::new(hdrext, RTP_HDREXT_TRANSPORT_CC.to_owned()));
         }
       }
-      <span class="kw">else if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">&quot;video&quot; </span>{
+      <span class="kw">else if </span>initiate_content.name.<span class="number">0 </span>== <span class="string">"video" </span>{
         <span class="kw">if let </span><span class="prelude-val">Some</span>(hdrext) = video_hdrext_transport_cc {
           description
             .hdrexts
@@ -2975,13 +2962,13 @@
           ip: addr.ip(),
           port: addr.port(),
           priority: c.priority(),
-          protocol: <span class="string">&quot;udp&quot;</span>.to_owned(),
+          protocol: <span class="string">"udp"</span>.to_owned(),
           type_: <span class="kw">match </span>c.type_() {
             nice::CandidateType::Host =&gt; jingle_ice_udp::Type::Host,
             nice::CandidateType::PeerReflexive =&gt; jingle_ice_udp::Type::Prflx,
             nice::CandidateType::ServerReflexive =&gt; jingle_ice_udp::Type::Srflx,
             nice::CandidateType::Relayed =&gt; jingle_ice_udp::Type::Relay,
-            other =&gt; <span class="macro">bail!</span>(<span class="string">&quot;unsupported candidate type: {:?}&quot;</span>, other),
+            other =&gt; <span class="macro">bail!</span>(<span class="string">"unsupported candidate type: {:?}"</span>, other),
           },
           rel_addr: <span class="prelude-val">None</span>,
           rel_port: <span class="prelude-val">None</span>,
@@ -2999,7 +2986,7 @@
 
     jingle_accept = jingle_accept.set_group(jingle_grouping::Group {
       semantics: jingle_grouping::Semantics::Bundle,
-      contents: <span class="macro">vec!</span>[GroupContent::new(<span class="string">&quot;video&quot;</span>), GroupContent::new(<span class="string">&quot;audio&quot;</span>)],
+      contents: <span class="macro">vec!</span>[GroupContent::new(<span class="string">"video"</span>), GroupContent::new(<span class="string">"audio"</span>)],
     });
 
     <span class="kw">let </span>accept_iq_id = generate_id();
@@ -3029,17 +3016,17 @@
           <span class="kw">let </span>owner = ssrc
             .info
             .as_ref()
-            .context(<span class="string">&quot;missing ssrc-info&quot;</span>)<span class="question-mark">?
+            .context(<span class="string">"missing ssrc-info"</span>)<span class="question-mark">?
             </span>.owner
             .clone();
 
-          <span class="macro">debug!</span>(<span class="string">&quot;adding ssrc to remote_ssrc_map: {:?}&quot;</span>, ssrc);
+          <span class="macro">debug!</span>(<span class="string">"adding ssrc to remote_ssrc_map: {:?}"</span>, ssrc);
           <span class="self">self</span>.remote_ssrc_map.insert(
             ssrc.id,
             Source {
               ssrc: ssrc.id,
               participant_id: participant_id_for_owner(owner)<span class="question-mark">?</span>,
-              media_type: <span class="kw">if </span>description.media == <span class="string">&quot;audio&quot; </span>{
+              media_type: <span class="kw">if </span>description.media == <span class="string">"audio" </span>{
                 MediaType::Audio
               }
               <span class="kw">else </span>{
@@ -3054,46 +3041,21 @@
   }
 }
 
-<span class="kw">fn </span>dump_pads(element: <span class="kw-2">&amp;</span>Element) -&gt; String {
-  element
-    .pads()
-    .into_iter()
-    .map(|pad| {
-      <span class="macro">format!</span>(
-        <span class="string">&quot;  {}, peer={}.{}, caps=\&quot;{}\&quot;&quot;</span>,
-        pad.name(),
-        pad
-          .peer()
-          .and_then(|peer| peer.parent_element())
-          .map(|element| element.name().to_string())
-          .unwrap_or_default(),
-        pad
-          .peer()
-          .map(|peer| peer.name().to_string())
-          .unwrap_or_default(),
-        pad.caps().map(|caps| caps.to_string()).unwrap_or_default(),
-      )
-    })
-    .join(<span class="string">&quot;\n&quot;</span>)
-}
-
 <span class="kw">fn </span>participant_id_for_owner(owner: String) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;String&gt;&gt; {
-  <span class="kw">if </span>owner == <span class="string">&quot;jvb&quot; </span>{
+  <span class="kw">if </span>owner == <span class="string">"jvb" </span>{
     <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
   }
   <span class="kw">else </span>{
-    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(
-      <span class="kw">if </span>owner.contains(<span class="string">&#39;/&#39;</span>) {
-        owner
-          .split(<span class="string">&#39;/&#39;</span>)
-          .nth(<span class="number">1</span>)
-          .context(<span class="string">&quot;invalid ssrc-info owner&quot;</span>)<span class="question-mark">?
-          </span>.to_owned()
-      }
-      <span class="kw">else </span>{
-        owner
-      }
-    ))
+    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">if </span>owner.contains(<span class="string">'/'</span>) {
+      owner
+        .split(<span class="string">'/'</span>)
+        .nth(<span class="number">1</span>)
+        .context(<span class="string">"invalid ssrc-info owner"</span>)<span class="question-mark">?
+        </span>.to_owned()
+    }
+    <span class="kw">else </span>{
+      owner
+    }))
   }
 }
 </code></pre></div></section></main></body></html>

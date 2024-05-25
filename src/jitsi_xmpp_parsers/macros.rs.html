@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `jitsi-xmpp-parsers/src/macros.rs`."><title>macros.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="jitsi_xmpp_parsers" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0 (90c541806 2023-05-31)" data-search-js="search-e077946657036a58.js" data-settings-js="settings-298e1ea74db45b39.js" data-settings-css="settings-7bfb4c59cc6bc502.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../static.files/source-script-905937fbbdc8e9ea.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f61008743c98d196.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../jitsi_xmpp_parsers/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `jitsi-xmpp-parsers/src/macros.rs`."><title>macros.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="jitsi_xmpp_parsers" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../jitsi_xmpp_parsers/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -725,13 +727,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-</span><span class="macro">macro_rules! </span>get_attr {
+</span><span class="macro">macro_rules!</span> get_attr {
   (<span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$attr</span>:tt, <span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">tt</span>) =&gt; {
     <span class="macro">get_attr!</span>(<span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$attr</span>, <span class="macro-nonterminal">$</span><span class="kw">type</span>, <span class="macro-nonterminal">value</span>, value.parse()<span class="question-mark">?</span>)
   };
   (<span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$attr</span>:tt, OptionEmpty, <span class="macro-nonterminal">$value</span>:ident, <span class="macro-nonterminal">$func</span>:expr) =&gt; {
     <span class="kw">match </span><span class="macro-nonterminal">$elem</span>.attr(<span class="macro-nonterminal">$attr</span>) {
-      <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>) =&gt; <span class="prelude-val">None</span>,
+      <span class="prelude-val">Some</span>(<span class="string">""</span>) =&gt; <span class="prelude-val">None</span>,
       <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$value</span>) =&gt; <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$func</span>),
       <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
     }
@@ -747,28 +749,28 @@
       <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$value</span>) =&gt; <span class="macro-nonterminal">$func</span>,
       <span class="prelude-val">None </span>=&gt; {
         <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-          <span class="string">&quot;Required attribute &#39;&quot;</span>,
+          <span class="string">"Required attribute '"</span>,
           <span class="macro-nonterminal">$attr</span>,
-          <span class="string">&quot;&#39; missing.&quot;
+          <span class="string">"' missing."
         </span>)));
       },
     }
   };
   (<span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$attr</span>:tt, RequiredNonEmpty, <span class="macro-nonterminal">$value</span>:ident, <span class="macro-nonterminal">$func</span>:expr) =&gt; {
     <span class="kw">match </span><span class="macro-nonterminal">$elem</span>.attr(<span class="macro-nonterminal">$attr</span>) {
-      <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>) =&gt; {
+      <span class="prelude-val">Some</span>(<span class="string">""</span>) =&gt; {
         <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-          <span class="string">&quot;Required attribute &#39;&quot;</span>,
+          <span class="string">"Required attribute '"</span>,
           <span class="macro-nonterminal">$attr</span>,
-          <span class="string">&quot;&#39; must not be empty.&quot;
+          <span class="string">"' must not be empty."
         </span>)));
       },
       <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$value</span>) =&gt; <span class="macro-nonterminal">$func</span>,
       <span class="prelude-val">None </span>=&gt; {
         <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-          <span class="string">&quot;Required attribute &#39;&quot;</span>,
+          <span class="string">"Required attribute '"</span>,
           <span class="macro-nonterminal">$attr</span>,
-          <span class="string">&quot;&#39; missing.&quot;
+          <span class="string">"' missing."
         </span>)));
       },
     }
@@ -781,7 +783,7 @@
   };
 }
 
-<span class="macro">macro_rules! </span>generate_attribute {
+<span class="macro">macro_rules!</span> generate_attribute {
   ($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>:meta]</span>)* <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, {$($(<span class="attr">#[<span class="macro-nonterminal">$a_meta</span>:meta]</span>)* <span class="macro-nonterminal">$a</span>:ident =&gt; <span class="macro-nonterminal">$b</span>:tt),+,}) =&gt; (
       <span class="macro">generate_attribute!</span>($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)* <span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$name</span>, {$($(<span class="attr">#[<span class="macro-nonterminal">$a_meta</span>]</span>)* <span class="macro-nonterminal">$a </span>=&gt; <span class="macro-nonterminal">$b</span>),+});
   );
@@ -802,13 +804,13 @@
           <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="macro-nonterminal">$elem</span>, xmpp_parsers::Error&gt; {
               <span class="prelude-val">Ok</span>(<span class="kw">match </span>s {
                   $(<span class="macro-nonterminal">$b </span>=&gt; <span class="macro-nonterminal">$elem</span>::<span class="macro-nonterminal">$a</span>),+,
-                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">&quot;Unknown value for &#39;&quot;</span>, <span class="macro-nonterminal">$name</span>, <span class="string">&quot;&#39; attribute.&quot;</span>))),
+                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">"Unknown value for '"</span>, <span class="macro-nonterminal">$name</span>, <span class="string">"' attribute."</span>))),
               })
           }
       }
       <span class="kw">impl </span>std::fmt::Display <span class="kw">for </span><span class="macro-nonterminal">$elem </span>{
           <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>std::fmt::Formatter) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::fmt::Error&gt; {
-              <span class="macro">write!</span>(fmt, <span class="string">&quot;{}&quot;</span>, <span class="kw">match </span><span class="self">self </span>{
+              <span class="macro">write!</span>(fmt, <span class="string">"{}"</span>, <span class="kw">match </span><span class="self">self </span>{
                   $(<span class="macro-nonterminal">$elem</span>::<span class="macro-nonterminal">$a </span>=&gt; <span class="macro-nonterminal">$b</span>),+
               })
           }
@@ -835,7 +837,7 @@
           <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="macro-nonterminal">$elem</span>, xmpp_parsers::Error&gt; {
               <span class="prelude-val">Ok</span>(<span class="kw">match </span>s {
                   $(<span class="macro-nonterminal">$b </span>=&gt; <span class="macro-nonterminal">$elem</span>::<span class="macro-nonterminal">$a</span>),+,
-                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">&quot;Unknown value for &#39;&quot;</span>, <span class="macro-nonterminal">$name</span>, <span class="string">&quot;&#39; attribute.&quot;</span>))),
+                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">"Unknown value for '"</span>, <span class="macro-nonterminal">$name</span>, <span class="string">"' attribute."</span>))),
               })
           }
       }
@@ -868,7 +870,7 @@
           <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, xmpp_parsers::Error&gt; {
               <span class="prelude-val">Ok</span>(<span class="kw">match </span>s {
                   <span class="macro-nonterminal">$value </span>=&gt; <span class="macro-nonterminal">$elem</span>::<span class="macro-nonterminal">$symbol</span>,
-                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">&quot;Unknown value for &#39;&quot;</span>, <span class="macro-nonterminal">$name</span>, <span class="string">&quot;&#39; attribute.&quot;</span>))),
+                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">"Unknown value for '"</span>, <span class="macro-nonterminal">$name</span>, <span class="string">"' attribute."</span>))),
               })
           }
       }
@@ -890,25 +892,25 @@
       $(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)*
       <span class="attr">#[derive(Debug, Clone, PartialEq)]
       </span><span class="kw">pub enum </span><span class="macro-nonterminal">$elem </span>{
-          <span class="doccomment">/// True value, represented by either &#39;true&#39; or &#39;1&#39;.
+          <span class="doccomment">/// True value, represented by either 'true' or '1'.
           </span>True,
-          <span class="doccomment">/// False value, represented by either &#39;false&#39; or &#39;0&#39;.
+          <span class="doccomment">/// False value, represented by either 'false' or '0'.
           </span>False,
       }
       <span class="kw">impl </span>::std::str::FromStr <span class="kw">for </span><span class="macro-nonterminal">$elem </span>{
           <span class="kw">type </span><span class="prelude-val">Err </span>= xmpp_parsers::Error;
           <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, xmpp_parsers::Error&gt; {
               <span class="prelude-val">Ok</span>(<span class="kw">match </span>s {
-                  <span class="string">&quot;true&quot; </span>| <span class="string">&quot;1&quot; </span>=&gt; <span class="macro-nonterminal">$elem::True</span>,
-                  <span class="string">&quot;false&quot; </span>| <span class="string">&quot;0&quot; </span>=&gt; <span class="macro-nonterminal">$elem::False</span>,
-                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">&quot;Unknown value for &#39;&quot;</span>, <span class="macro-nonterminal">$name</span>, <span class="string">&quot;&#39; attribute.&quot;</span>))),
+                  <span class="string">"true" </span>| <span class="string">"1" </span>=&gt; <span class="macro-nonterminal">$elem::True</span>,
+                  <span class="string">"false" </span>| <span class="string">"0" </span>=&gt; <span class="macro-nonterminal">$elem::False</span>,
+                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(<span class="string">"Unknown value for '"</span>, <span class="macro-nonterminal">$name</span>, <span class="string">"' attribute."</span>))),
               })
           }
       }
       <span class="kw">impl </span>::minidom::IntoAttributeValue <span class="kw">for </span><span class="macro-nonterminal">$elem </span>{
           <span class="kw">fn </span>into_attribute_value(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
               <span class="kw">match </span><span class="self">self </span>{
-                  <span class="macro-nonterminal">$elem::True </span>=&gt; <span class="prelude-val">Some</span>(String::from(<span class="string">&quot;true&quot;</span>)),
+                  <span class="macro-nonterminal">$elem::True </span>=&gt; <span class="prelude-val">Some</span>(String::from(<span class="string">"true"</span>)),
                   <span class="macro-nonterminal">$elem::False </span>=&gt; <span class="prelude-val">None
               </span>}
           }
@@ -933,7 +935,7 @@
           <span class="kw">fn </span>into_attribute_value(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
               <span class="kw">match </span><span class="self">self </span>{
                   <span class="macro-nonterminal">$elem</span>(<span class="macro-nonterminal">$default</span>) =&gt; <span class="prelude-val">None</span>,
-                  <span class="macro-nonterminal">$elem</span>(value) =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, value)),
+                  <span class="macro-nonterminal">$elem</span>(value) =&gt; <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">"{}"</span>, value)),
               }
           }
       }
@@ -945,7 +947,7 @@
   );
 }
 
-<span class="macro">macro_rules! </span>generate_element_enum {
+<span class="macro">macro_rules!</span> generate_element_enum {
   ($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>:meta]</span>)* <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident, {$($(<span class="attr">#[<span class="macro-nonterminal">$enum_meta</span>:meta]</span>)* <span class="macro-nonterminal">$</span><span class="kw">enum</span>:<span class="macro-nonterminal">ident </span>=&gt; <span class="macro-nonterminal">$enum_name</span>:tt),+,}) =&gt; (
       <span class="macro">generate_element_enum!</span>($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)* <span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>, {$($(<span class="attr">#[<span class="macro-nonterminal">$enum_meta</span>]</span>)* <span class="macro-nonterminal">$</span><span class="kw">enum </span>=&gt; <span class="macro-nonterminal">$enum_name</span>),+});
   );
@@ -964,7 +966,7 @@
               <span class="macro">check_ns_only!</span>(elem, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>);
               <span class="prelude-val">Ok</span>(<span class="kw">match </span>elem.name() {
                   $(<span class="macro-nonterminal">$enum_name </span>=&gt; <span class="macro-nonterminal">$elem</span>::<span class="macro-nonterminal">$</span><span class="kw">enum</span>,)+
-                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro-nonterminal">xmpp_parsers::Error::ParseError</span>(<span class="macro">concat!</span>(<span class="string">&quot;This is not a &quot;</span>, <span class="macro-nonterminal">$name</span>, <span class="string">&quot; element.&quot;</span>))),
+                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro-nonterminal">xmpp_parsers::Error::ParseError</span>(<span class="macro">concat!</span>(<span class="string">"This is not a "</span>, <span class="macro-nonterminal">$name</span>, <span class="string">" element."</span>))),
               })
           }
       }
@@ -982,7 +984,7 @@
   );
 }
 
-<span class="macro">macro_rules! </span>generate_attribute_enum {
+<span class="macro">macro_rules!</span> generate_attribute_enum {
   ($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>:meta]</span>)* <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident, <span class="macro-nonterminal">$attr</span>:tt, {$($(<span class="attr">#[<span class="macro-nonterminal">$enum_meta</span>:meta]</span>)* <span class="macro-nonterminal">$</span><span class="kw">enum</span>:<span class="macro-nonterminal">ident </span>=&gt; <span class="macro-nonterminal">$enum_name</span>:tt),+,}) =&gt; (
       <span class="macro">generate_attribute_enum!</span>($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)* <span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>, <span class="macro-nonterminal">$attr</span>, {$($(<span class="attr">#[<span class="macro-nonterminal">$enum_meta</span>]</span>)* <span class="macro-nonterminal">$</span><span class="kw">enum </span>=&gt; <span class="macro-nonterminal">$enum_name</span>),+});
   );
@@ -1001,7 +1003,7 @@
               <span class="macro">check_ns_only!</span>(elem, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>);
               <span class="prelude-val">Ok</span>(<span class="kw">match </span><span class="macro">get_attr!</span>(elem, <span class="macro-nonterminal">$attr</span>, Required) {
                   $(<span class="macro-nonterminal">$enum_name </span>=&gt; <span class="macro-nonterminal">$elem</span>::<span class="macro-nonterminal">$</span><span class="kw">enum</span>,)+
-                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro-nonterminal">xmpp_parsers::Error::ParseError</span>(<span class="macro">concat!</span>(<span class="string">&quot;Invalid &quot;</span>, <span class="macro-nonterminal">$name</span>, <span class="string">&quot; &quot;</span>, <span class="macro-nonterminal">$attr</span>, <span class="string">&quot; value.&quot;</span>))),
+                  <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro-nonterminal">xmpp_parsers::Error::ParseError</span>(<span class="macro">concat!</span>(<span class="string">"Invalid "</span>, <span class="macro-nonterminal">$name</span>, <span class="string">" "</span>, <span class="macro-nonterminal">$attr</span>, <span class="string">" value."</span>))),
               })
           }
       }
@@ -1017,34 +1019,34 @@
   );
 }
 
-<span class="macro">macro_rules! </span>check_self {
+<span class="macro">macro_rules!</span> check_self {
   (<span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident) =&gt; {
     <span class="macro">check_self!</span>(<span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>, <span class="macro-nonterminal">$name</span>);
   };
   (<span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident, <span class="macro-nonterminal">$pretty_name</span>:tt) =&gt; {
     <span class="kw">if </span>!<span class="macro-nonterminal">$elem</span>.is(<span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>) {
       <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-        <span class="string">&quot;This is not a &quot;</span>,
+        <span class="string">"This is not a "</span>,
         <span class="macro-nonterminal">$pretty_name</span>,
-        <span class="string">&quot; element.&quot;
+        <span class="string">" element."
       </span>)));
     }
   };
 }
 
-<span class="macro">macro_rules! </span>check_ns_only {
+<span class="macro">macro_rules!</span> check_ns_only {
   (<span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident) =&gt; {
     <span class="kw">if </span>!<span class="macro-nonterminal">$elem</span>.has_ns(<span class="macro-nonterminal">$ns</span>) {
       <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-        <span class="string">&quot;This is not a &quot;</span>,
+        <span class="string">"This is not a "</span>,
         <span class="macro-nonterminal">$name</span>,
-        <span class="string">&quot; element.&quot;
+        <span class="string">" element."
       </span>)));
     }
   };
 }
 
-<span class="macro">macro_rules! </span>generate_empty_element {
+<span class="macro">macro_rules!</span> generate_empty_element {
   ($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>:meta]</span>)* <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident) =&gt; (
       $(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)*
       <span class="attr">#[derive(Debug, Clone, PartialEq)]
@@ -1068,7 +1070,7 @@
   );
 }
 
-<span class="macro">macro_rules! </span>generate_id {
+<span class="macro">macro_rules!</span> generate_id {
   ($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>:meta]</span>)* <span class="macro-nonterminal">$elem</span>:ident) =&gt; (
       $(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)*
       <span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -1088,7 +1090,7 @@
   );
 }
 
-<span class="macro">macro_rules! </span>generate_elem_id {
+<span class="macro">macro_rules!</span> generate_elem_id {
   ($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>:meta]</span>)* <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident) =&gt; (
       <span class="macro">generate_elem_id!</span>($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)* <span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>, String);
       <span class="kw">impl </span>::std::str::FromStr <span class="kw">for </span><span class="macro-nonterminal">$elem </span>{
@@ -1121,7 +1123,7 @@
   );
 }
 
-<span class="macro">macro_rules! </span>decl_attr {
+<span class="macro">macro_rules!</span> decl_attr {
   (OptionEmpty, <span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">ty</span>) =&gt; (
       <span class="prelude-ty">Option</span>&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt;
   );
@@ -1139,7 +1141,7 @@
   </span>);
 }
 
-<span class="macro">macro_rules! </span><span class="macro-nonterminal">start_decl </span>{
+<span class="macro">macro_rules!</span> <span class="macro-nonterminal">start_decl </span>{
   (Vec, <span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">ty</span>) =&gt; (
       Vec&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt;
   );
@@ -1154,7 +1156,7 @@
   );
 }
 
-<span class="macro">macro_rules! </span>start_parse_elem {
+<span class="macro">macro_rules!</span> start_parse_elem {
   (<span class="macro-nonterminal">$temp</span>:ident: Vec) =&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span><span class="macro-nonterminal">$temp </span>= Vec::new();
   };
@@ -1169,7 +1171,7 @@
   };
 }
 
-<span class="macro">macro_rules! </span>do_parse {
+<span class="macro">macro_rules!</span> do_parse {
   (<span class="macro-nonterminal">$elem</span>:ident, Element) =&gt; {
     <span class="macro-nonterminal">$elem</span>.clone()
   };
@@ -1181,18 +1183,18 @@
   </span>};
 }
 
-<span class="macro">macro_rules! </span>do_parse_elem {
+<span class="macro">macro_rules!</span> do_parse_elem {
   (<span class="macro-nonterminal">$temp</span>:ident: Vec = <span class="macro-nonterminal">$constructor</span>:ident =&gt; <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$parent_name</span>:tt) =&gt; {
     <span class="macro-nonterminal">$temp</span>.push(<span class="macro">do_parse!</span>(<span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$constructor</span>));
   };
   (<span class="macro-nonterminal">$temp</span>:ident: <span class="prelude-ty">Option </span>= <span class="macro-nonterminal">$constructor</span>:ident =&gt; <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$parent_name</span>:tt) =&gt; {
     <span class="kw">if </span><span class="macro-nonterminal">$temp</span>.is_some() {
       <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-        <span class="string">&quot;Element &quot;</span>,
+        <span class="string">"Element "</span>,
         <span class="macro-nonterminal">$parent_name</span>,
-        <span class="string">&quot; must not have more than one &quot;</span>,
+        <span class="string">" must not have more than one "</span>,
         <span class="macro-nonterminal">$name</span>,
-        <span class="string">&quot; child.&quot;
+        <span class="string">" child."
       </span>)));
     }
     <span class="macro-nonterminal">$temp </span>= <span class="prelude-val">Some</span>(<span class="macro">do_parse!</span>(<span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$constructor</span>));
@@ -1200,11 +1202,11 @@
   (<span class="macro-nonterminal">$temp</span>:ident: Required = <span class="macro-nonterminal">$constructor</span>:ident =&gt; <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$parent_name</span>:tt) =&gt; {
     <span class="kw">if </span><span class="macro-nonterminal">$temp</span>.is_some() {
       <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-        <span class="string">&quot;Element &quot;</span>,
+        <span class="string">"Element "</span>,
         <span class="macro-nonterminal">$parent_name</span>,
-        <span class="string">&quot; must not have more than one &quot;</span>,
+        <span class="string">" must not have more than one "</span>,
         <span class="macro-nonterminal">$name</span>,
-        <span class="string">&quot; child.&quot;
+        <span class="string">" child."
       </span>)));
     }
     <span class="macro-nonterminal">$temp </span>= <span class="prelude-val">Some</span>(<span class="macro">do_parse!</span>(<span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$constructor</span>));
@@ -1212,18 +1214,18 @@
   (<span class="macro-nonterminal">$temp</span>:ident: Present = <span class="macro-nonterminal">$constructor</span>:ident =&gt; <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$parent_name</span>:tt) =&gt; {
     <span class="kw">if </span><span class="macro-nonterminal">$temp </span>{
       <span class="kw">return </span><span class="prelude-val">Err</span>(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-        <span class="string">&quot;Element &quot;</span>,
+        <span class="string">"Element "</span>,
         <span class="macro-nonterminal">$parent_name</span>,
-        <span class="string">&quot; must not have more than one &quot;</span>,
+        <span class="string">" must not have more than one "</span>,
         <span class="macro-nonterminal">$name</span>,
-        <span class="string">&quot; child.&quot;
+        <span class="string">" child."
       </span>)));
     }
     <span class="macro-nonterminal">$temp </span>= <span class="bool-val">true</span>;
   };
 }
 
-<span class="macro">macro_rules! </span>finish_parse_elem {
+<span class="macro">macro_rules!</span> finish_parse_elem {
   (<span class="macro-nonterminal">$temp</span>:ident: Vec = <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$parent_name</span>:tt) =&gt; {
     <span class="macro-nonterminal">$temp
   </span>};
@@ -1232,11 +1234,11 @@
   </span>};
   (<span class="macro-nonterminal">$temp</span>:ident: Required = <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$parent_name</span>:tt) =&gt; {
     <span class="macro-nonterminal">$temp</span>.ok_or(xmpp_parsers::Error::ParseError(<span class="macro">concat!</span>(
-      <span class="string">&quot;Missing child &quot;</span>,
+      <span class="string">"Missing child "</span>,
       <span class="macro-nonterminal">$name</span>,
-      <span class="string">&quot; in &quot;</span>,
+      <span class="string">" in "</span>,
       <span class="macro-nonterminal">$parent_name</span>,
-      <span class="string">&quot; element.&quot;
+      <span class="string">" element."
     </span>)))<span class="question-mark">?
   </span>};
   (<span class="macro-nonterminal">$temp</span>:ident: Present = <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$parent_name</span>:tt) =&gt; {
@@ -1244,7 +1246,7 @@
   </span>};
 }
 
-<span class="macro">macro_rules! </span>generate_serialiser {
+<span class="macro">macro_rules!</span> generate_serialiser {
   (<span class="macro-nonterminal">$builder</span>:ident, <span class="macro-nonterminal">$parent</span>:ident, <span class="macro-nonterminal">$elem</span>:ident, Required, String, (<span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident)) =&gt; {
     <span class="macro-nonterminal">$builder</span>.append(
       xmpp_parsers::Element::builder(<span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>).append(::minidom::Node::Text(<span class="macro-nonterminal">$parent</span>.<span class="macro-nonterminal">$elem</span>)),
@@ -1286,7 +1288,7 @@
   };
 }
 
-<span class="macro">macro_rules! </span>generate_child_test {
+<span class="macro">macro_rules!</span> generate_child_test {
   (<span class="macro-nonterminal">$child</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="kw-2">*</span>) =&gt; {
     <span class="macro-nonterminal">$child</span>.is(<span class="macro-nonterminal">$name</span>, ::minidom::NSChoice::Any)
   };
@@ -1295,7 +1297,7 @@
   };
 }
 
-<span class="macro">macro_rules! </span>generate_element {
+<span class="macro">macro_rules!</span> generate_element {
   ($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>:meta]</span>)* <span class="macro-nonterminal">$elem</span>:ident, <span class="macro-nonterminal">$name</span>:tt, <span class="macro-nonterminal">$ns</span>:ident, attributes: [$($(<span class="attr">#[<span class="macro-nonterminal">$attr_meta</span>:meta]</span>)* <span class="macro-nonterminal">$attr</span>:ident: <span class="macro-nonterminal">$attr_action</span>:tt&lt;<span class="macro-nonterminal">$attr_type</span>:ty&gt; = <span class="macro-nonterminal">$attr_name</span>:tt),+,]) =&gt; (
       <span class="macro">generate_element!</span>($(<span class="attr">#[<span class="macro-nonterminal">$meta</span>]</span>)* <span class="macro-nonterminal">$elem</span>, <span class="macro-nonterminal">$name</span>, <span class="macro-nonterminal">$ns</span>, attributes: [$($(<span class="attr">#[<span class="macro-nonterminal">$attr_meta</span>]</span>)* <span class="macro-nonterminal">$attr</span>: <span class="macro-nonterminal">$attr_action</span>&lt;<span class="macro-nonterminal">$attr_type</span>&gt; = <span class="macro-nonterminal">$attr_name</span>),<span class="kw-2">*</span>], children: []);
   );
@@ -1382,30 +1384,30 @@
 }
 
 <span class="attr">#[cfg(test)]
-</span><span class="macro">macro_rules! </span>assert_size (
+</span><span class="macro">macro_rules!</span> assert_size (
   (<span class="macro-nonterminal">$t</span>:ty, <span class="macro-nonterminal">$sz</span>:expr) =&gt; (
       <span class="macro">assert_eq!</span>(::std::mem::size_of::&lt;<span class="macro-nonterminal">$t</span>&gt;(), <span class="macro-nonterminal">$sz</span>);
   );
 );
 
 <span class="comment">// TODO: move that to src/pubsub/mod.rs, once we figure out how to use macros from there.
-</span><span class="macro">macro_rules! </span>impl_pubsub_item {
+</span><span class="macro">macro_rules!</span> impl_pubsub_item {
   (<span class="macro-nonterminal">$item</span>:ident, <span class="macro-nonterminal">$ns</span>:ident) =&gt; {
     <span class="kw">impl </span>::std::convert::TryFrom&lt;xmpp_parsers::Element&gt; <span class="kw">for </span><span class="macro-nonterminal">$item </span>{
       <span class="kw">type </span>Error = Error;
 
       <span class="kw">fn </span>try_from(elem: xmpp_parsers::Element) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="macro-nonterminal">$item</span>, Error&gt; {
-        <span class="macro">check_self!</span>(elem, <span class="string">&quot;item&quot;</span>, <span class="macro-nonterminal">$ns</span>);
+        <span class="macro">check_self!</span>(elem, <span class="string">"item"</span>, <span class="macro-nonterminal">$ns</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>payloads = elem.children().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         <span class="kw">let </span>payload = payloads.pop();
         <span class="kw">if </span>!payloads.is_empty() {
           <span class="kw">return </span><span class="prelude-val">Err</span>(Error::ParseError(
-            <span class="string">&quot;More than a single payload in item element.&quot;</span>,
+            <span class="string">"More than a single payload in item element."</span>,
           ));
         }
         <span class="prelude-val">Ok</span>(<span class="macro-nonterminal">$item</span>(xmpp_parsers::pubsub::Item {
-          id: <span class="macro">get_attr!</span>(elem, <span class="string">&quot;id&quot;</span>, <span class="prelude-ty">Option</span>),
-          publisher: <span class="macro">get_attr!</span>(elem, <span class="string">&quot;publisher&quot;</span>, <span class="prelude-ty">Option</span>),
+          id: <span class="macro">get_attr!</span>(elem, <span class="string">"id"</span>, <span class="prelude-ty">Option</span>),
+          publisher: <span class="macro">get_attr!</span>(elem, <span class="string">"publisher"</span>, <span class="prelude-ty">Option</span>),
           payload,
         }))
       }
@@ -1413,9 +1415,9 @@
 
     <span class="kw">impl </span>From&lt;<span class="macro-nonterminal">$item</span>&gt; <span class="kw">for </span>xmpp_parsers::Element {
       <span class="kw">fn </span>from(item: <span class="macro-nonterminal">$item</span>) -&gt; xmpp_parsers::Element {
-        xmpp_parsers::Element::builder(<span class="string">&quot;item&quot;</span>, <span class="macro-nonterminal">$ns</span>)
-          .attr(<span class="string">&quot;id&quot;</span>, item.<span class="number">0</span>.id)
-          .attr(<span class="string">&quot;publisher&quot;</span>, item.<span class="number">0</span>.publisher)
+        xmpp_parsers::Element::builder(<span class="string">"item"</span>, <span class="macro-nonterminal">$ns</span>)
+          .attr(<span class="string">"id"</span>, item.<span class="number">0</span>.id)
+          .attr(<span class="string">"publisher"</span>, item.<span class="number">0</span>.publisher)
           .append_all(item.<span class="number">0</span>.payload)
           .build()
       }

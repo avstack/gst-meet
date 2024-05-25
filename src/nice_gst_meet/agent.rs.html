@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `nice-gst-meet/src/agent.rs`."><title>agent.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nice_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0 (90c541806 2023-05-31)" data-search-js="search-e077946657036a58.js" data-settings-js="settings-298e1ea74db45b39.js" data-settings-css="settings-7bfb4c59cc6bc502.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../../static.files/source-script-905937fbbdc8e9ea.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f61008743c98d196.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../nice_gst_meet/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `nice-gst-meet/src/agent.rs`."><title>agent.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="nice_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../nice_gst_meet/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -2125,6 +2127,7 @@
 <a href="#2125" id="2125">2125</a>
 <a href="#2126" id="2126">2126</a>
 <a href="#2127" id="2127">2127</a>
+<a href="#2128" id="2128">2128</a>
 </pre></div><pre class="rust"><code><span class="comment">// Generated by gir (https://github.com/gtk-rs/gir @ 5bbf6cb)
 // from ../../gir-files (@ 8e47c67)
 // DO NOT EDIT
@@ -2136,21 +2139,22 @@
   object::ObjectType <span class="kw">as </span>ObjectType_,
   signal::{connect_raw, SignalHandlerId},
   translate::<span class="kw-2">*</span>,
-  StaticType, ToValue,
+  types::StaticType,
+  value::ToValue,
 };
 <span class="kw">use </span>libc::{c_char, c_uint};
 <span class="kw">use </span>nice_sys <span class="kw">as </span>ffi;
 
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-#[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
+<span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+#[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
 </span><span class="kw">use </span><span class="kw">crate</span>::AgentOption;
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-#[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
+<span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+#[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
 </span><span class="kw">use </span><span class="kw">crate</span>::ComponentState;
 <span class="kw">use crate</span>::{Candidate, Compatibility, RelayType};
 
-<span class="macro">glib::wrapper! </span>{
-    <span class="attr">#[doc(alias = <span class="string">&quot;NiceAgent&quot;</span>)]
+<span class="macro">glib::wrapper!</span> {
+    <span class="attr">#[doc(alias = <span class="string">"NiceAgent"</span>)]
     </span><span class="kw">pub struct </span>Agent(Object&lt;ffi::NiceAgent, ffi::NiceAgentClass&gt;);
 
     <span class="kw">match fn </span>{
@@ -2161,7 +2165,7 @@
 <span class="kw">unsafe impl </span>Send <span class="kw">for </span>Agent {}
 <span class="kw">unsafe impl </span>Sync <span class="kw">for </span>Agent {}
 
-<span class="kw">extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>attach_recv_cb(
+<span class="kw">extern </span><span class="string">"C" </span><span class="kw">fn </span>attach_recv_cb(
   agent: <span class="kw-2">*mut </span>ffi::NiceAgent,
   stream_id: c_uint,
   component_id: c_uint,
@@ -2186,7 +2190,7 @@
 }
 
 <span class="kw">impl </span>Agent {
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_new&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_new"</span>)]
   </span><span class="kw">pub fn </span>new(ctx: <span class="kw-2">&amp;</span>glib::MainContext, compat: Compatibility) -&gt; Agent {
     <span class="kw">unsafe </span>{
       Agent::from_glib_full(ffi::nice_agent_new(
@@ -2196,9 +2200,9 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_new_full&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_new_full"</span>)]
   </span><span class="kw">pub fn </span>new_full(ctx: <span class="kw-2">&amp;</span>glib::MainContext, compat: Compatibility, flags: AgentOption) -&gt; Agent {
     <span class="kw">unsafe </span>{
       Agent::from_glib_full(ffi::nice_agent_new_full(
@@ -2209,7 +2213,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_new_reliable&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_new_reliable"</span>)]
   </span><span class="kw">pub fn </span>new_reliable(ctx: <span class="kw-2">&amp;</span>glib::MainContext, compat: Compatibility) -&gt; Agent {
     <span class="kw">unsafe </span>{
       Agent::from_glib_full(ffi::nice_agent_new_reliable(
@@ -2219,12 +2223,12 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_add_stream&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_add_stream"</span>)]
   </span><span class="kw">pub fn </span>add_stream(<span class="kw-2">&amp;</span><span class="self">self</span>, n_components: u32) -&gt; u32 {
     <span class="kw">unsafe </span>{ ffi::nice_agent_add_stream(<span class="self">self</span>.to_glib_none().<span class="number">0</span>, n_components) }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_attach_recv&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_attach_recv"</span>)]
   </span><span class="kw">pub fn </span>attach_recv(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     stream_id: u32,
@@ -2245,9 +2249,9 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_20&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_20&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_consent_lost&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_20"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_20"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_consent_lost"</span>)]
   </span><span class="kw">pub fn </span>consent_lost(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_consent_lost(
@@ -2258,9 +2262,9 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_6&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_6&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_forget_relays&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_6"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_6"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_forget_relays"</span>)]
   </span><span class="kw">pub fn </span>forget_relays(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_forget_relays(
@@ -2271,7 +2275,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_gather_candidates&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_gather_candidates"</span>)]
   </span><span class="kw">pub fn </span>gather_candidates(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_gather_candidates(
@@ -2281,9 +2285,9 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_generate_local_candidate_sdp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_generate_local_candidate_sdp"</span>)]
   </span><span class="kw">pub fn </span>generate_local_candidate_sdp(<span class="kw-2">&amp;</span><span class="self">self</span>, candidate: <span class="kw-2">&amp;mut </span>Candidate) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
     <span class="kw">unsafe </span>{
       from_glib_full(ffi::nice_agent_generate_local_candidate_sdp(
@@ -2293,16 +2297,16 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_generate_local_sdp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_generate_local_sdp"</span>)]
   </span><span class="kw">pub fn </span>generate_local_sdp(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;glib::GString&gt; {
     <span class="kw">unsafe </span>{ from_glib_full(ffi::nice_agent_generate_local_sdp(<span class="self">self</span>.to_glib_none().<span class="number">0</span>)) }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_generate_local_stream_sdp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_generate_local_stream_sdp"</span>)]
   </span><span class="kw">pub fn </span>generate_local_stream_sdp(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, include_non_ice: bool) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
     <span class="kw">unsafe </span>{
       from_glib_full(ffi::nice_agent_generate_local_stream_sdp(
@@ -2313,10 +2317,10 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_get_component_state&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;get_component_state&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_get_component_state"</span>)]
+  #[doc(alias = <span class="string">"get_component_state"</span>)]
   </span><span class="kw">pub fn </span>component_state(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32) -&gt; ComponentState {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_get_component_state(
@@ -2327,8 +2331,8 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_get_default_local_candidate&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;get_default_local_candidate&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_get_default_local_candidate"</span>)]
+  #[doc(alias = <span class="string">"get_default_local_candidate"</span>)]
   </span><span class="kw">pub fn </span>default_local_candidate(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32) -&gt; <span class="prelude-ty">Option</span>&lt;Candidate&gt; {
     <span class="kw">unsafe </span>{
       from_glib_full(ffi::nice_agent_get_default_local_candidate(
@@ -2339,8 +2343,8 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_get_local_candidates&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;get_local_candidates&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_get_local_candidates"</span>)]
+  #[doc(alias = <span class="string">"get_local_candidates"</span>)]
   </span><span class="kw">pub fn </span>local_candidates(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32) -&gt; Vec&lt;Candidate&gt; {
     <span class="kw">unsafe </span>{
       FromGlibPtrContainer::from_glib_full(ffi::nice_agent_get_local_candidates(
@@ -2351,8 +2355,8 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_get_local_credentials&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;get_local_credentials&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_get_local_credentials"</span>)]
+  #[doc(alias = <span class="string">"get_local_credentials"</span>)]
   </span><span class="kw">pub fn </span>local_credentials(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32) -&gt; <span class="prelude-ty">Option</span>&lt;(String, String)&gt; {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>ufrag = ptr::null_mut();
@@ -2372,8 +2376,8 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_get_remote_candidates&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;get_remote_candidates&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_get_remote_candidates"</span>)]
+  #[doc(alias = <span class="string">"get_remote_candidates"</span>)]
   </span><span class="kw">pub fn </span>remote_candidates(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32) -&gt; Vec&lt;Candidate&gt; {
     <span class="kw">unsafe </span>{
       FromGlibPtrContainer::from_glib_full(ffi::nice_agent_get_remote_candidates(
@@ -2384,7 +2388,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_get_selected_pair&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_get_selected_pair"</span>)]
   </span><span class="kw">pub fn </span>get_selected_pair(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     stream_id: u32,
@@ -2409,10 +2413,10 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_get_stream_name&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;get_stream_name&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_get_stream_name"</span>)]
+  #[doc(alias = <span class="string">"get_stream_name"</span>)]
   </span><span class="kw">pub fn </span>stream_name(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
     <span class="kw">unsafe </span>{
       from_glib_none(ffi::nice_agent_get_stream_name(
@@ -2422,9 +2426,9 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_parse_remote_candidate_sdp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_parse_remote_candidate_sdp"</span>)]
   </span><span class="kw">pub fn </span>parse_remote_candidate_sdp(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, sdp: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Candidate&gt; {
     <span class="kw">unsafe </span>{
       from_glib_full(ffi::nice_agent_parse_remote_candidate_sdp(
@@ -2435,16 +2439,16 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_parse_remote_sdp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_parse_remote_sdp"</span>)]
   </span><span class="kw">pub fn </span>parse_remote_sdp(<span class="kw-2">&amp;</span><span class="self">self</span>, sdp: <span class="kw-2">&amp;</span>str) -&gt; i32 {
     <span class="kw">unsafe </span>{ ffi::nice_agent_parse_remote_sdp(<span class="self">self</span>.to_glib_none().<span class="number">0</span>, sdp.to_glib_none().<span class="number">0</span>) }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_parse_remote_stream_sdp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_parse_remote_stream_sdp"</span>)]
   </span><span class="kw">pub fn </span>parse_remote_stream_sdp(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     stream_id: u32,
@@ -2468,9 +2472,9 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_16&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_16&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_peer_candidate_gathering_done&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_16"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_16"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_peer_candidate_gathering_done"</span>)]
   </span><span class="kw">pub fn </span>peer_candidate_gathering_done(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_peer_candidate_gathering_done(
@@ -2480,21 +2484,21 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_remove_stream&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_remove_stream"</span>)]
   </span><span class="kw">pub fn </span>remove_stream(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32) {
     <span class="kw">unsafe </span>{
       ffi::nice_agent_remove_stream(<span class="self">self</span>.to_glib_none().<span class="number">0</span>, stream_id);
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_restart&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_restart"</span>)]
   </span><span class="kw">pub fn </span>restart(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{ from_glib(ffi::nice_agent_restart(<span class="self">self</span>.to_glib_none().<span class="number">0</span>)) }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_6&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_6&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_restart_stream&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_6"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_6"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_restart_stream"</span>)]
   </span><span class="kw">pub fn </span>restart_stream(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_restart_stream(
@@ -2504,7 +2508,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_send&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_send"</span>)]
   </span><span class="kw">pub fn </span>send(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32, len: u32, buf: <span class="kw-2">&amp;</span>str) -&gt; i32 {
     <span class="kw">unsafe </span>{
       ffi::nice_agent_send(
@@ -2517,7 +2521,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_local_credentials&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_local_credentials"</span>)]
   </span><span class="kw">pub fn </span>set_local_credentials(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, ufrag: <span class="kw-2">&amp;</span>str, pwd: <span class="kw-2">&amp;</span>str) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_set_local_credentials(
@@ -2529,7 +2533,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_port_range&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_port_range"</span>)]
   </span><span class="kw">pub fn </span>set_port_range(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, component_id: u32, min_port: u32, max_port: u32) {
     <span class="kw">unsafe </span>{
       ffi::nice_agent_set_port_range(
@@ -2543,7 +2547,7 @@
   }
 
   <span class="attr">#[allow(clippy::too_many_arguments)]
-  #[doc(alias = <span class="string">&quot;nice_agent_set_relay_info&quot;</span>)]
+  #[doc(alias = <span class="string">"nice_agent_set_relay_info"</span>)]
   </span><span class="kw">pub fn </span>set_relay_info(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     stream_id: u32,
@@ -2568,7 +2572,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_remote_candidates&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_remote_candidates"</span>)]
   </span><span class="kw">pub fn </span>set_remote_candidates(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     stream_id: u32,
@@ -2585,7 +2589,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_remote_credentials&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_remote_credentials"</span>)]
   </span><span class="kw">pub fn </span>set_remote_credentials(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, ufrag: <span class="kw-2">&amp;</span>str, pwd: <span class="kw-2">&amp;</span>str) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_set_remote_credentials(
@@ -2597,7 +2601,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_selected_pair&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_selected_pair"</span>)]
   </span><span class="kw">pub fn </span>set_selected_pair(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     stream_id: u32,
@@ -2616,7 +2620,7 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_selected_remote_candidate&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_selected_remote_candidate"</span>)]
   </span><span class="kw">pub fn </span>set_selected_remote_candidate(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     stream_id: u32,
@@ -2633,16 +2637,16 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_software&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_software"</span>)]
   </span><span class="kw">pub fn </span>set_software(<span class="kw-2">&amp;</span><span class="self">self</span>, software: <span class="kw-2">&amp;</span>str) {
     <span class="kw">unsafe </span>{
       ffi::nice_agent_set_software(<span class="self">self</span>.to_glib_none().<span class="number">0</span>, software.to_glib_none().<span class="number">0</span>);
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_4&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_4&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;nice_agent_set_stream_name&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_4"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_4"</span>)))]
+  #[doc(alias = <span class="string">"nice_agent_set_stream_name"</span>)]
   </span><span class="kw">pub fn </span>set_stream_name(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, name: <span class="kw-2">&amp;</span>str) -&gt; bool {
     <span class="kw">unsafe </span>{
       from_glib(ffi::nice_agent_set_stream_name(
@@ -2653,27 +2657,27 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;nice_agent_set_stream_tos&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"nice_agent_set_stream_tos"</span>)]
   </span><span class="kw">pub fn </span>set_stream_tos(<span class="kw-2">&amp;</span><span class="self">self</span>, stream_id: u32, tos: i32) {
     <span class="kw">unsafe </span>{
       ffi::nice_agent_set_stream_tos(<span class="self">self</span>.to_glib_none().<span class="number">0</span>, stream_id, tos);
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;bytestream-tcp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"bytestream-tcp"</span>)]
   </span><span class="kw">pub fn </span>is_bytestream_tcp(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;bytestream-tcp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"bytestream-tcp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `bytestream-tcp` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `bytestream-tcp` getter"</span>)
     }
   }
 
@@ -2682,413 +2686,413 @@
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;compatibility\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"compatibility\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `compatibility` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `compatibility` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_20&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_20&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;consent-freshness&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_20"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_20"</span>)))]
+  #[doc(alias = <span class="string">"consent-freshness"</span>)]
   </span><span class="kw">pub fn </span>is_consent_freshness(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;consent-freshness\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"consent-freshness\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `consent-freshness` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `consent-freshness` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;controlling-mode&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"controlling-mode"</span>)]
   </span><span class="kw">pub fn </span>is_controlling_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;controlling-mode\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"controlling-mode\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `controlling-mode` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `controlling-mode` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;controlling-mode&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"controlling-mode"</span>)]
   </span><span class="kw">pub fn </span>set_controlling_mode(<span class="kw-2">&amp;</span><span class="self">self</span>, controlling_mode: bool) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;controlling-mode\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"controlling-mode\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         controlling_mode.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_14&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_14&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;force-relay&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_14"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_14"</span>)))]
+  #[doc(alias = <span class="string">"force-relay"</span>)]
   </span><span class="kw">pub fn </span>is_force_relay(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;force-relay\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"force-relay\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `force-relay` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `force-relay` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_14&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_14&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;force-relay&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_14"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_14"</span>)))]
+  #[doc(alias = <span class="string">"force-relay"</span>)]
   </span><span class="kw">pub fn </span>set_force_relay(<span class="kw-2">&amp;</span><span class="self">self</span>, force_relay: bool) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;force-relay\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"force-relay\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         force_relay.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;full-mode&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"full-mode"</span>)]
   </span><span class="kw">pub fn </span>is_full_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;full-mode\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"full-mode\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `full-mode` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `full-mode` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-tcp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"ice-tcp"</span>)]
   </span><span class="kw">pub fn </span>is_ice_tcp(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;ice-tcp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"ice-tcp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `ice-tcp` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `ice-tcp` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-tcp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"ice-tcp"</span>)]
   </span><span class="kw">pub fn </span>set_ice_tcp(<span class="kw-2">&amp;</span><span class="self">self</span>, ice_tcp: bool) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;ice-tcp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"ice-tcp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         ice_tcp.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_16&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_16&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-trickle&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_16"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_16"</span>)))]
+  #[doc(alias = <span class="string">"ice-trickle"</span>)]
   </span><span class="kw">pub fn </span>is_ice_trickle(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;ice-trickle\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"ice-trickle\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `ice-trickle` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `ice-trickle` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_16&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_16&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-trickle&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_16"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_16"</span>)))]
+  #[doc(alias = <span class="string">"ice-trickle"</span>)]
   </span><span class="kw">pub fn </span>set_ice_trickle(<span class="kw-2">&amp;</span><span class="self">self</span>, ice_trickle: bool) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;ice-trickle\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"ice-trickle\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         ice_trickle.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-udp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"ice-udp"</span>)]
   </span><span class="kw">pub fn </span>is_ice_udp(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;ice-udp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"ice-udp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `ice-udp` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `ice-udp` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-udp&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"ice-udp"</span>)]
   </span><span class="kw">pub fn </span>set_ice_udp(<span class="kw-2">&amp;</span><span class="self">self</span>, ice_udp: bool) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;ice-udp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"ice-udp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         ice_udp.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_17&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_17&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;idle-timeout&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_17"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_17"</span>)))]
+  #[doc(alias = <span class="string">"idle-timeout"</span>)]
   </span><span class="kw">pub fn </span>idle_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;idle-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"idle-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `idle-timeout` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `idle-timeout` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_17&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_17&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;idle-timeout&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_17"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_17"</span>)))]
+  #[doc(alias = <span class="string">"idle-timeout"</span>)]
   </span><span class="kw">pub fn </span>set_idle_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>, idle_timeout: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;idle-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"idle-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         idle_timeout.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;keepalive-conncheck&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"keepalive-conncheck"</span>)]
   </span><span class="kw">pub fn </span>is_keepalive_conncheck(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;keepalive-conncheck\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"keepalive-conncheck\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `keepalive-conncheck` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `keepalive-conncheck` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;keepalive-conncheck&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"keepalive-conncheck"</span>)]
   </span><span class="kw">pub fn </span>set_keepalive_conncheck(<span class="kw-2">&amp;</span><span class="self">self</span>, keepalive_conncheck: bool) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;keepalive-conncheck\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"keepalive-conncheck\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         keepalive_conncheck.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="comment">//#[doc(alias = &quot;main-context&quot;)]
+  <span class="comment">//#[doc(alias = "main-context")]
   //pub fn main_context(&amp;self) -&gt; /*Unimplemented*/Fundamental: Pointer {
   //    unsafe {
   //        let mut value = glib::Value::from_type(&lt;/*Unknown type*/ as StaticType&gt;::static_type());
-  //        glib::gobject_ffi::g_object_get_property(self.as_ptr() as *mut glib::gobject_ffi::GObject, b&quot;main-context\0&quot;.as_ptr() as *const _, value.to_glib_none_mut().0);
-  //        value.get().expect(&quot;Return Value for property `main-context` getter&quot;)
+  //        glib::gobject_ffi::g_object_get_property(self.as_ptr() as *mut glib::gobject_ffi::GObject, b"main-context\0".as_ptr() as *const _, value.to_glib_none_mut().0);
+  //        value.get().expect("Return Value for property `main-context` getter")
   //    }
   //}
 
-  </span><span class="attr">#[doc(alias = <span class="string">&quot;max-connectivity-checks&quot;</span>)]
+  </span><span class="attr">#[doc(alias = <span class="string">"max-connectivity-checks"</span>)]
   </span><span class="kw">pub fn </span>max_connectivity_checks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;max-connectivity-checks\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"max-connectivity-checks\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `max-connectivity-checks` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `max-connectivity-checks` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;max-connectivity-checks&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"max-connectivity-checks"</span>)]
   </span><span class="kw">pub fn </span>set_max_connectivity_checks(<span class="kw-2">&amp;</span><span class="self">self</span>, max_connectivity_checks: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;max-connectivity-checks\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"max-connectivity-checks\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         max_connectivity_checks.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-ip&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-ip"</span>)]
   </span><span class="kw">pub fn </span>proxy_ip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;glib::GString&gt; {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;glib::GString <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-ip\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-ip\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `proxy-ip` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `proxy-ip` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-ip&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-ip"</span>)]
   </span><span class="kw">pub fn </span>set_proxy_ip(<span class="kw-2">&amp;</span><span class="self">self</span>, proxy_ip: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-ip\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-ip\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         proxy_ip.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-password&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-password"</span>)]
   </span><span class="kw">pub fn </span>proxy_password(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;glib::GString&gt; {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;glib::GString <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-password\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-password\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `proxy-password` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `proxy-password` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-password&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-password"</span>)]
   </span><span class="kw">pub fn </span>set_proxy_password(<span class="kw-2">&amp;</span><span class="self">self</span>, proxy_password: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-password\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-password\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         proxy_password.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-port&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-port"</span>)]
   </span><span class="kw">pub fn </span>proxy_port(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-port\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-port\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `proxy-port` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `proxy-port` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-port&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-port"</span>)]
   </span><span class="kw">pub fn </span>set_proxy_port(<span class="kw-2">&amp;</span><span class="self">self</span>, proxy_port: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-port\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-port\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         proxy_port.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-type&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-type"</span>)]
   </span><span class="kw">pub fn </span>proxy_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-type\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-type\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `proxy-type` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `proxy-type` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-type&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-type"</span>)]
   </span><span class="kw">pub fn </span>set_proxy_type(<span class="kw-2">&amp;</span><span class="self">self</span>, proxy_type: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-type\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-type\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         proxy_type.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-username&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-username"</span>)]
   </span><span class="kw">pub fn </span>proxy_username(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;glib::GString&gt; {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;glib::GString <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-username\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-username\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `proxy-username` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `proxy-username` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-username&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"proxy-username"</span>)]
   </span><span class="kw">pub fn </span>set_proxy_username(<span class="kw-2">&amp;</span><span class="self">self</span>, proxy_username: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;proxy-username\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"proxy-username\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         proxy_username.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
@@ -3099,204 +3103,204 @@
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;reliable\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"reliable\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `reliable` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `reliable` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-initial-timeout&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-initial-timeout"</span>)]
   </span><span class="kw">pub fn </span>stun_initial_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-initial-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-initial-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `stun-initial-timeout` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `stun-initial-timeout` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-initial-timeout&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-initial-timeout"</span>)]
   </span><span class="kw">pub fn </span>set_stun_initial_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>, stun_initial_timeout: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-initial-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-initial-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         stun_initial_timeout.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-max-retransmissions&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-max-retransmissions"</span>)]
   </span><span class="kw">pub fn </span>stun_max_retransmissions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-max-retransmissions\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-max-retransmissions\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `stun-max-retransmissions` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `stun-max-retransmissions` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-max-retransmissions&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-max-retransmissions"</span>)]
   </span><span class="kw">pub fn </span>set_stun_max_retransmissions(<span class="kw-2">&amp;</span><span class="self">self</span>, stun_max_retransmissions: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-max-retransmissions\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-max-retransmissions\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         stun_max_retransmissions.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-pacing-timer&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"stun-pacing-timer"</span>)]
   </span><span class="kw">pub fn </span>stun_pacing_timer(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-pacing-timer\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-pacing-timer\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `stun-pacing-timer` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `stun-pacing-timer` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-pacing-timer&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"stun-pacing-timer"</span>)]
   </span><span class="kw">pub fn </span>set_stun_pacing_timer(<span class="kw-2">&amp;</span><span class="self">self</span>, stun_pacing_timer: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-pacing-timer\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-pacing-timer\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         stun_pacing_timer.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-reliable-timeout&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-reliable-timeout"</span>)]
   </span><span class="kw">pub fn </span>stun_reliable_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-reliable-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-reliable-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `stun-reliable-timeout` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `stun-reliable-timeout` getter"</span>)
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-reliable-timeout&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-reliable-timeout"</span>)]
   </span><span class="kw">pub fn </span>set_stun_reliable_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>, stun_reliable_timeout: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-reliable-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-reliable-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         stun_reliable_timeout.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-server&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"stun-server"</span>)]
   </span><span class="kw">pub fn </span>stun_server(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;glib::GString&gt; {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;glib::GString <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-server\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-server\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `stun-server` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `stun-server` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-server&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"stun-server"</span>)]
   </span><span class="kw">pub fn </span>set_stun_server(<span class="kw-2">&amp;</span><span class="self">self</span>, stun_server: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-server\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-server\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         stun_server.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-server-port&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"stun-server-port"</span>)]
   </span><span class="kw">pub fn </span>stun_server_port(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-server-port\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-server-port\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `stun-server-port` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `stun-server-port` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-server-port&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"stun-server-port"</span>)]
   </span><span class="kw">pub fn </span>set_stun_server_port(<span class="kw-2">&amp;</span><span class="self">self</span>, stun_server_port: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;stun-server-port\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"stun-server-port\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         stun_server_port.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;support-renomination&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"support-renomination"</span>)]
   </span><span class="kw">pub fn </span>supports_renomination(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;support-renomination\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"support-renomination\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `support-renomination` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `support-renomination` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;support-renomination&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"support-renomination"</span>)]
   </span><span class="kw">pub fn </span>set_support_renomination(<span class="kw-2">&amp;</span><span class="self">self</span>, support_renomination: bool) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;support-renomination\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"support-renomination\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         support_renomination.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
@@ -3307,12 +3311,12 @@
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;bool <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;upnp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"upnp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `upnp` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `upnp` getter"</span>)
     }
   }
 
@@ -3320,44 +3324,44 @@
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;upnp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"upnp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         upnp.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;upnp-timeout&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"upnp-timeout"</span>)]
   </span><span class="kw">pub fn </span>upnp_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
     <span class="kw">unsafe </span>{
       <span class="kw">let </span><span class="kw-2">mut </span>value = glib::Value::from_type(&lt;u32 <span class="kw">as </span>StaticType&gt;::static_type());
       glib::gobject_ffi::g_object_get_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;upnp-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"upnp-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         value.to_glib_none_mut().<span class="number">0</span>,
       );
       value
         .get()
-        .expect(<span class="string">&quot;Return Value for property `upnp-timeout` getter&quot;</span>)
+        .expect(<span class="string">"Return Value for property `upnp-timeout` getter"</span>)
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;upnp-timeout&quot;</span>)]
+  <span class="attr">#[doc(alias = <span class="string">"upnp-timeout"</span>)]
   </span><span class="kw">pub fn </span>set_upnp_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>, upnp_timeout: u32) {
     <span class="kw">unsafe </span>{
       glib::gobject_ffi::g_object_set_property(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>glib::gobject_ffi::GObject,
-        <span class="string">b&quot;upnp-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="string">b"upnp-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
         upnp_timeout.to_value().to_glib_none().<span class="number">0</span>,
       );
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;candidate-gathering-done&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_candidate_gathering_done&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"candidate-gathering-done"</span>)]
+  </span><span class="kw">pub fn </span>connect_candidate_gathering_done&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>candidate_gathering_done_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent, u32) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>candidate_gathering_done_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent, u32) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
       f: glib::ffi::gpointer,
@@ -3369,8 +3373,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;candidate-gathering-done\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"candidate-gathering-done\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           candidate_gathering_done_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3378,13 +3382,13 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;component-state-changed&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_component_state_changed&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, u32) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"component-state-changed"</span>)]
+  </span><span class="kw">pub fn </span>connect_component_state_changed&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, u32) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>component_state_changed_trampoline&lt;
-      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, u32) + <span class="lifetime">&#39;static</span>,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>component_state_changed_trampoline&lt;
+      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, u32) + <span class="lifetime">'static</span>,
     &gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
@@ -3399,8 +3403,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;component-state-changed\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"component-state-changed\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           component_state_changed_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3408,13 +3412,13 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;initial-binding-request-received&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_initial_binding_request_received&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"initial-binding-request-received"</span>)]
+  </span><span class="kw">pub fn </span>connect_initial_binding_request_received&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>initial_binding_request_received_trampoline&lt;
-      F: Fn(<span class="kw-2">&amp;</span>Agent, u32) + <span class="lifetime">&#39;static</span>,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>initial_binding_request_received_trampoline&lt;
+      F: Fn(<span class="kw-2">&amp;</span>Agent, u32) + <span class="lifetime">'static</span>,
     &gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
@@ -3427,8 +3431,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;initial-binding-request-received\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"initial-binding-request-received\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           initial_binding_request_received_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3436,13 +3440,13 @@
     }
   }
 
-  <span class="attr">#[cfg_attr(feature = <span class="string">&quot;v0_1_8&quot;</span>, deprecated = <span class="string">&quot;Since 0.1.8&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;new-candidate&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_new_candidate&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg_attr(feature = <span class="string">"v0_1_8"</span>, deprecated = <span class="string">"Since 0.1.8"</span>)]
+  #[doc(alias = <span class="string">"new-candidate"</span>)]
+  </span><span class="kw">pub fn </span>connect_new_candidate&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>new_candidate_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>new_candidate_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
       component_id: libc::c_uint,
@@ -3461,8 +3465,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;new-candidate\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"new-candidate\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           new_candidate_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3470,14 +3474,14 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;new-candidate-full&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_new_candidate_full&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"new-candidate-full"</span>)]
+  </span><span class="kw">pub fn </span>connect_new_candidate_full&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>new_candidate_full_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>new_candidate_full_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       candidate: <span class="kw-2">*mut </span>ffi::NiceCandidate,
       f: glib::ffi::gpointer,
@@ -3489,8 +3493,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;new-candidate-full\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"new-candidate-full\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           new_candidate_full_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3498,14 +3502,14 @@
     }
   }
 
-  <span class="attr">#[cfg_attr(feature = <span class="string">&quot;v0_1_8&quot;</span>, deprecated = <span class="string">&quot;Since 0.1.8&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;new-remote-candidate&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_new_remote_candidate&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg_attr(feature = <span class="string">"v0_1_8"</span>, deprecated = <span class="string">"Since 0.1.8"</span>)]
+  #[doc(alias = <span class="string">"new-remote-candidate"</span>)]
+  </span><span class="kw">pub fn </span>connect_new_remote_candidate&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>new_remote_candidate_trampoline&lt;
-      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">&#39;static</span>,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>new_remote_candidate_trampoline&lt;
+      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>str) + <span class="lifetime">'static</span>,
     &gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
@@ -3525,8 +3529,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;new-remote-candidate\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"new-remote-candidate\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           new_remote_candidate_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3534,15 +3538,15 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;new-remote-candidate-full&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_new_remote_candidate_full&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"new-remote-candidate-full"</span>)]
+  </span><span class="kw">pub fn </span>connect_new_remote_candidate_full&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>new_remote_candidate_full_trampoline&lt;
-      F: Fn(<span class="kw-2">&amp;</span>Agent, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">&#39;static</span>,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>new_remote_candidate_full_trampoline&lt;
+      F: Fn(<span class="kw-2">&amp;</span>Agent, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">'static</span>,
     &gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       candidate: <span class="kw-2">*mut </span>ffi::NiceCandidate,
@@ -3555,8 +3559,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;new-remote-candidate-full\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"new-remote-candidate-full\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           new_remote_candidate_full_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3564,14 +3568,14 @@
     }
   }
 
-  <span class="attr">#[cfg_attr(feature = <span class="string">&quot;v0_1_8&quot;</span>, deprecated = <span class="string">&quot;Since 0.1.8&quot;</span>)]
-  #[doc(alias = <span class="string">&quot;new-selected-pair&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_new_selected_pair&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg_attr(feature = <span class="string">"v0_1_8"</span>, deprecated = <span class="string">"Since 0.1.8"</span>)]
+  #[doc(alias = <span class="string">"new-selected-pair"</span>)]
+  </span><span class="kw">pub fn </span>connect_new_selected_pair&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>new_selected_pair_trampoline&lt;
-      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str) + <span class="lifetime">&#39;static</span>,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>new_selected_pair_trampoline&lt;
+      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str) + <span class="lifetime">'static</span>,
     &gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
@@ -3593,8 +3597,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;new-selected-pair\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"new-selected-pair\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           new_selected_pair_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3602,17 +3606,17 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;new-selected-pair-full&quot;</span>)]
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"new-selected-pair-full"</span>)]
   </span><span class="kw">pub fn </span>connect_new_selected_pair_full&lt;
-    F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>Candidate, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">&#39;static</span>,
+    F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32, <span class="kw-2">&amp;</span>Candidate, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">'static</span>,
   &gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>new_selected_pair_full_trampoline&lt;
-      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>Candidate, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">&#39;static</span>,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>new_selected_pair_full_trampoline&lt;
+      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32, <span class="kw-2">&amp;</span>Candidate, <span class="kw-2">&amp;</span>Candidate) + <span class="lifetime">'static</span>,
     &gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
@@ -3634,8 +3638,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;new-selected-pair-full\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"new-selected-pair-full\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           new_selected_pair_full_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3643,13 +3647,13 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;reliable-transport-writable&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_reliable_transport_writable&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"reliable-transport-writable"</span>)]
+  </span><span class="kw">pub fn </span>connect_reliable_transport_writable&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>, u32, u32) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>reliable_transport_writable_trampoline&lt;
-      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32) + <span class="lifetime">&#39;static</span>,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>reliable_transport_writable_trampoline&lt;
+      F: Fn(<span class="kw-2">&amp;</span>Agent, u32, u32) + <span class="lifetime">'static</span>,
     &gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       stream_id: libc::c_uint,
@@ -3663,8 +3667,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;reliable-transport-writable\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"reliable-transport-writable\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           reliable_transport_writable_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3672,18 +3676,18 @@
     }
   }
 
-  <span class="comment">//#[cfg(any(feature = &quot;v0_1_5&quot;, feature = &quot;dox&quot;))]
-  //#[cfg_attr(feature = &quot;dox&quot;, doc(cfg(feature = &quot;v0_1_5&quot;)))]
-  //#[doc(alias = &quot;streams-removed&quot;)]
+  <span class="comment">//#[cfg(any(feature = "v0_1_5", feature = "dox"))]
+  //#[cfg_attr(feature = "dox", doc(cfg(feature = "v0_1_5")))]
+  //#[doc(alias = "streams-removed")]
   //pub fn connect_streams_removed&lt;Unsupported or ignored types&gt;(&amp;self, f: F) -&gt; SignalHandlerId {
   //    Empty ctype stream_ids: *.CArray TypeId { ns_id: 0, id: 15 }
   //}
 
-  </span><span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;bytestream-tcp&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_bytestream_tcp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_bytestream_tcp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  </span><span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"bytestream-tcp"</span>)]
+  </span><span class="kw">pub fn </span>connect_bytestream_tcp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_bytestream_tcp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3695,8 +3699,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::bytestream-tcp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::bytestream-tcp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_bytestream_tcp_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3704,9 +3708,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;controlling-mode&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_controlling_mode_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_controlling_mode_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"controlling-mode"</span>)]
+  </span><span class="kw">pub fn </span>connect_controlling_mode_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_controlling_mode_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3718,8 +3722,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::controlling-mode\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::controlling-mode\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_controlling_mode_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3727,11 +3731,11 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_14&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_14&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;force-relay&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_force_relay_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_force_relay_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_14"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_14"</span>)))]
+  #[doc(alias = <span class="string">"force-relay"</span>)]
+  </span><span class="kw">pub fn </span>connect_force_relay_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_force_relay_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3743,8 +3747,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::force-relay\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::force-relay\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_force_relay_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3752,11 +3756,11 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-tcp&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_ice_tcp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_ice_tcp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"ice-tcp"</span>)]
+  </span><span class="kw">pub fn </span>connect_ice_tcp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_ice_tcp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3768,8 +3772,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::ice-tcp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::ice-tcp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_ice_tcp_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3777,11 +3781,11 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_16&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_16&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-trickle&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_ice_trickle_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_ice_trickle_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_16"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_16"</span>)))]
+  #[doc(alias = <span class="string">"ice-trickle"</span>)]
+  </span><span class="kw">pub fn </span>connect_ice_trickle_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_ice_trickle_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3793,8 +3797,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::ice-trickle\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::ice-trickle\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_ice_trickle_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3802,11 +3806,11 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;ice-udp&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_ice_udp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_ice_udp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"ice-udp"</span>)]
+  </span><span class="kw">pub fn </span>connect_ice_udp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_ice_udp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3818,8 +3822,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::ice-udp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::ice-udp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_ice_udp_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3827,11 +3831,11 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_17&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_17&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;idle-timeout&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_idle_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_idle_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_17"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_17"</span>)))]
+  #[doc(alias = <span class="string">"idle-timeout"</span>)]
+  </span><span class="kw">pub fn </span>connect_idle_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_idle_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3843,8 +3847,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::idle-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::idle-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_idle_timeout_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3852,14 +3856,14 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_8&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_8&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;keepalive-conncheck&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_keepalive_conncheck_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_8"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_8"</span>)))]
+  #[doc(alias = <span class="string">"keepalive-conncheck"</span>)]
+  </span><span class="kw">pub fn </span>connect_keepalive_conncheck_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_keepalive_conncheck_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_keepalive_conncheck_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3871,8 +3875,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::keepalive-conncheck\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::keepalive-conncheck\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_keepalive_conncheck_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3880,12 +3884,12 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;max-connectivity-checks&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_max_connectivity_checks_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"max-connectivity-checks"</span>)]
+  </span><span class="kw">pub fn </span>connect_max_connectivity_checks_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_max_connectivity_checks_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_max_connectivity_checks_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3897,8 +3901,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::max-connectivity-checks\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::max-connectivity-checks\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_max_connectivity_checks_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3906,9 +3910,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-ip&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_proxy_ip_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_proxy_ip_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"proxy-ip"</span>)]
+  </span><span class="kw">pub fn </span>connect_proxy_ip_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_proxy_ip_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3920,8 +3924,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::proxy-ip\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::proxy-ip\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_proxy_ip_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3929,9 +3933,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-password&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_proxy_password_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_proxy_password_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"proxy-password"</span>)]
+  </span><span class="kw">pub fn </span>connect_proxy_password_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_proxy_password_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3943,8 +3947,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::proxy-password\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::proxy-password\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_proxy_password_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3952,9 +3956,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-port&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_proxy_port_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_proxy_port_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"proxy-port"</span>)]
+  </span><span class="kw">pub fn </span>connect_proxy_port_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_proxy_port_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3966,8 +3970,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::proxy-port\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::proxy-port\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_proxy_port_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3975,9 +3979,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-type&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_proxy_type_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_proxy_type_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"proxy-type"</span>)]
+  </span><span class="kw">pub fn </span>connect_proxy_type_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_proxy_type_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -3989,8 +3993,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::proxy-type\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::proxy-type\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_proxy_type_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -3998,9 +4002,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;proxy-username&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_proxy_username_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_proxy_username_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"proxy-username"</span>)]
+  </span><span class="kw">pub fn </span>connect_proxy_username_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_proxy_username_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4012,8 +4016,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::proxy-username\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::proxy-username\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_proxy_username_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4021,14 +4025,14 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-initial-timeout&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_stun_initial_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-initial-timeout"</span>)]
+  </span><span class="kw">pub fn </span>connect_stun_initial_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_stun_initial_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_stun_initial_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4040,8 +4044,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::stun-initial-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::stun-initial-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_stun_initial_timeout_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4049,14 +4053,14 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-max-retransmissions&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_stun_max_retransmissions_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-max-retransmissions"</span>)]
+  </span><span class="kw">pub fn </span>connect_stun_max_retransmissions_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_stun_max_retransmissions_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_stun_max_retransmissions_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4068,8 +4072,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::stun-max-retransmissions\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::stun-max-retransmissions\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_stun_max_retransmissions_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4077,9 +4081,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-pacing-timer&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_stun_pacing_timer_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_stun_pacing_timer_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"stun-pacing-timer"</span>)]
+  </span><span class="kw">pub fn </span>connect_stun_pacing_timer_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_stun_pacing_timer_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4091,8 +4095,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::stun-pacing-timer\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::stun-pacing-timer\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_stun_pacing_timer_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4100,14 +4104,14 @@
     }
   }
 
-  <span class="attr">#[cfg(any(feature = <span class="string">&quot;v0_1_15&quot;</span>, feature = <span class="string">&quot;dox&quot;</span>))]
-  #[cfg_attr(feature = <span class="string">&quot;dox&quot;</span>, doc(cfg(feature = <span class="string">&quot;v0_1_15&quot;</span>)))]
-  #[doc(alias = <span class="string">&quot;stun-reliable-timeout&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_stun_reliable_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[cfg(any(feature = <span class="string">"v0_1_15"</span>, feature = <span class="string">"dox"</span>))]
+  #[cfg_attr(feature = <span class="string">"dox"</span>, doc(cfg(feature = <span class="string">"v0_1_15"</span>)))]
+  #[doc(alias = <span class="string">"stun-reliable-timeout"</span>)]
+  </span><span class="kw">pub fn </span>connect_stun_reliable_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_stun_reliable_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_stun_reliable_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4119,8 +4123,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::stun-reliable-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::stun-reliable-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_stun_reliable_timeout_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4128,9 +4132,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-server&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_stun_server_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_stun_server_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"stun-server"</span>)]
+  </span><span class="kw">pub fn </span>connect_stun_server_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_stun_server_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4142,8 +4146,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::stun-server\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::stun-server\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_stun_server_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4151,9 +4155,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;stun-server-port&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_stun_server_port_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_stun_server_port_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"stun-server-port"</span>)]
+  </span><span class="kw">pub fn </span>connect_stun_server_port_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_stun_server_port_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4165,8 +4169,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::stun-server-port\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::stun-server-port\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_stun_server_port_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4174,12 +4178,12 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;support-renomination&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_support_renomination_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"support-renomination"</span>)]
+  </span><span class="kw">pub fn </span>connect_support_renomination_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(
     <span class="kw-2">&amp;</span><span class="self">self</span>,
     f: F,
   ) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_support_renomination_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_support_renomination_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4191,8 +4195,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::support-renomination\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::support-renomination\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_support_renomination_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4200,9 +4204,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;upnp&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_upnp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_upnp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"upnp"</span>)]
+  </span><span class="kw">pub fn </span>connect_upnp_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_upnp_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4214,8 +4218,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::upnp\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::upnp\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_upnp_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4223,9 +4227,9 @@
     }
   }
 
-  <span class="attr">#[doc(alias = <span class="string">&quot;upnp-timeout&quot;</span>)]
-  </span><span class="kw">pub fn </span>connect_upnp_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>notify_upnp_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">&#39;static</span>&gt;(
+  <span class="attr">#[doc(alias = <span class="string">"upnp-timeout"</span>)]
+  </span><span class="kw">pub fn </span>connect_upnp_timeout_notify&lt;F: Fn(<span class="kw-2">&amp;</span><span class="self">Self</span>) + <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; SignalHandlerId {
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>notify_upnp_timeout_trampoline&lt;F: Fn(<span class="kw-2">&amp;</span>Agent) + <span class="lifetime">'static</span>&gt;(
       this: <span class="kw-2">*mut </span>ffi::NiceAgent,
       _param_spec: glib::ffi::gpointer,
       f: glib::ffi::gpointer,
@@ -4237,8 +4241,8 @@
       <span class="kw">let </span>f: Box_&lt;F&gt; = Box_::new(f);
       connect_raw(
         <span class="self">self</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>,
-        <span class="string">b&quot;notify::upnp-timeout\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
-        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>()&gt;(
+        <span class="string">b"notify::upnp-timeout\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>,
+        <span class="prelude-val">Some</span>(transmute::&lt;<span class="kw">_</span>, <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>()&gt;(
           notify_upnp_timeout_trampoline::&lt;F&gt; <span class="kw">as </span><span class="kw-2">*const </span>(),
         )),
         Box_::into_raw(f),
@@ -4249,7 +4253,7 @@
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>Agent {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-    f.write_str(<span class="string">&quot;Agent&quot;</span>)
+    f.write_str(<span class="string">"Agent"</span>)
   }
 }
 </code></pre></div></section></main></body></html>

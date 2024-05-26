@@ -64,6 +64,7 @@ enum CodecName {
   H264,
   Vp8,
   Vp9,
+  Av1,
 }
 
 #[derive(Clone)]
@@ -101,6 +102,7 @@ impl Codec {
       "h264" => self.name == CodecName::H264,
       "vp8" => self.name == CodecName::Vp8,
       "vp9" => self.name == CodecName::Vp9,
+      "av1" => self.name == CodecName::Av1,
       _ => false,
     }
   }
@@ -111,6 +113,7 @@ impl Codec {
       CodecName::H264 => "H264",
       CodecName::Vp8 => "VP8",
       CodecName::Vp9 => "VP9",
+      CodecName::Av1 => "AV1",
     }
   }
 
@@ -120,6 +123,7 @@ impl Codec {
       CodecName::H264 => "rtph264depay",
       CodecName::Vp8 => "rtpvp8depay",
       CodecName::Vp9 => "rtpvp9depay",
+      CodecName::Av1 => "rtpav1depay",
     }
   }
 
@@ -129,6 +133,7 @@ impl Codec {
       CodecName::H264 => "avdec_h264",
       CodecName::Vp8 => "vp8dec",
       CodecName::Vp9 => "vp9dec",
+      CodecName::Av1 => "av1dec",
     }
   }
 
@@ -138,6 +143,7 @@ impl Codec {
       CodecName::H264 => "rtph264pay",
       CodecName::Vp8 => "rtpvp8pay",
       CodecName::Vp9 => "rtpvp9pay",
+      CodecName::Av1 => "rtpav1pay",
     }
   }
 }
@@ -209,6 +215,7 @@ impl JingleSession {
     let mut h264 = None;
     let mut vp8 = None;
     let mut vp9 = None;
+    let mut av1 = None;
     let mut audio_hdrext_ssrc_audio_level = None;
     let mut audio_hdrext_transport_cc = None;
     let mut video_hdrext_transport_cc = None;
@@ -263,6 +270,14 @@ impl JingleSession {
                 rtcp_fbs: pt.rtcp_fbs.clone(),
               });
             },
+            "AV1" => {
+              av1 = Some(Codec {
+                name: CodecName::Av1,
+                pt: pt.id,
+                rtx_pt: None,
+                rtcp_fbs: pt.rtcp_fbs.clone(),
+              });
+            },
             _ => (),
           }
         }
@@ -288,6 +303,11 @@ impl JingleSession {
                     vp9.rtx_pt = Some(pt.id);
                   }
                 }
+                if let Some(av1) = &mut av1 {
+                  if apt_pt == av1.pt {
+                    av1.rtx_pt = Some(pt.id);
+                  }
+                }
               }
             }
           }
@@ -304,7 +324,7 @@ impl JingleSession {
       return Ok(None);
     }
 
-    let codecs = [opus, h264, vp8, vp9].iter().flatten().cloned().collect();
+    let codecs = [opus, h264, vp8, vp9, av1].iter().flatten().cloned().collect();
 
     for ssrc in &description.ssrcs {
       let owner = ssrc
@@ -1119,7 +1139,7 @@ impl JingleSession {
       if codec.name == CodecName::H264 {
         element.set_property_from_str("aggregate-mode", "zero-latency");
       }
-      else {
+      else if codec.name == CodecName::Vp8 || codec.name == CodecName::Vp9 {
         element.set_property_from_str("picture-id-mode", "15-bit");
       }
       element

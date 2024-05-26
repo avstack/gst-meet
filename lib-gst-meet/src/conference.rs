@@ -204,10 +204,13 @@ impl JitsiConference {
         .append("false")
         .build(),
       xmpp_parsers::Element::builder("SourceInfo", ns::DEFAULT_NS)
-        .append(serde_json::to_string(&serde_json::json!({
-          format!("{endpoint_id}-a0"): {"muted": false},
-          format!("{endpoint_id}-v0"): {"muted": false},
-        }))?.as_str())
+        .append(
+          serde_json::to_string(&serde_json::json!({
+            format!("{endpoint_id}-a0"): {"muted": false},
+            format!("{endpoint_id}-v0"): {"muted": false},
+          }))?
+          .as_str(),
+        )
         .build(),
       xmpp_parsers::Element::builder("nick", "http://jabber.org/protocol/nick")
         .append(config.nick.as_str())
@@ -683,10 +686,13 @@ impl StanzaFilter for JitsiConference {
                     let my_endpoint_id = self.endpoint_id()?.to_owned();
 
                     info!("Sending source video type message");
-                    if let Err(e) = colibri_channel.send(ColibriMessage::SourceVideoTypeMessage {
-                      source_name: format!("{my_endpoint_id}-v0"),
-                      video_type: colibri::VideoType::Camera,
-                    }).await {
+                    if let Err(e) = colibri_channel
+                      .send(ColibriMessage::SourceVideoTypeMessage {
+                        source_name: format!("{my_endpoint_id}-v0"),
+                        video_type: colibri::VideoType::Camera,
+                      })
+                      .await
+                    {
                       warn!("Failed to send source video type message: {e:?}");
                     }
 

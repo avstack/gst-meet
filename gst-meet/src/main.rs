@@ -58,8 +58,8 @@ struct Opt {
 
   #[structopt(
     long,
-    default_value = "vp9",
-    help = "The video codec to negotiate support for. One of: vp9, vp8, h264"
+    default_value = "vp8",
+    help = "The codec to transmit and receive video using. One of: av1, vp9, vp8, h264"
   )]
   video_codec: String,
 

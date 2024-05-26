@@ -1051,6 +1051,12 @@
 <a href="#1049" id="1049">1049</a>
 <a href="#1050" id="1050">1050</a>
 <a href="#1051" id="1051">1051</a>
+<a href="#1052" id="1052">1052</a>
+<a href="#1053" id="1053">1053</a>
+<a href="#1054" id="1054">1054</a>
+<a href="#1055" id="1055">1055</a>
+<a href="#1056" id="1056">1056</a>
+<a href="#1057" id="1057">1057</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
   collections::HashMap, convert::TryFrom, fmt, future::Future, pin::Pin, sync::Arc, time::Duration,
 };
@@ -1257,10 +1263,13 @@
         .append(<span class="string">"false"</span>)
         .build(),
       xmpp_parsers::Element::builder(<span class="string">"SourceInfo"</span>, ns::DEFAULT_NS)
-        .append(serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">serde_json::json!</span>({
-          <span class="macro">format!</span>(<span class="string">"{endpoint_id}-a0"</span>): {<span class="string">"muted"</span>: <span class="bool-val">false</span>},
-          <span class="macro">format!</span>(<span class="string">"{endpoint_id}-v0"</span>): {<span class="string">"muted"</span>: <span class="bool-val">false</span>},
-        }))<span class="question-mark">?</span>.as_str())
+        .append(
+          serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">serde_json::json!</span>({
+            <span class="macro">format!</span>(<span class="string">"{endpoint_id}-a0"</span>): {<span class="string">"muted"</span>: <span class="bool-val">false</span>},
+            <span class="macro">format!</span>(<span class="string">"{endpoint_id}-v0"</span>): {<span class="string">"muted"</span>: <span class="bool-val">false</span>},
+          }))<span class="question-mark">?
+          </span>.as_str(),
+        )
         .build(),
       xmpp_parsers::Element::builder(<span class="string">"nick"</span>, <span class="string">"http://jabber.org/protocol/nick"</span>)
         .append(config.nick.as_str())
@@ -1736,10 +1745,13 @@
                     <span class="kw">let </span>my_endpoint_id = <span class="self">self</span>.endpoint_id()<span class="question-mark">?</span>.to_owned();
 
                     <span class="macro">info!</span>(<span class="string">"Sending source video type message"</span>);
-                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = colibri_channel.send(ColibriMessage::SourceVideoTypeMessage {
-                      source_name: <span class="macro">format!</span>(<span class="string">"{my_endpoint_id}-v0"</span>),
-                      video_type: colibri::VideoType::Camera,
-                    }).<span class="kw">await </span>{
+                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = colibri_channel
+                      .send(ColibriMessage::SourceVideoTypeMessage {
+                        source_name: <span class="macro">format!</span>(<span class="string">"{my_endpoint_id}-v0"</span>),
+                        video_type: colibri::VideoType::Camera,
+                      })
+                      .<span class="kw">await
+                    </span>{
                       <span class="macro">warn!</span>(<span class="string">"Failed to send source video type message: {e:?}"</span>);
                     }
 

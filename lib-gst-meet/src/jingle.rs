@@ -324,7 +324,11 @@ impl JingleSession {
       return Ok(None);
     }
 
-    let codecs = [opus, h264, vp8, vp9, av1].iter().flatten().cloned().collect();
+    let codecs = [opus, h264, vp8, vp9, av1]
+      .iter()
+      .flatten()
+      .cloned()
+      .collect();
 
     for ssrc in &description.ssrcs {
       let owner = ssrc
@@ -1366,7 +1370,7 @@ impl JingleSession {
       };
 
       description.rtcp_mux = Some(RtcpMux);
-      
+
       let endpoint_id = conference.endpoint_id()?;
 
       let mslabel = format!("{}-{}-0-1", endpoint_id, initiate_content.name.0);
@@ -1380,7 +1384,11 @@ impl JingleSession {
       });
 
       description.ssrcs = if initiate_content.name.0 == "audio" {
-        vec![jingle_ssma::Source::new(audio_ssrc, Some(format!("{endpoint_id}-a0")), None)]
+        vec![jingle_ssma::Source::new(
+          audio_ssrc,
+          Some(format!("{endpoint_id}-a0")),
+          None,
+        )]
       }
       else {
         let source_name = format!("{endpoint_id}-v0");

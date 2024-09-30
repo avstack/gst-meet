@@ -16,7 +16,6 @@ use gstreamer::{
 #[cfg(feature = "log-rtp")]
 use gstreamer_rtp::RTPBuffer;
 use gstreamer_rtp::{prelude::RTPHeaderExtensionExt as _, RTPHeaderExtension};
-use itertools::Itertools;
 use jitsi_xmpp_parsers::{
   jingle::{Action, Content, Description, Jingle, Transport},
   jingle_dtls_srtp::Fingerprint,
@@ -845,6 +844,46 @@ impl JingleSession {
 
             debug!("pad added for remote source: {:?}", source);
 
+            let (maybe_participant_id, maybe_sink_element, maybe_participant_bin) =
+              if let Some(participant_id) = source.participant_id {
+                handle.block_on(conference.ensure_participant(&participant_id))?;
+                let maybe_sink_element = match source.media_type {
+                  MediaType::Audio => {
+                    handle.block_on(conference.remote_participant_audio_sink_element())
+                  },
+                  MediaType::Video => {
+                    handle.block_on(conference.remote_participant_video_sink_element())
+                  },
+                };
+                let maybe_participant_bin =
+                  pipeline.by_name(&format!("participant_{}", participant_id));
+                (
+                  Some(participant_id),
+                  maybe_sink_element,
+                  maybe_participant_bin,
+                )
+              }
+              else {
+                debug!("source is owned by JVB");
+                (None, None, None)
+              };
+
+            if maybe_participant_id.is_none()
+              || (maybe_sink_element.is_none() && maybe_participant_bin.is_none())
+            {
+              debug!("nothing to link to decoder, adding fakesink");
+              let fakesink = gstreamer::ElementFactory::make("fakesink").build()?;
+              pipeline.add(&fakesink)?;
+              fakesink.sync_state_with_parent()?;
+              let sink_pad = fakesink
+                .static_pad("sink")
+                .context("fakesink has no sink pad")?;
+              pad.link(&sink_pad)?;
+              return Ok(());
+            }
+
+            let participant_id = maybe_participant_id.unwrap();
+
             let depayloader = match source.media_type {
               MediaType::Audio => {
                 let codec = codecs
@@ -1000,81 +1039,51 @@ impl JingleSession {
               },
             };
 
-            if let Some(participant_id) = source.participant_id {
-              handle.block_on(conference.ensure_participant(&participant_id))?;
-              let maybe_sink_element = match source.media_type {
-                MediaType::Audio => {
-                  handle.block_on(conference.remote_participant_audio_sink_element())
-                },
-                MediaType::Video => {
-                  handle.block_on(conference.remote_participant_video_sink_element())
-                },
-              };
-              if let Some(sink_element) = maybe_sink_element {
-                let sink_pad = sink_element
-                  .request_pad_simple("sink_%u")
-                  .context("no suitable sink pad provided by sink element in recv pipeline")?;
-                let ghost_pad = GhostPad::builder_with_target(&sink_pad)?
-                  .name(format!(
-                    "participant_{}_{:?}",
-                    participant_id, source.media_type
-                  ))
-                  .build();
-                let bin: Bin = sink_element
-                  .parent()
-                  .context("sink element has no parent")?
-                  .downcast()
-                  .map_err(|_| anyhow!("sink element's parent is not a bin"))?;
-                bin.add_pad(&ghost_pad)?;
+            if let Some(sink_element) = maybe_sink_element {
+              let sink_pad = sink_element
+                .request_pad_simple("sink_%u")
+                .context("no suitable sink pad provided by sink element in recv pipeline")?;
+              let ghost_pad = GhostPad::builder_with_target(&sink_pad)?
+                .name(format!(
+                  "participant_{}_{:?}",
+                  participant_id, source.media_type
+                ))
+                .build();
+              let bin: Bin = sink_element
+                .parent()
+                .context("sink element has no parent")?
+                .downcast()
+                .map_err(|_| anyhow!("sink element's parent is not a bin"))?;
+              bin.add_pad(&ghost_pad)?;
 
-                src_pad
-                  .link(&ghost_pad)
-                  .context("failed to link decode chain to participant bin from recv pipeline")?;
+              src_pad
+                .link(&ghost_pad)
+                .context("failed to link decode chain to participant bin from recv pipeline")?;
+              info!(
+                "linked {}/{:?} to new pad in recv pipeline",
+                participant_id, source.media_type
+              );
+            }
+            else if let Some(participant_bin) = maybe_participant_bin {
+              let sink_pad_name = match source.media_type {
+                MediaType::Audio => "audio",
+                MediaType::Video => "video",
+              };
+              if let Some(sink_pad) = participant_bin.static_pad(sink_pad_name) {
+                src_pad.link(&sink_pad).context(
+                  "failed to link decode chain to participant bin from recv participant pipeline",
+                )?;
                 info!(
-                  "linked {}/{:?} to new pad in recv pipeline",
+                  "linked {}/{:?} to recv participant pipeline",
                   participant_id, source.media_type
                 );
               }
-              else if let Some(participant_bin) =
-                pipeline.by_name(&format!("participant_{}", participant_id))
-              {
-                let sink_pad_name = match source.media_type {
-                  MediaType::Audio => "audio",
-                  MediaType::Video => "video",
-                };
-                if let Some(sink_pad) = participant_bin.static_pad(sink_pad_name) {
-                  src_pad.link(&sink_pad).context(
-                    "failed to link decode chain to participant bin from recv participant pipeline",
-                  )?;
-                  info!(
-                    "linked {}/{:?} to recv participant pipeline",
-                    participant_id, source.media_type
-                  );
-                }
-                else {
-                  warn!(
-                    "no {} sink pad on {} participant bin in recv participant pipeline",
-                    sink_pad_name, participant_id
-                  );
-                }
-              }
               else {
-                warn!("no pipeline handled new participant: {}", participant_id);
+                warn!(
+                  "no {} sink pad on {} participant bin in recv participant pipeline",
+                  sink_pad_name, participant_id
+                );
               }
-            }
-            else {
-              debug!("not looking for participant bin, source is owned by JVB");
-            }
-
-            if !src_pad.is_linked() {
-              debug!("nothing linked to decoder, adding fakesink");
-              let fakesink = gstreamer::ElementFactory::make("fakesink").build()?;
-              pipeline.add(&fakesink)?;
-              fakesink.sync_state_with_parent()?;
-              let sink_pad = fakesink
-                .static_pad("sink")
-                .context("fakesink has no sink pad")?;
-              src_pad.link(&sink_pad)?;
             }
 
             pipeline.debug_to_dot_file(

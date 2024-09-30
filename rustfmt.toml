@@ -8,6 +8,4 @@ imports_granularity = "Crate"
 newline_style = "Unix"
 reorder_impl_items = true
 group_imports = "StdExternalCrate"
-report_fixme = "Unnumbered"
-report_todo = "Unnumbered"
-version = "Two"
+style_edition = "2021"

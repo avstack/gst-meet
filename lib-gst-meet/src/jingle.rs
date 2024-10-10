@@ -581,6 +581,8 @@ impl JingleSession {
       .property("stream", ice_stream_id)
       .property("component", ice_component_id)
       .property("agent", &ice_agent)
+      .property("sync", false)
+      .property("async", false)
       .build()?;
     pipeline.add(&nicesrc)?;
 
@@ -588,6 +590,8 @@ impl JingleSession {
       .property("stream", ice_stream_id)
       .property("component", ice_component_id)
       .property("agent", &ice_agent)
+      .property("sync", false)
+      .property("async", false)
       .build()?;
     pipeline.add(&nicesink)?;
 

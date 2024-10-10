@@ -1568,6 +1568,24 @@
 <a href="#1568" id="1568">1568</a>
 <a href="#1569" id="1569">1569</a>
 <a href="#1570" id="1570">1570</a>
+<a href="#1571" id="1571">1571</a>
+<a href="#1572" id="1572">1572</a>
+<a href="#1573" id="1573">1573</a>
+<a href="#1574" id="1574">1574</a>
+<a href="#1575" id="1575">1575</a>
+<a href="#1576" id="1576">1576</a>
+<a href="#1577" id="1577">1577</a>
+<a href="#1578" id="1578">1578</a>
+<a href="#1579" id="1579">1579</a>
+<a href="#1580" id="1580">1580</a>
+<a href="#1581" id="1581">1581</a>
+<a href="#1582" id="1582">1582</a>
+<a href="#1583" id="1583">1583</a>
+<a href="#1584" id="1584">1584</a>
+<a href="#1585" id="1585">1585</a>
+<a href="#1586" id="1586">1586</a>
+<a href="#1587" id="1587">1587</a>
+<a href="#1588" id="1588">1588</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::HashMap, fmt, net::SocketAddr};
 
 <span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
@@ -2516,13 +2534,13 @@
 
             <span class="macro">debug!</span>(<span class="string">"linked rtpbin.{} to depayloader"</span>, pad_name);
 
-            <span class="kw">let </span>queue = gstreamer::ElementFactory::make(<span class="string">"queue"</span>).build()<span class="question-mark">?</span>;
+            <span class="kw">let </span>pre_decoder_queue = gstreamer::ElementFactory::make(<span class="string">"queue"</span>).build()<span class="question-mark">?</span>;
             pipeline
-              .add(<span class="kw-2">&amp;</span>queue)
+              .add(<span class="kw-2">&amp;</span>pre_decoder_queue)
               .context(<span class="string">"failed to add queue to pipeline"</span>)<span class="question-mark">?</span>;
-            queue.sync_state_with_parent()<span class="question-mark">?</span>;
+            pre_decoder_queue.sync_state_with_parent()<span class="question-mark">?</span>;
             depayloader
-              .link(<span class="kw-2">&amp;</span>queue)
+              .link(<span class="kw-2">&amp;</span>pre_decoder_queue)
               .context(<span class="string">"failed to link depayloader to queue"</span>)<span class="question-mark">?</span>;
 
             <span class="kw">let </span>decoder = <span class="kw">match </span>source.media_type {
@@ -2563,23 +2581,32 @@
               .add(<span class="kw-2">&amp;</span>decoder)
               .context(<span class="string">"failed to add decoder to pipeline"</span>)<span class="question-mark">?</span>;
             decoder.sync_state_with_parent()<span class="question-mark">?</span>;
-            queue
+            pre_decoder_queue
               .link(<span class="kw-2">&amp;</span>decoder)
               .context(<span class="string">"failed to link queue to decoder"</span>)<span class="question-mark">?</span>;
 
+            <span class="kw">let </span>post_decoder_queue = gstreamer::ElementFactory::make(<span class="string">"queue"</span>).build()<span class="question-mark">?</span>;
+            pipeline
+              .add(<span class="kw-2">&amp;</span>post_decoder_queue)
+              .context(<span class="string">"failed to add queue to pipeline"</span>)<span class="question-mark">?</span>;
+            post_decoder_queue.sync_state_with_parent()<span class="question-mark">?</span>;
+            decoder
+              .link(<span class="kw-2">&amp;</span>post_decoder_queue)
+              .context(<span class="string">"failed to link decoder to queue"</span>)<span class="question-mark">?</span>;
+
             <span class="kw">let </span>src_pad = <span class="kw">match </span>source.media_type {
-              MediaType::Audio =&gt; decoder
+              MediaType::Audio =&gt; post_decoder_queue
                 .static_pad(<span class="string">"src"</span>)
-                .context(<span class="string">"decoder has no src pad"</span>)<span class="question-mark">?</span>,
+                .context(<span class="string">"queue has no src pad"</span>)<span class="question-mark">?</span>,
               MediaType::Video =&gt; {
                 <span class="kw">let </span>videoscale = gstreamer::ElementFactory::make(<span class="string">"videoscale"</span>).build()<span class="question-mark">?</span>;
                 pipeline
                   .add(<span class="kw-2">&amp;</span>videoscale)
                   .context(<span class="string">"failed to add videoscale to pipeline"</span>)<span class="question-mark">?</span>;
                 videoscale.sync_state_with_parent()<span class="question-mark">?</span>;
-                decoder
+                post_decoder_queue
                   .link(<span class="kw-2">&amp;</span>videoscale)
-                  .context(<span class="string">"failed to link decoder to videoscale"</span>)<span class="question-mark">?</span>;
+                  .context(<span class="string">"failed to link queue to videoscale"</span>)<span class="question-mark">?</span>;
 
                 <span class="kw">let </span>capsfilter = gstreamer::ElementFactory::make(<span class="string">"capsfilter"</span>).build()<span class="question-mark">?</span>;
                 capsfilter.set_property_from_str(
@@ -2607,9 +2634,18 @@
                   .link(<span class="kw-2">&amp;</span>videoconvert)
                   .context(<span class="string">"failed to link capsfilter to videoconvert"</span>)<span class="question-mark">?</span>;
 
+                <span class="kw">let </span>post_videoconvert_queue = gstreamer::ElementFactory::make(<span class="string">"queue"</span>).build()<span class="question-mark">?</span>;
+                pipeline
+                  .add(<span class="kw-2">&amp;</span>post_videoconvert_queue)
+                  .context(<span class="string">"failed to add queue to pipeline"</span>)<span class="question-mark">?</span>;
+                post_videoconvert_queue.sync_state_with_parent()<span class="question-mark">?</span>;
                 videoconvert
+                  .link(<span class="kw-2">&amp;</span>post_videoconvert_queue)
+                  .context(<span class="string">"failed to link videoconvert to queue"</span>)<span class="question-mark">?</span>;
+
+                post_videoconvert_queue
                   .static_pad(<span class="string">"src"</span>)
-                  .context(<span class="string">"videoconvert has no src pad"</span>)<span class="question-mark">?
+                  .context(<span class="string">"queue has no src pad"</span>)<span class="question-mark">?
               </span>},
             };
 

@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/jingle.rs`."><title>jingle.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
-            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
-    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../lib_gst_meet/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `lib-gst-meet/src/jingle.rs`."><title>jingle.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c5d6553a23f1e5a6.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lib_gst_meet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0 (eeb90cda1 2024-09-04)" data-channel="1.81.0" data-search-js="search-d234aafac6c221dd.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-d2fab2bf619172d3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1557,6 +1555,19 @@
 <a href="#1555" id="1555">1555</a>
 <a href="#1556" id="1556">1556</a>
 <a href="#1557" id="1557">1557</a>
+<a href="#1558" id="1558">1558</a>
+<a href="#1559" id="1559">1559</a>
+<a href="#1560" id="1560">1560</a>
+<a href="#1561" id="1561">1561</a>
+<a href="#1562" id="1562">1562</a>
+<a href="#1563" id="1563">1563</a>
+<a href="#1564" id="1564">1564</a>
+<a href="#1565" id="1565">1565</a>
+<a href="#1566" id="1566">1566</a>
+<a href="#1567" id="1567">1567</a>
+<a href="#1568" id="1568">1568</a>
+<a href="#1569" id="1569">1569</a>
+<a href="#1570" id="1570">1570</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::HashMap, fmt, net::SocketAddr};
 
 <span class="kw">use </span>anyhow::{anyhow, bail, Context, <span class="prelude-ty">Result</span>};
@@ -1575,7 +1586,6 @@
 <span class="attr">#[cfg(feature = <span class="string">"log-rtp"</span>)]
 </span><span class="kw">use </span>gstreamer_rtp::RTPBuffer;
 <span class="kw">use </span>gstreamer_rtp::{prelude::RTPHeaderExtensionExt <span class="kw">as _</span>, RTPHeaderExtension};
-<span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>jitsi_xmpp_parsers::{
   jingle::{Action, Content, Description, Jingle, Transport},
   jingle_dtls_srtp::Fingerprint,
@@ -2141,6 +2151,8 @@
       .property(<span class="string">"stream"</span>, ice_stream_id)
       .property(<span class="string">"component"</span>, ice_component_id)
       .property(<span class="string">"agent"</span>, <span class="kw-2">&amp;</span>ice_agent)
+      .property(<span class="string">"sync"</span>, <span class="bool-val">false</span>)
+      .property(<span class="string">"async"</span>, <span class="bool-val">false</span>)
       .build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>nicesrc)<span class="question-mark">?</span>;
 
@@ -2148,6 +2160,8 @@
       .property(<span class="string">"stream"</span>, ice_stream_id)
       .property(<span class="string">"component"</span>, ice_component_id)
       .property(<span class="string">"agent"</span>, <span class="kw-2">&amp;</span>ice_agent)
+      .property(<span class="string">"sync"</span>, <span class="bool-val">false</span>)
+      .property(<span class="string">"async"</span>, <span class="bool-val">false</span>)
       .build()<span class="question-mark">?</span>;
     pipeline.add(<span class="kw-2">&amp;</span>nicesink)<span class="question-mark">?</span>;
 
@@ -2404,6 +2418,46 @@
 
             <span class="macro">debug!</span>(<span class="string">"pad added for remote source: {:?}"</span>, source);
 
+            <span class="kw">let </span>(maybe_participant_id, maybe_sink_element, maybe_participant_bin) =
+              <span class="kw">if let </span><span class="prelude-val">Some</span>(participant_id) = source.participant_id {
+                handle.block_on(conference.ensure_participant(<span class="kw-2">&amp;</span>participant_id))<span class="question-mark">?</span>;
+                <span class="kw">let </span>maybe_sink_element = <span class="kw">match </span>source.media_type {
+                  MediaType::Audio =&gt; {
+                    handle.block_on(conference.remote_participant_audio_sink_element())
+                  },
+                  MediaType::Video =&gt; {
+                    handle.block_on(conference.remote_participant_video_sink_element())
+                  },
+                };
+                <span class="kw">let </span>maybe_participant_bin =
+                  pipeline.by_name(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"participant_{}"</span>, participant_id));
+                (
+                  <span class="prelude-val">Some</span>(participant_id),
+                  maybe_sink_element,
+                  maybe_participant_bin,
+                )
+              }
+              <span class="kw">else </span>{
+                <span class="macro">debug!</span>(<span class="string">"source is owned by JVB"</span>);
+                (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+              };
+
+            <span class="kw">if </span>maybe_participant_id.is_none()
+              || (maybe_sink_element.is_none() &amp;&amp; maybe_participant_bin.is_none())
+            {
+              <span class="macro">debug!</span>(<span class="string">"nothing to link to decoder, adding fakesink"</span>);
+              <span class="kw">let </span>fakesink = gstreamer::ElementFactory::make(<span class="string">"fakesink"</span>).build()<span class="question-mark">?</span>;
+              pipeline.add(<span class="kw-2">&amp;</span>fakesink)<span class="question-mark">?</span>;
+              fakesink.sync_state_with_parent()<span class="question-mark">?</span>;
+              <span class="kw">let </span>sink_pad = fakesink
+                .static_pad(<span class="string">"sink"</span>)
+                .context(<span class="string">"fakesink has no sink pad"</span>)<span class="question-mark">?</span>;
+              pad.link(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?</span>;
+              <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+            }
+
+            <span class="kw">let </span>participant_id = maybe_participant_id.unwrap();
+
             <span class="kw">let </span>depayloader = <span class="kw">match </span>source.media_type {
               MediaType::Audio =&gt; {
                 <span class="kw">let </span>codec = codecs
@@ -2559,81 +2613,51 @@
               </span>},
             };
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(participant_id) = source.participant_id {
-              handle.block_on(conference.ensure_participant(<span class="kw-2">&amp;</span>participant_id))<span class="question-mark">?</span>;
-              <span class="kw">let </span>maybe_sink_element = <span class="kw">match </span>source.media_type {
-                MediaType::Audio =&gt; {
-                  handle.block_on(conference.remote_participant_audio_sink_element())
-                },
-                MediaType::Video =&gt; {
-                  handle.block_on(conference.remote_participant_video_sink_element())
-                },
-              };
-              <span class="kw">if let </span><span class="prelude-val">Some</span>(sink_element) = maybe_sink_element {
-                <span class="kw">let </span>sink_pad = sink_element
-                  .request_pad_simple(<span class="string">"sink_%u"</span>)
-                  .context(<span class="string">"no suitable sink pad provided by sink element in recv pipeline"</span>)<span class="question-mark">?</span>;
-                <span class="kw">let </span>ghost_pad = GhostPad::builder_with_target(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?
-                  </span>.name(<span class="macro">format!</span>(
-                    <span class="string">"participant_{}_{:?}"</span>,
-                    participant_id, source.media_type
-                  ))
-                  .build();
-                <span class="kw">let </span>bin: Bin = sink_element
-                  .parent()
-                  .context(<span class="string">"sink element has no parent"</span>)<span class="question-mark">?
-                  </span>.downcast()
-                  .map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">"sink element's parent is not a bin"</span>))<span class="question-mark">?</span>;
-                bin.add_pad(<span class="kw-2">&amp;</span>ghost_pad)<span class="question-mark">?</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(sink_element) = maybe_sink_element {
+              <span class="kw">let </span>sink_pad = sink_element
+                .request_pad_simple(<span class="string">"sink_%u"</span>)
+                .context(<span class="string">"no suitable sink pad provided by sink element in recv pipeline"</span>)<span class="question-mark">?</span>;
+              <span class="kw">let </span>ghost_pad = GhostPad::builder_with_target(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?
+                </span>.name(<span class="macro">format!</span>(
+                  <span class="string">"participant_{}_{:?}"</span>,
+                  participant_id, source.media_type
+                ))
+                .build();
+              <span class="kw">let </span>bin: Bin = sink_element
+                .parent()
+                .context(<span class="string">"sink element has no parent"</span>)<span class="question-mark">?
+                </span>.downcast()
+                .map_err(|<span class="kw">_</span>| <span class="macro">anyhow!</span>(<span class="string">"sink element's parent is not a bin"</span>))<span class="question-mark">?</span>;
+              bin.add_pad(<span class="kw-2">&amp;</span>ghost_pad)<span class="question-mark">?</span>;
 
-                src_pad
-                  .link(<span class="kw-2">&amp;</span>ghost_pad)
-                  .context(<span class="string">"failed to link decode chain to participant bin from recv pipeline"</span>)<span class="question-mark">?</span>;
+              src_pad
+                .link(<span class="kw-2">&amp;</span>ghost_pad)
+                .context(<span class="string">"failed to link decode chain to participant bin from recv pipeline"</span>)<span class="question-mark">?</span>;
+              <span class="macro">info!</span>(
+                <span class="string">"linked {}/{:?} to new pad in recv pipeline"</span>,
+                participant_id, source.media_type
+              );
+            }
+            <span class="kw">else if let </span><span class="prelude-val">Some</span>(participant_bin) = maybe_participant_bin {
+              <span class="kw">let </span>sink_pad_name = <span class="kw">match </span>source.media_type {
+                MediaType::Audio =&gt; <span class="string">"audio"</span>,
+                MediaType::Video =&gt; <span class="string">"video"</span>,
+              };
+              <span class="kw">if let </span><span class="prelude-val">Some</span>(sink_pad) = participant_bin.static_pad(sink_pad_name) {
+                src_pad.link(<span class="kw-2">&amp;</span>sink_pad).context(
+                  <span class="string">"failed to link decode chain to participant bin from recv participant pipeline"</span>,
+                )<span class="question-mark">?</span>;
                 <span class="macro">info!</span>(
-                  <span class="string">"linked {}/{:?} to new pad in recv pipeline"</span>,
+                  <span class="string">"linked {}/{:?} to recv participant pipeline"</span>,
                   participant_id, source.media_type
                 );
               }
-              <span class="kw">else if let </span><span class="prelude-val">Some</span>(participant_bin) =
-                pipeline.by_name(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"participant_{}"</span>, participant_id))
-              {
-                <span class="kw">let </span>sink_pad_name = <span class="kw">match </span>source.media_type {
-                  MediaType::Audio =&gt; <span class="string">"audio"</span>,
-                  MediaType::Video =&gt; <span class="string">"video"</span>,
-                };
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(sink_pad) = participant_bin.static_pad(sink_pad_name) {
-                  src_pad.link(<span class="kw-2">&amp;</span>sink_pad).context(
-                    <span class="string">"failed to link decode chain to participant bin from recv participant pipeline"</span>,
-                  )<span class="question-mark">?</span>;
-                  <span class="macro">info!</span>(
-                    <span class="string">"linked {}/{:?} to recv participant pipeline"</span>,
-                    participant_id, source.media_type
-                  );
-                }
-                <span class="kw">else </span>{
-                  <span class="macro">warn!</span>(
-                    <span class="string">"no {} sink pad on {} participant bin in recv participant pipeline"</span>,
-                    sink_pad_name, participant_id
-                  );
-                }
-              }
               <span class="kw">else </span>{
-                <span class="macro">warn!</span>(<span class="string">"no pipeline handled new participant: {}"</span>, participant_id);
+                <span class="macro">warn!</span>(
+                  <span class="string">"no {} sink pad on {} participant bin in recv participant pipeline"</span>,
+                  sink_pad_name, participant_id
+                );
               }
-            }
-            <span class="kw">else </span>{
-              <span class="macro">debug!</span>(<span class="string">"not looking for participant bin, source is owned by JVB"</span>);
-            }
-
-            <span class="kw">if </span>!src_pad.is_linked() {
-              <span class="macro">debug!</span>(<span class="string">"nothing linked to decoder, adding fakesink"</span>);
-              <span class="kw">let </span>fakesink = gstreamer::ElementFactory::make(<span class="string">"fakesink"</span>).build()<span class="question-mark">?</span>;
-              pipeline.add(<span class="kw-2">&amp;</span>fakesink)<span class="question-mark">?</span>;
-              fakesink.sync_state_with_parent()<span class="question-mark">?</span>;
-              <span class="kw">let </span>sink_pad = fakesink
-                .static_pad(<span class="string">"sink"</span>)
-                .context(<span class="string">"fakesink has no sink pad"</span>)<span class="question-mark">?</span>;
-              src_pad.link(<span class="kw-2">&amp;</span>sink_pad)<span class="question-mark">?</span>;
             }
 
             pipeline.debug_to_dot_file(

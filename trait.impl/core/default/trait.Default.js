@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"jitsi_xmpp_parsers":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.78.0/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"jitsi_xmpp_parsers/jingle_ice_udp/struct.Transport.html\" title=\"struct jitsi_xmpp_parsers::jingle_ice_udp::Transport\">Transport</a>"]]
+"jitsi_xmpp_parsers":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.81.0/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"jitsi_xmpp_parsers/jingle_ice_udp/struct.Transport.html\" title=\"struct jitsi_xmpp_parsers::jingle_ice_udp::Transport\">Transport</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

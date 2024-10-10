@@ -946,13 +946,13 @@ impl JingleSession {
 
             debug!("linked rtpbin.{} to depayloader", pad_name);
 
-            let queue = gstreamer::ElementFactory::make("queue").build()?;
+            let pre_decoder_queue = gstreamer::ElementFactory::make("queue").build()?;
             pipeline
-              .add(&queue)
+              .add(&pre_decoder_queue)
               .context("failed to add queue to pipeline")?;
-            queue.sync_state_with_parent()?;
+            pre_decoder_queue.sync_state_with_parent()?;
             depayloader
-              .link(&queue)
+              .link(&pre_decoder_queue)
               .context("failed to link depayloader to queue")?;
 
             let decoder = match source.media_type {
@@ -993,23 +993,32 @@ impl JingleSession {
               .add(&decoder)
               .context("failed to add decoder to pipeline")?;
             decoder.sync_state_with_parent()?;
-            queue
+            pre_decoder_queue
               .link(&decoder)
               .context("failed to link queue to decoder")?;
 
+            let post_decoder_queue = gstreamer::ElementFactory::make("queue").build()?;
+            pipeline
+              .add(&post_decoder_queue)
+              .context("failed to add queue to pipeline")?;
+            post_decoder_queue.sync_state_with_parent()?;
+            decoder
+              .link(&post_decoder_queue)
+              .context("failed to link decoder to queue")?;
+
             let src_pad = match source.media_type {
-              MediaType::Audio => decoder
+              MediaType::Audio => post_decoder_queue
                 .static_pad("src")
-                .context("decoder has no src pad")?,
+                .context("queue has no src pad")?,
               MediaType::Video => {
                 let videoscale = gstreamer::ElementFactory::make("videoscale").build()?;
                 pipeline
                   .add(&videoscale)
                   .context("failed to add videoscale to pipeline")?;
                 videoscale.sync_state_with_parent()?;
-                decoder
+                post_decoder_queue
                   .link(&videoscale)
-                  .context("failed to link decoder to videoscale")?;
+                  .context("failed to link queue to videoscale")?;
 
                 let capsfilter = gstreamer::ElementFactory::make("capsfilter").build()?;
                 capsfilter.set_property_from_str(
@@ -1037,9 +1046,18 @@ impl JingleSession {
                   .link(&videoconvert)
                   .context("failed to link capsfilter to videoconvert")?;
 
+                let post_videoconvert_queue = gstreamer::ElementFactory::make("queue").build()?;
+                pipeline
+                  .add(&post_videoconvert_queue)
+                  .context("failed to add queue to pipeline")?;
+                post_videoconvert_queue.sync_state_with_parent()?;
                 videoconvert
+                  .link(&post_videoconvert_queue)
+                  .context("failed to link videoconvert to queue")?;
+
+                post_videoconvert_queue
                   .static_pad("src")
-                  .context("videoconvert has no src pad")?
+                  .context("queue has no src pad")?
               },
             };
 

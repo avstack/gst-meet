@@ -16,7 +16,7 @@ tracing = { version = "0.1", default-features = false }
 
 [lib]
 name = "gstmeet"
-crate_type = ["staticlib", "cdylib"]
+crate-type = ["staticlib", "cdylib"]
 
 [features]
 default = []
